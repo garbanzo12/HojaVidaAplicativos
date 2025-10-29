@@ -6,13 +6,16 @@
     "dev": "node index.js",
     "generate": "prisma generate",
     "migrate": "prisma migrate dev --name init",
-    "studio": "prisma studio"
+    "studio": "prisma studio",
+    "start": "node app.js"
+  
   },
   "devDependencies": {
     "prisma": "^6.18.0"
   },
   "dependencies": {
     "@prisma/client": "^6.18.0",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "require": "^2.4.20"
   }
 }
