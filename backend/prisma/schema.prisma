@@ -88,3 +88,11 @@ enum TipoContacto {
   Comercial
   Soporte
 }
+
+
+
+
+generator erd {
+  provider = "prisma-erd-generator"
+  output   = "./ERD.svg"
+}
