@@ -2,97 +2,133 @@ generator client {
   provider = "prisma-client-js"
 }
 
+generator erd {
+  provider = "prisma-erd-generator"
+  output   = "./ERD.svg"
+}
+
 datasource db {
-  provider = "mysql"  // Prisma usa el mismo driver para MariaDB
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
-model Campanas {
-  id                   Int                 @id @default(autoincrement())
-  nombre_campana       String              @db.VarChar(100)
-  cliente              String              @db.VarChar(100)
-  director_operacion   String              @db.VarChar(150)
-  correo_director      String              @db.VarChar(150)
-  fecha_actualizacion  DateTime?
-  servicios_prestados  String?             @db.VarChar(255)
-
-  // Relaciones
-  gestores             Gestores_campana[]  @relation("CampanaGestores")
-  datosGenerales       Datos_generales[]   @relation("CampanaDatos")
-  contactos            Contactos[]         @relation("CampanaContactos")
-  detalles             Campanas_detalle[]  @relation("CampanaDetalle")
+model aplicativos_abai {
+  id           Int     @id @default(autoincrement())
+  nombre       String  @db.VarChar(100)
+  direccion_ip String? @db.VarChar(50)
+  puerto       String? @db.VarChar(10)
+  url          String? @db.Text
+  tipo_red     String? @db.VarChar(100)
+  escalamiento String? @db.VarChar(100)
 }
 
-model Gestores_campana {
-  id          Int                 @id @default(autoincrement())
-  campana_id  Int?
-  segmento    String?             @db.VarChar(100)
-  nombre      String?             @db.VarChar(100)
-  correo      String?             @db.VarChar(150)
-
-  // Relaciones
-  campana     Campanas?           @relation("CampanaGestores", fields: [campana_id], references: [id])
-  detalles    Campanas_detalle[]  @relation("GestorDetalle")
+model aplicativos_internet {
+  id           Int     @id @default(autoincrement())
+  nombre       String  @db.VarChar(100)
+  direccion_ip String? @db.VarChar(50)
+  puerto       String? @db.VarChar(10)
+  url          String? @db.Text
+  tipo_red     String? @db.VarChar(100)
+  escalamiento String? @db.VarChar(100)
 }
 
-model Datos_generales {
-  id                 Int                 @id @default(autoincrement())
-  campana_id         Int?
-  ubicacion_sede     String?             @db.VarChar(150)
-  puestos_operacion  Int?
-  puestos_estructura Int?
-  segmento_red       String?             @db.VarChar(255)
-
-  campana            Campanas?           @relation("CampanaDatos", fields: [campana_id], references: [id])
-  detalles           Campanas_detalle[]  @relation("DatosDetalle")
+model aplicativos_proveedor {
+  id           Int     @id @default(autoincrement())
+  puerto       String? @db.VarChar(10)
+  url          String? @db.Text
+  tipo_red     String? @db.VarChar(100)
+  escalamiento String? @db.VarChar(100)
 }
 
-model Contactos {
-  id            Int                 @id @default(autoincrement())
-  campana_id    Int?
-  tipo_contacto TipoContacto
-  nombre        String?             @db.VarChar(150)
-  correo        String?             @db.VarChar(150)
-  telefono      String?             @db.VarChar(50)
-  empresa       String?             @db.VarChar(100)
-
-  campana       Campanas?           @relation("CampanaContactos", fields: [campana_id], references: [id])
-  detalles      Campanas_detalle[]  @relation("ContactoDetalle")
+model campanas {
+  id                  Int                @id @default(autoincrement())
+  nombre_campana      String             @db.VarChar(100)
+  cliente             String             @db.VarChar(100)
+  director_operacion  String             @db.VarChar(150)
+  correo_director     String             @db.VarChar(150)
+  fecha_actualizacion DateTime?
+  servicios_prestados String?            @db.VarChar(255)
+  campanas_detalle    campanas_detalle[]
+  contactos           contactos[]
+  datos_generales     datos_generales[]
+  gestores_campana    gestores_campana[]
 }
 
-model Imagen {
-  id      Int                 @id @default(autoincrement())
-  imagen  String              @db.Text
-
-  detalles Campanas_detalle[] @relation("ImagenDetalle")
-}
-
-model Campanas_detalle {
-  id                 Int                @id @default(autoincrement())
+model campanas_detalle {
+  id                 Int               @id @default(autoincrement())
   campana_id         Int
   gestor_id          Int?
   datos_generales_id Int?
   contacto_id        Int?
   imagen_id          Int?
+  campanas           campanas          @relation(fields: [campana_id], references: [id], onDelete: Cascade, map: "Campanas_detalle_campana_id_fkey")
+  contactos          contactos?        @relation(fields: [contacto_id], references: [id], map: "Campanas_detalle_contacto_id_fkey")
+  datos_generales    datos_generales?  @relation(fields: [datos_generales_id], references: [id], map: "Campanas_detalle_datos_generales_id_fkey")
+  gestores_campana   gestores_campana? @relation(fields: [gestor_id], references: [id], map: "Campanas_detalle_gestor_id_fkey")
+  imagen             imagen?           @relation(fields: [imagen_id], references: [id], map: "Campanas_detalle_imagen_id_fkey")
 
-  // Relaciones
-  campana            Campanas           @relation("CampanaDetalle", fields: [campana_id], references: [id], onDelete: Cascade)
-  gestor             Gestores_campana?  @relation("GestorDetalle", fields: [gestor_id], references: [id], onDelete: SetNull)
-  datosGenerales     Datos_generales?   @relation("DatosDetalle", fields: [datos_generales_id], references: [id], onDelete: SetNull)
-  contacto           Contactos?         @relation("ContactoDetalle", fields: [contacto_id], references: [id], onDelete: SetNull)
-  imagen             Imagen?            @relation("ImagenDetalle", fields: [imagen_id], references: [id], onDelete: SetNull)
+  @@index([campana_id], map: "Campanas_detalle_campana_id_fkey")
+  @@index([contacto_id], map: "Campanas_detalle_contacto_id_fkey")
+  @@index([datos_generales_id], map: "Campanas_detalle_datos_generales_id_fkey")
+  @@index([gestor_id], map: "Campanas_detalle_gestor_id_fkey")
+  @@index([imagen_id], map: "Campanas_detalle_imagen_id_fkey")
 }
 
-enum TipoContacto {
+model contactos {
+  id               Int                     @id @default(autoincrement())
+  campana_id       Int?
+  tipo_contacto    contactos_tipo_contacto
+  nombre           String?                 @db.VarChar(150)
+  correo           String?                 @db.VarChar(150)
+  telefono         String?                 @db.VarChar(50)
+  empresa          String?                 @db.VarChar(100)
+  campanas_detalle campanas_detalle[]
+  campanas         campanas?               @relation(fields: [campana_id], references: [id], map: "Contactos_campana_id_fkey")
+
+  @@index([campana_id], map: "Contactos_campana_id_fkey")
+}
+
+model datos_generales {
+  id                 Int                @id @default(autoincrement())
+  campana_id         Int?
+  ubicacion_sede     String?            @db.VarChar(150)
+  puestos_operacion  Int?
+  puestos_estructura Int?
+  segmento_red       String?            @db.VarChar(255)
+  campanas_detalle   campanas_detalle[]
+  campanas           campanas?          @relation(fields: [campana_id], references: [id], map: "Datos_generales_campana_id_fkey")
+
+  @@index([campana_id], map: "Datos_generales_campana_id_fkey")
+}
+
+model gestores_campana {
+  id               Int                @id @default(autoincrement())
+  campana_id       Int?
+  segmento         String?            @db.VarChar(100)
+  nombre           String?            @db.VarChar(100)
+  correo           String?            @db.VarChar(150)
+  campanas_detalle campanas_detalle[]
+  campanas         campanas?          @relation(fields: [campana_id], references: [id], map: "Gestores_campana_campana_id_fkey")
+
+  @@index([campana_id], map: "Gestores_campana_campana_id_fkey")
+}
+
+model imagen {
+  id               Int                @id @default(autoincrement())
+  imagen           String             @db.Text
+  campanas_detalle campanas_detalle[]
+}
+
+model matriz_escalamiento {
+  id                 Int     @id @default(autoincrement())
+  proveedor          String? @db.VarChar(100)
+  codigo_servicio    String? @db.VarChar(50)
+  telefono_proveedor String? @db.VarChar(20)
+  telefono_asesor    String? @db.VarChar(20)
+}
+
+enum contactos_tipo_contacto {
   Cliente
   Comercial
   Soporte
-}
-
-
-
-
-generator erd {
-  provider = "prisma-erd-generator"
-  output   = "./ERD.svg"
 }

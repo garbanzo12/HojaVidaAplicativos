@@ -67,6 +67,41 @@ CREATE TABLE `Campanas_detalle` (
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
+CREATE TABLE Aplicativos_ABAI (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    direccion_ip VARCHAR(50),
+    puerto VARCHAR(10),
+    url TEXT,
+    tipo_red VARCHAR(100),
+    escalamiento VARCHAR(100)
+);
+CREATE TABLE Aplicativos_Proveedor (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    puerto VARCHAR(10),
+    url TEXT,
+    tipo_red VARCHAR(100),
+    escalamiento VARCHAR(100)
+);
+
+CREATE TABLE Aplicativos_Internet (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    direccion_ip VARCHAR(50),
+    puerto VARCHAR(10),
+    url TEXT,
+    tipo_red VARCHAR(100),
+    escalamiento VARCHAR(100)
+);
+CREATE TABLE Matriz_Escalamiento (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    proveedor VARCHAR(100),
+    codigo_servicio VARCHAR(50),
+    telefono_proveedor VARCHAR(20),
+    telefono_asesor VARCHAR(20)
+);
+
+
 -- AddForeignKey
 ALTER TABLE `Gestores_campana` ADD CONSTRAINT `Gestores_campana_campana_id_fkey` FOREIGN KEY (`campana_id`) REFERENCES `Campanas`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
