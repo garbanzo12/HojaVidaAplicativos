@@ -10,10 +10,9 @@ import {
 const router = express.Router();
 
 // Rutas
-router.get("/", testConnection);
-router.get("/campanas", getCampanas);
-router.get("/campanas/:id", getCampanaById);
-router.post("/campanas", createCampana);
-router.delete("/campanas/:id", deleteCampana);
+router.get("/", getCampanas);
+router.get("/:id", getCampanaById);
+router.post("/", createCampana);
+router.delete("/:id", deleteCampana);
 
 export default router;
