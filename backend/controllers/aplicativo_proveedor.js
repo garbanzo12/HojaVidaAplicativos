@@ -19,7 +19,7 @@ export const createAplicativoProveedor = async (req, res) => {
   }
 };
 
-// 📌 Obtener todas las gestores
+// 📌 Obtener todos los proveedores
 export const getProveedor = async (req, res) => {
   try {
     const proveedores = await prisma.aplicativos_proveedor.findMany();
@@ -30,7 +30,7 @@ export const getProveedor = async (req, res) => {
   }
 };
 
-// 📌 Obtener una campaña por ID
+// 📌 Obtener un proveedor por ID
 export const getProveedorById = async (req, res) => {
   try {
     const { id } = req.params;

@@ -55,17 +55,18 @@ model campanas {
 }
 
 model campanas_detalle {
-  id                 Int               @id @default(autoincrement())
+  id                 Int                      @id @default(autoincrement())
   campana_id         Int
   gestor_id          Int?
   datos_generales_id Int?
   contacto_id        Int?
   imagen_id          Int?
-  campanas           campanas          @relation(fields: [campana_id], references: [id], onDelete: Cascade, map: "Campanas_detalle_campana_id_fkey")
-  contactos          contactos?        @relation(fields: [contacto_id], references: [id], map: "Campanas_detalle_contacto_id_fkey")
-  datos_generales    datos_generales?  @relation(fields: [datos_generales_id], references: [id], map: "Campanas_detalle_datos_generales_id_fkey")
-  gestores_campana   gestores_campana? @relation(fields: [gestor_id], references: [id], map: "Campanas_detalle_gestor_id_fkey")
-  imagen             imagen?           @relation(fields: [imagen_id], references: [id], map: "Campanas_detalle_imagen_id_fkey")
+  estado             campanas_detalle_estado?
+  campanas           campanas                 @relation(fields: [campana_id], references: [id], onDelete: Cascade, map: "Campanas_detalle_campana_id_fkey")
+  contactos          contactos?               @relation(fields: [contacto_id], references: [id], map: "Campanas_detalle_contacto_id_fkey")
+  datos_generales    datos_generales?         @relation(fields: [datos_generales_id], references: [id], map: "Campanas_detalle_datos_generales_id_fkey")
+  gestores_campana   gestores_campana?        @relation(fields: [gestor_id], references: [id], map: "Campanas_detalle_gestor_id_fkey")
+  imagen             imagen?                  @relation(fields: [imagen_id], references: [id], map: "Campanas_detalle_imagen_id_fkey")
 
   @@index([campana_id], map: "Campanas_detalle_campana_id_fkey")
   @@index([contacto_id], map: "Campanas_detalle_contacto_id_fkey")
@@ -131,4 +132,9 @@ enum contactos_tipo_contacto {
   Cliente
   Comercial
   Soporte
+}
+
+enum campanas_detalle_estado {
+  habilitado
+  deshabilitado
 }

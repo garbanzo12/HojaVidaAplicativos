@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
-// 📌 Obtener todas las gestores
+// 📌 Obtener todos los datos generales
 export const getDatosGenerales = async (req, res) => {
   try {
     const datos_generales = await prisma.Datos_generales.findMany();
@@ -12,7 +12,7 @@ export const getDatosGenerales = async (req, res) => {
   }
 };
 
-// 📌 Obtener una campaña por ID
+// 📌 Obtener un dato general por ID
 export const getDatosGeneralesById = async (req, res) => {
   try {
     const { id } = req.params;

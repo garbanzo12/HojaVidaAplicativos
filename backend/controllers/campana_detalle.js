@@ -11,10 +11,10 @@ export const getCampanas = async (req, res) => {
   try {
     const detalles = await prisma.campanas_detalle.findMany({
       include: {
-        campana: true,
-        gestor: true,
-        datosGenerales: true,
-        contacto: true,
+        campanas: true,
+        gestores_campana: true,
+        datos_generales: true,
+        contactos: true,
         imagen: true,
       },
     });
@@ -33,10 +33,10 @@ export const getCampanaById = async (req, res) => {
     const detalle = await prisma.campanas_detalle.findUnique({
       where: { id: Number(id) },
       include: {
-        campana: true,
-        gestor: true,
-        datosGenerales: true,
-        contacto: true,
+        campanas: true,
+        gestores_campana: true,
+        datos_generales: true,
+        contactos: true,
         imagen: true,
       },
     });
@@ -78,6 +78,7 @@ export const createCampana = async (req, res) => {
     contacto_empresa,
 
     imagen_url,
+    estado, 
   } = req.body;
 
   try {
@@ -134,18 +135,27 @@ export const createCampana = async (req, res) => {
           datos_generales_id: nuevosDatos.id,
           contacto_id: nuevoContacto.id,
           imagen_id: nuevaImagen ? nuevaImagen.id : null,
+          estado, // ✅ Se agrega el campo estado al detalle
         },
       });
 
-      return { campana: nuevaCampana, gestor: nuevoGestor, datos_generales: nuevosDatos, contacto: nuevoContacto, imagen: nuevaImagen, detalle };
+      return {
+        campana: nuevaCampana,
+        gestor: nuevoGestor,
+        datos_generales: nuevosDatos,
+        contacto: nuevoContacto,
+        imagen: nuevaImagen,
+        detalle,
+      };
     });
 
     res.json(result);
   } catch (error) {
-    console.error(error);
+    console.error("❌ Error al crear la campaña:", error);
     res.status(500).json({ error: "Error al crear la campaña y sus relaciones" });
   }
 };
+
 
 // ✅ Eliminar campaña
 export const deleteCampana = async (req, res) => {

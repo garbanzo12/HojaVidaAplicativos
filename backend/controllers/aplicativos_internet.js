@@ -2,7 +2,7 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 
-
+// 📌 Crear un aplicativo de internet 
 export const createAplicativoInternet = async (req, res) => {
   try {
     const { nombre, direccion_ip, puerto, url, tipo_red, escalamiento } = req.body;
@@ -19,7 +19,7 @@ export const createAplicativoInternet = async (req, res) => {
 };
 
 
-// 📌 Obtener todas las campañas
+// 📌 Obtener todaos los aplicativos de internet
 export const getAplicativoInternet= async (req, res) => {
   try {
     const aps_internet = await prisma.aplicativos_internet.findMany();
@@ -30,7 +30,7 @@ export const getAplicativoInternet= async (req, res) => {
   }
 };
 
-// 📌 Obtener una campaña por ID
+// 📌 Obtener un aplicativo por Id
 export const getAplicativoInternetById = async (req, res) => {
   try {
     const { id } = req.params;

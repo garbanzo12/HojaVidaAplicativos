@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
-// 📌 Obtener todas las gestores
+// 📌 Obtener todos los conytactos
 export const getContactos = async (req, res) => {
   try {
     const contactos = await prisma.Contactos.findMany();
@@ -12,7 +12,7 @@ export const getContactos = async (req, res) => {
   }
 };
 
-// 📌 Obtener una campaña por ID
+// 📌 Obtener un contacto por ID
 export const getContactosById = async (req, res) => {
   try {
     const { id } = req.params;

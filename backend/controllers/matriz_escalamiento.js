@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
-
+// 📌 Crear una matriz
 export const createMatrizEscalamiento = async (req, res) => {
   try {
     const { proveedor, codigo_servicio, telefono_proveedor, telefono_asesor } = req.body;
@@ -18,7 +18,7 @@ export const createMatrizEscalamiento = async (req, res) => {
 };
 
 
-// 📌 Obtener todas las campañas
+// 📌 Obtener todas las matrices
 export const getMatriz = async (req, res) => {
   try {
     const matrices = await prisma.matriz_escalamiento.findMany();
@@ -29,7 +29,7 @@ export const getMatriz = async (req, res) => {
   }
 };
 
-// 📌 Obtener una campaña por ID
+// 📌 Obtener una matriz por ID
 export const getMatrizById = async (req, res) => {
   try {
     const { id } = req.params;

@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
-// 📌 Crear todas las campañas
+// 📌 Crear todos los aplicativos
 export const createAplicativoAbai = async (req, res) => {
   try {
     const { nombre, direccion_ip, puerto, url, tipo_red, escalamiento } = req.body;
@@ -19,7 +19,7 @@ export const createAplicativoAbai = async (req, res) => {
 
 
 
-// 📌 Obtener todas las campañas
+// 📌 Obtener todos los aplicativos
 export const getAplicativoabai = async (req, res) => {
   try {
     const aps_abai = await prisma.aplicativos_abai.findMany();
@@ -30,7 +30,7 @@ export const getAplicativoabai = async (req, res) => {
   }
 };
 
-// 📌 Obtener una campaña por ID
+// 📌 Obtener un aplicativo por ID
 export const getAplicativoabaiById = async (req, res) => {
   try {
     const { id } = req.params;

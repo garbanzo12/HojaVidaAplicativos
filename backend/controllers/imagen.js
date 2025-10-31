@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
-// 📌 Obtener todas las gestores
+// 📌 Obtener todas las imagenes
 export const getImagenes = async (req, res) => {
   try {
     const imagenes = await prisma.Imagen.findMany();
@@ -12,7 +12,7 @@ export const getImagenes = async (req, res) => {
   }
 };
 
-// 📌 Obtener una campaña por ID
+// 📌 Obtener una imgen por id
 export const getImagenesById = async (req, res) => {
   try {
     const { id } = req.params;

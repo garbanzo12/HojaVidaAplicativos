@@ -12,7 +12,7 @@ export const getGestores = async (req, res) => {
   }
 };
 
-// 📌 Obtener una campaña por ID
+// 📌 Obtener un gestor por ID
 export const getGestoresById = async (req, res) => {
   try {
     const { id } = req.params;

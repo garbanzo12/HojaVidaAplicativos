@@ -63,6 +63,7 @@ CREATE TABLE `Campanas_detalle` (
     `datos_generales_id` INTEGER NULL,
     `contacto_id` INTEGER NULL,
     `imagen_id` INTEGER NULL,
+    `estado` ENUM('habilitado', 'deshabilitado') NULL
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
