@@ -2,97 +2,98 @@ generator client {
   provider = "prisma-client-js"
 }
 
-datasource db {
-  provider = "mysql"  // Prisma usa el mismo driver para MariaDB
-  url      = env("DATABASE_URL")
-}
-
-model Campanas {
-  id                   Int                 @id @default(autoincrement())
-  nombre_campana       String              @db.VarChar(100)
-  cliente              String              @db.VarChar(100)
-  director_operacion   String              @db.VarChar(150)
-  correo_director      String              @db.VarChar(150)
-  fecha_actualizacion  DateTime?
-  servicios_prestados  String?             @db.VarChar(255)
-
-  // Relaciones
-  gestores             Gestores_campana[]  @relation("CampanaGestores")
-  datosGenerales       Datos_generales[]   @relation("CampanaDatos")
-  contactos            Contactos[]         @relation("CampanaContactos")
-  detalles             Campanas_detalle[]  @relation("CampanaDetalle")
-}
-
-model Gestores_campana {
-  id          Int                 @id @default(autoincrement())
-  campana_id  Int?
-  segmento    String?             @db.VarChar(100)
-  nombre      String?             @db.VarChar(100)
-  correo      String?             @db.VarChar(150)
-
-  // Relaciones
-  campana     Campanas?           @relation("CampanaGestores", fields: [campana_id], references: [id])
-  detalles    Campanas_detalle[]  @relation("GestorDetalle")
-}
-
-model Datos_generales {
-  id                 Int                 @id @default(autoincrement())
-  campana_id         Int?
-  ubicacion_sede     String?             @db.VarChar(150)
-  puestos_operacion  Int?
-  puestos_estructura Int?
-  segmento_red       String?             @db.VarChar(255)
-
-  campana            Campanas?           @relation("CampanaDatos", fields: [campana_id], references: [id])
-  detalles           Campanas_detalle[]  @relation("DatosDetalle")
-}
-
-model Contactos {
-  id            Int                 @id @default(autoincrement())
-  campana_id    Int?
-  tipo_contacto TipoContacto
-  nombre        String?             @db.VarChar(150)
-  correo        String?             @db.VarChar(150)
-  telefono      String?             @db.VarChar(50)
-  empresa       String?             @db.VarChar(100)
-
-  campana       Campanas?           @relation("CampanaContactos", fields: [campana_id], references: [id])
-  detalles      Campanas_detalle[]  @relation("ContactoDetalle")
-}
-
-model Imagen {
-  id      Int                 @id @default(autoincrement())
-  imagen  String              @db.Text
-
-  detalles Campanas_detalle[] @relation("ImagenDetalle")
-}
-
-model Campanas_detalle {
-  id                 Int                @id @default(autoincrement())
-  campana_id         Int
-  gestor_id          Int?
-  datos_generales_id Int?
-  contacto_id        Int?
-  imagen_id          Int?
-
-  // Relaciones
-  campana            Campanas           @relation("CampanaDetalle", fields: [campana_id], references: [id], onDelete: Cascade)
-  gestor             Gestores_campana?  @relation("GestorDetalle", fields: [gestor_id], references: [id], onDelete: SetNull)
-  datosGenerales     Datos_generales?   @relation("DatosDetalle", fields: [datos_generales_id], references: [id], onDelete: SetNull)
-  contacto           Contactos?         @relation("ContactoDetalle", fields: [contacto_id], references: [id], onDelete: SetNull)
-  imagen             Imagen?            @relation("ImagenDetalle", fields: [imagen_id], references: [id], onDelete: SetNull)
-}
-
-enum TipoContacto {
-  Cliente
-  Comercial
-  Soporte
-}
-
-
-
-
 generator erd {
   provider = "prisma-erd-generator"
   output   = "./ERD.svg"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+
+enum TipoRed {
+  internet
+  abai
+  proveedor
+}
+
+enum Estado {
+  HABILITADO
+  DESHABILITADO
+}
+
+model Campana {
+  id                        Int       @id @default(autoincrement())
+  nombre_campana            String
+  cliente                   String
+  director_operacion_abai   String
+  correo_director           String
+  segmento                  String?
+  nombre_gte_campana        String?
+  correo_gte_campana        String?
+  ubicacion_sedes           String
+  puestos_operacion         Int
+  puestos_estructura        Int
+  segmento_red              String
+  fecha_actualizacion       DateTime
+  nombre_contacto_cliente   String
+  correo_contacto_cliente   String
+  telefono_contacto_cliente String
+  nombre_contacto_comercial String
+  correo_contacto_comercial String
+  telefono_contacto_comercial String
+  soporte_tecnico_abai      String
+  correo_soporte_abai       String
+  servicios_prestados       String?
+  imagen_cliente            String?
+  imagen_sede               String?
+
+  aplicativos               Aplicativo[]
+  matrizEscalamientos       MatrizEscalamiento[]
+  matrizEscalamientoGlobal  MatrizEscalamientoGlobal[]
+
+  estado                    Estado   @default(HABILITADO)
+}
+
+model Aplicativo {
+  id             Int      @id @default(autoincrement())
+  nombre         String
+  direccion_ip   String
+  puerto         Int
+  url            String
+  tipo_red       TipoRed
+  escalamiento   String
+
+  campanaId      Int
+  campana        Campana   @relation(fields: [campanaId], references: [id], onDelete: Cascade)
+
+  estado         Estado   @default(HABILITADO)
+}
+
+model MatrizEscalamiento {
+  id                   Int      @id @default(autoincrement())
+  proveedor            String
+  codigo_servicio      String
+  n_telefono_proveedor String
+  n_telefono_asesor    String
+
+  campanaId            Int
+  campana              Campana   @relation(fields: [campanaId], references: [id], onDelete: Cascade)
+
+  estado               Estado   @default(HABILITADO)
+}
+
+model MatrizEscalamientoGlobal {
+  id                   Int      @id @default(autoincrement())
+  proveedor            String
+  codigo_servicio      String
+  n_telefono_proveedor String
+  n_telefono_asesor    String
+
+  campanaId            Int
+  campana              Campana   @relation(fields: [campanaId], references: [id], onDelete: Cascade)
+
+  estado               Estado   @default(HABILITADO)
 }
