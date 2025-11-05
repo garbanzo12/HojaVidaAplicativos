@@ -49,9 +49,7 @@ export const campanaSchema = z.object({
 
   // 🔹 Opcionales adicionales
   servicios_prestados: z.string().optional().nullable(),
-  imagen_cliente: z.string().url("La URL de la imagen del cliente no es válida").optional().nullable(),
-  imagen_sede: z.string().url("La URL de la imagen de la sede no es válida").optional().nullable(),
-
+  
   // 🔹 Estado
   estado: EstadoEnum.optional().default("HABILITADO"),
 });

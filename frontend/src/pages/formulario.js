@@ -12,6 +12,7 @@ import {
   Divider,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import { crearCampana } from "../api/aplicativos";
 
 const modalStyle = {
   position: "absolute",
@@ -27,9 +28,9 @@ const modalStyle = {
   maxHeight: "90vh",
   overflowY: "auto",
   scrollbarWidth: "none",
-  msOverflowStyle: "none", 
+  msOverflowStyle: "none",
   "&::-webkit-scrollbar": {
-    display: "none", 
+    display: "none",
   },
 };
 
@@ -43,18 +44,69 @@ const sectionTitle = {
 };
 
 const FormularioModal = ({ open, onClose }) => {
-  const [fotoSede, setFotoSede] = useState("");
-  const [fotoCliente, setFotoCliente] = useState("");
+  const [formData, setFormData] = useState({
+    nombre_campana: "",
+    cliente: "",
+    director_operacion_abai: "",
+    correo_director: "",
+    segmento: "",
+    nombre_gte_campana: "",
+    correo_gte_campana: "",
+    ubicacion_sedes: "",
+    puestos_operacion: "",
+    puestos_estructura: "",
+    segmento_red: "",
+    fecha_actualizacion: "",
+    nombre_contacto_cliente: "",
+    correo_contacto_cliente: "",
+    telefono_contacto_cliente: "",
+    nombre_contacto_comercial: "",
+    correo_contacto_comercial: "",
+    telefono_contacto_comercial: "",
+    soporte_tecnico_abai: "",
+    correo_soporte_abai: "",
+    servicios_prestados: "",
+    estado: "",
+  });
 
-  const handleSubmit = (e) => {
+  const [imagenSede, setImagenSede] = useState(null);
+  const [imagenCliente, setImagenCliente] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  // Manejar cambios de texto/select
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  // Enviar datos al backend
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert("✅ Formulario creado correctamente");
-    onClose();
+    try {
+      setLoading(true);
+
+      const dataToSend = {
+        ...formData,
+        imagen_sede: imagenSede ? imagenSede.name : null,
+        imagen_cliente: imagenCliente ? imagenCliente.name : null,
+        estado : 'HABILITADO',
+      };
+
+      const response = await crearCampana(dataToSend);
+      alert("✅ Campaña creada correctamente");
+      console.log("Respuesta del backend:", response);
+      onClose();
+    } catch (error) {
+      console.error(error);
+      alert(`❌ Error: ${error.message || "Error al crear campaña"}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <Modal open={open} onClose={() => null} disableEscapeKeyDown>
       <Box component="form" onSubmit={handleSubmit} sx={modalStyle}>
+        {/* Botón cerrar */}
         <IconButton
           onClick={onClose}
           sx={{
@@ -82,118 +134,119 @@ const FormularioModal = ({ open, onClose }) => {
         </Typography>
 
         <Divider sx={{ mb: 3 }} />
+
+        {/* INFORMACIÓN PRINCIPAL */}
         <Typography variant="subtitle1" sx={sectionTitle}>
           INFORMACIÓN PRINCIPAL
         </Typography>
-
         <Grid container spacing={2} justifyContent="center">
-          {["Nombre De Campaña", "Cliente", "Director De Operación De ABAI", "Correo"].map(
-            (label, i) => (
-              <Grid item xs={12} sm={10} key={i}>
-                <TextField
-                  label={label}
-                  fullWidth
-                  required
-                  size="small"
-                  type={label === "Correo" ? "email" : "text"}
-                />
-              </Grid>
-            )
-          )}
-        </Grid>
-
-        <Typography variant="subtitle1" sx={sectionTitle}>
-          GERENTES CAMPAÑA
-        </Typography>
-
-        <Grid container spacing={2} justifyContent="center">
-          {["Segmento", "Nombre", "Correo"].map((label, i) => (
-            <Grid item xs={12} sm={10} key={i}>
-              <TextField
-                label={label}
-                fullWidth
-                required
-                size="small"
-                type={label === "Correo" ? "email" : "text"}
-              />
-            </Grid>
-          ))}
-        </Grid>
-
-        <Typography variant="subtitle1" sx={sectionTitle}>
-          DATOS GENERALES
-        </Typography>
-
-        <Grid container spacing={2} justifyContent="center">
-          <Grid item xs={12} sm={10}>
-            <Select
-              fullWidth
-              displayEmpty
-              defaultValue=""
-              size="small"
-              required
-            >
-              <MenuItem value="" disabled>
-                Seleccione sede
-              </MenuItem>
-              <MenuItem value="Bogotá">Bogotá</MenuItem>
-              <MenuItem value="Pereira">Pereira</MenuItem>
-              <MenuItem value="Manizales">Manizales</MenuItem>
-            </Select>
-          </Grid>
-
-          {[ 
-            { label: "N° Puesto De Operación", type: "number" },
-            { label: "N° Puesto De Estructura", type: "number" },
-            { label: "Segmento De Red", type: "text" },
-            { label: "Fecha Actualización", type: "date" },
-          ].map((field, i) => (
-            <Grid item xs={12} sm={10} key={i}>
+          {[
+            { name: "nombre_campana", label: "Nombre de Campaña" },
+            { name: "cliente", label: "Cliente" },
+            { name: "director_operacion_abai", label: "Director Operación ABAI" },
+            { name: "correo_director", label: "Correo Director", type: "email" },
+            { name: "segmento", label: "Segmento" },
+          ].map((field) => (
+            <Grid item xs={12} sm={10} key={field.name}>
               <TextField
                 label={field.label}
-                type={field.type}
+                name={field.name}
+                type={field.type || "text"}
                 fullWidth
                 size="small"
                 required
-                InputLabelProps={
-                  field.type === "date" ? { shrink: true } : undefined
-                }
+                value={formData[field.name]}
+                onChange={handleChange}
               />
             </Grid>
           ))}
         </Grid>
 
+        {/* GESTIÓN DE CAMPAÑA */}
+        <Typography variant="subtitle1" sx={sectionTitle}>
+          GESTIÓN DE CAMPAÑA
+        </Typography>
+        <Grid container spacing={2} justifyContent="center">
+          {[
+            { name: "nombre_gte_campana", label: "Nombre Gerente de Campaña" },
+            { name: "correo_gte_campana", label: "Correo Gerente de Campaña", type: "email" },
+            { name: "ubicacion_sedes", label: "Ubicación Sede" },
+            { name: "puestos_operacion", label: "N° Puestos de Operación", type: "number" },
+            { name: "puestos_estructura", label: "N° Puestos de Estructura", type: "number" },
+            { name: "segmento_red", label: "Segmento de Red" },
+            { name: "fecha_actualizacion", label: "Fecha Actualización", type: "date" },
+          ].map((field) => (
+            <Grid item xs={12} sm={10} key={field.name}>
+              <TextField
+                label={field.label}
+                name={field.name}
+                type={field.type || "text"}
+                fullWidth
+                size="small"
+                required
+                InputLabelProps={field.type === "date" ? { shrink: true } : undefined}
+                value={formData[field.name]}
+                onChange={handleChange}
+              />
+            </Grid>
+          ))}
+        </Grid>
+
+        {/* CONTACTOS */}
         <Typography variant="subtitle1" sx={sectionTitle}>
           CONTACTOS
         </Typography>
-
         <Grid container spacing={2} justifyContent="center">
           {[
-            "Nombre Contacto De Cliente",
-            "Correo",
-            "Teléfono Cliente",
-            "Nombre Contacto Comercial",
-            "Correo Comercial",
-            "Teléfono Comercial",
-          ].map((label, i) => (
-            <Grid item xs={12} sm={10} key={i}>
+            { name: "nombre_contacto_cliente", label: "Nombre Contacto Cliente" },
+            { name: "correo_contacto_cliente", label: "Correo Cliente", type: "email" },
+            { name: "telefono_contacto_cliente", label: "Teléfono Cliente", type: "tel" },
+            { name: "nombre_contacto_comercial", label: "Nombre Contacto Comercial" },
+            { name: "correo_contacto_comercial", label: "Correo Comercial", type: "email" },
+            { name: "telefono_contacto_comercial", label: "Teléfono Comercial", type: "tel" },
+          ].map((field) => (
+            <Grid item xs={12} sm={10} key={field.name}>
               <TextField
-                label={label}
+                label={field.label}
+                name={field.name}
+                type={field.type || "text"}
                 fullWidth
-                required
                 size="small"
-                type={
-                  label.toLowerCase().includes("correo")
-                    ? "email"
-                    : label.toLowerCase().includes("teléfono")
-                    ? "tel"
-                    : "text"
-                }
+                required
+                value={formData[field.name]}
+                onChange={handleChange}
               />
             </Grid>
           ))}
         </Grid>
 
+        {/* SOPORTE Y SERVICIOS */}
+        <Typography variant="subtitle1" sx={sectionTitle}>
+          SOPORTE Y SERVICIOS
+        </Typography>
+        <Grid container spacing={2} justifyContent="center">
+          {[
+            { name: "soporte_tecnico_abai", label: "Soporte Técnico ABAI" },
+            { name: "correo_soporte_abai", label: "Correo Soporte ABAI", type: "email" },
+            { name: "servicios_prestados", label: "Servicios Prestados" },
+            { name: "estado", label: "Estado" },
+          ].map((field) => (
+            <Grid item xs={12} sm={10} key={field.name}>
+              <TextField
+                label={field.label}
+                name={field.name}
+                type={field.type || "text"}
+                fullWidth
+                size="small"
+                required
+                value={formData[field.name]}
+                onChange={handleChange}
+              />
+            </Grid>
+          ))}
+        </Grid>
+
+        {/* IMÁGENES */}
         <Typography variant="subtitle1" sx={sectionTitle}>
           IMÁGENES
         </Typography>
@@ -210,23 +263,20 @@ const FormularioModal = ({ open, onClose }) => {
                 borderColor: "#1565c0",
                 color: "#1565c0",
                 fontWeight: 600,
-                "&:hover": {
-                  backgroundColor: "#1565c0",
-                  color: "#fff",
-                },
+                "&:hover": { backgroundColor: "#1565c0", color: "#fff" },
               }}
             >
-              Subir Foto Sede
+              Subir Imagen Sede
               <input
                 type="file"
                 hidden
                 accept="image/*"
-                onChange={(e) => setFotoSede(e.target.files[0]?.name || "")}
+                onChange={(e) => setImagenSede(e.target.files[0])}
               />
             </Button>
-            {fotoSede && (
+            {imagenSede && (
               <Typography variant="body2" mt={1} textAlign="center">
-                📁 {fotoSede}
+                📁 {imagenSede.name}
               </Typography>
             )}
           </Grid>
@@ -242,33 +292,32 @@ const FormularioModal = ({ open, onClose }) => {
                 borderColor: "#1565c0",
                 color: "#1565c0",
                 fontWeight: 600,
-                "&:hover": {
-                  backgroundColor: "#1565c0",
-                  color: "#fff",
-                },
+                "&:hover": { backgroundColor: "#1565c0", color: "#fff" },
               }}
             >
-              Subir Foto Cliente
+              Subir Imagen Cliente
               <input
                 type="file"
                 hidden
                 accept="image/*"
-                onChange={(e) => setFotoCliente(e.target.files[0]?.name || "")}
+                onChange={(e) => setImagenCliente(e.target.files[0])}
               />
             </Button>
-            {fotoCliente && (
+            {imagenCliente && (
               <Typography variant="body2" mt={1} textAlign="center">
-                📁 {fotoCliente}
+                📁 {imagenCliente.name}
               </Typography>
             )}
           </Grid>
         </Grid>
 
+        {/* BOTÓN CREAR */}
         <Box textAlign="center" mt={5}>
           <Button
             variant="contained"
             color="primary"
             type="submit"
+            disabled={loading}
             sx={{
               width: "60%",
               py: 1.4,
@@ -283,7 +332,7 @@ const FormularioModal = ({ open, onClose }) => {
               },
             }}
           >
-            CREAR
+            {loading ? "Creando..." : "CREAR"}
           </Button>
         </Box>
       </Box>
