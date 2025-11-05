@@ -48,9 +48,7 @@ const Dashboard = () => {
   const sidebarItems = [
     { label: "Formularios", type: "dropdown" },
     { label: "Campaña", route: "/campana" },
-    { label: "Aplicativo ABAI", route: "/abai" },
-    { label: "App Proveedor", route: "/proveedor" },
-    { label: "App Internet", route: "/internet" },
+    { label: "Aplicativos", route: "/abai" },
     { label: "Matriz Escalamiento", route: "/matriz-escalamiento" },
   ];
 
