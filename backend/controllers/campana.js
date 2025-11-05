@@ -75,7 +75,7 @@ export const createCampana = async (req, res) => {
     imagen_cliente,
     imagen_sede,
     estado,
-  } = req.body;
+  } = req.validatedBody;
 
   try {
     const nuevaCampana = await prisma.campana.create({

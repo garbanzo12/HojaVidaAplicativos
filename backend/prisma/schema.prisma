@@ -63,7 +63,7 @@ model Aplicativo {
   direccion_ip   String
   puerto         Int
   url            String
-  tipo_red       TipoRed
+  tipo_aplicativo       TipoRed
   escalamiento   String
 
   campanaId      Int
