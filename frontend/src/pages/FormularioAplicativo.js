@@ -38,19 +38,16 @@ const FormularioAplicativo = ({ onClose = () => {} }) => {
 
   return (
     <Paper
-      elevation={6}
+      elevation={0} 
       sx={{
         p: { xs: 3, sm: 4 },
         borderRadius: 4,
         position: "relative",
         maxWidth: 750,
         mx: "auto",
-        background:
-          "linear-gradient(180deg, #ffffff 0%, #f7f9fc 100%)",
-        boxShadow: "0px 6px 20px rgba(0,0,0,0.05)",
+        backgroundColor: "transparent", 
       }}
     >
-      {/* Botón cerrar */}
       <IconButton
         onClick={onClose}
         sx={{
@@ -65,14 +62,13 @@ const FormularioAplicativo = ({ onClose = () => {} }) => {
         <CloseIcon />
       </IconButton>
 
-      {/* Título principal */}
       <Typography
         variant="h5"
         align="center"
         sx={{
           fontWeight: 700,
           mb: 1,
-          color: "#0d47a1",
+          color: "#000000ff",
           letterSpacing: 0.8,
         }}
       >
@@ -91,7 +87,6 @@ const FormularioAplicativo = ({ onClose = () => {} }) => {
         INFORMACIÓN PRINCIPAL
       </Typography>
 
-      {/* Campos */}
       <Grid container spacing={3} justifyContent="center">
         <Grid item xs={12} md={4}>
           <FormControl fullWidth size="small" required>
@@ -102,7 +97,7 @@ const FormularioAplicativo = ({ onClose = () => {} }) => {
               onChange={handleChange}
               sx={{
                 borderRadius: 2,
-                backgroundColor: "#fff",
+                backgroundColor: "transparent", 
                 "& .MuiOutlinedInput-notchedOutline": {
                   borderColor: "#cfd8dc",
                 },
@@ -121,126 +116,35 @@ const FormularioAplicativo = ({ onClose = () => {} }) => {
           </FormControl>
         </Grid>
 
-        <Grid item xs={12} md={4}>
-          <TextField
-            label="Nombre"
-            name="nombre"
-            value={formData.nombre}
-            onChange={handleChange}
-            fullWidth
-            size="small"
-            required
-            sx={{
-              backgroundColor: "#fff",
-              borderRadius: 2,
-              "& .MuiOutlinedInput-root": {
-                "& fieldset": { borderColor: "#cfd8dc" },
-                "&:hover fieldset": { borderColor: "#90caf9" },
-              },
-            }}
-          />
-        </Grid>
-
-        <Grid item xs={12} md={4}>
-          <TextField
-            label="Dirección IP"
-            name="direccionIP"
-            value={formData.direccionIP}
-            onChange={handleChange}
-            fullWidth
-            size="small"
-            placeholder="192.168.0.1"
-            sx={{
-              backgroundColor: "#fff",
-              borderRadius: 2,
-              "& .MuiOutlinedInput-root": {
-                "& fieldset": { borderColor: "#cfd8dc" },
-                "&:hover fieldset": { borderColor: "#90caf9" },
-              },
-            }}
-          />
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <TextField
-            label="Puerto"
-            name="puerto"
-            type="number"
-            value={formData.puerto}
-            onChange={handleChange}
-            fullWidth
-            size="small"
-            placeholder="8080"
-            sx={{
-              backgroundColor: "#fff",
-              borderRadius: 2,
-              "& .MuiOutlinedInput-root": {
-                "& fieldset": { borderColor: "#cfd8dc" },
-                "&:hover fieldset": { borderColor: "#90caf9" },
-              },
-            }}
-          />
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <TextField
-            label="URL"
-            name="url"
-            value={formData.url}
-            onChange={handleChange}
-            fullWidth
-            size="small"
-            placeholder="https://miapp.example"
-            sx={{
-              backgroundColor: "#fff",
-              borderRadius: 2,
-              "& .MuiOutlinedInput-root": {
-                "& fieldset": { borderColor: "#cfd8dc" },
-                "&:hover fieldset": { borderColor: "#90caf9" },
-              },
-            }}
-          />
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <TextField
-            label="Tipo de Red"
-            name="tipoRed"
-            value={formData.tipoRed}
-            onChange={handleChange}
-            fullWidth
-            size="small"
-            placeholder="Ej: LAN, WAN, VPN..."
-            sx={{
-              backgroundColor: "#fff",
-              borderRadius: 2,
-              "& .MuiOutlinedInput-root": {
-                "& fieldset": { borderColor: "#cfd8dc" },
-                "&:hover fieldset": { borderColor: "#90caf9" },
-              },
-            }}
-          />
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <TextField
-            label="Escalamiento"
-            name="escalamiento"
-            value={formData.escalamiento}
-            onChange={handleChange}
-            fullWidth
-            size="small"
-            placeholder="Ej: Nivel 2"
-            sx={{
-              backgroundColor: "#fff",
-              borderRadius: 2,
-              "& .MuiOutlinedInput-root": {
-                "& fieldset": { borderColor: "#cfd8dc" },
-                "&:hover fieldset": { borderColor: "#90caf9" },
-              },
-            }}
-          />
-        </Grid>
+        {[
+          { label: "Nombre", name: "nombre" },
+          { label: "Dirección IP", name: "direccionIP", placeholder: "192.168.0.1" },
+          { label: "Puerto", name: "puerto", placeholder: "8080", type: "number" },
+          { label: "URL", name: "url", placeholder: "https://miapp.example" },
+          { label: "Tipo de Red", name: "tipoRed", placeholder: "Ej: LAN, WAN, VPN..." },
+          { label: "Escalamiento", name: "escalamiento", placeholder: "Ej: Nivel 2" },
+        ].map((field) => (
+          <Grid item xs={12} md={field.name === "nombre" || field.name === "direccionIP" ? 4 : 6} key={field.name}>
+            <TextField
+              label={field.label}
+              name={field.name}
+              type={field.type || "text"}
+              value={formData[field.name]}
+              onChange={handleChange}
+              fullWidth
+              size="small"
+              placeholder={field.placeholder}
+              sx={{
+                backgroundColor: "transparent", 
+                borderRadius: 2,
+                "& .MuiOutlinedInput-root": {
+                  "& fieldset": { borderColor: "#cfd8dc" },
+                  "&:hover fieldset": { borderColor: "#90caf9" },
+                },
+              }}
+            />
+          </Grid>
+        ))}
 
         <Grid item xs={12} md={4}>
           <FormControl fullWidth size="small" required>
@@ -251,7 +155,7 @@ const FormularioAplicativo = ({ onClose = () => {} }) => {
               onChange={handleChange}
               sx={{
                 borderRadius: 2,
-                backgroundColor: "#fff",
+                backgroundColor: "transparent", 
                 "& .MuiOutlinedInput-notchedOutline": {
                   borderColor: "#cfd8dc",
                 },
@@ -270,8 +174,6 @@ const FormularioAplicativo = ({ onClose = () => {} }) => {
           </FormControl>
         </Grid>
       </Grid>
-
-      {/* Botón crear */}
       <Box
         sx={{
           display: "flex",
