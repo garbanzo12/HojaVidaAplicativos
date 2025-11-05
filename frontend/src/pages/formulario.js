@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Box,
   Button,
@@ -29,6 +29,10 @@ const style = {
 };
 
 const FormularioModal = ({ open, onClose }) => {
+
+  const [fotoSede, setFotoSede] = useState("");
+  const [fotoCliente, setFotoCliente] = useState("");
+
   const handleSubmit = (e) => {
     e.preventDefault();
     alert("Formulario creado correctamente ✅");
@@ -51,16 +55,12 @@ const FormularioModal = ({ open, onClose }) => {
         >
           <CloseIcon />
         </IconButton>
+
         <Typography variant="h5" fontWeight="bold" mb={4} textAlign="center">
           CREAR FORMULARIO
         </Typography>
 
-        <Typography
-          variant="subtitle1"
-          fontWeight="bold"
-          textAlign="center"
-          sx={{ mb: 3, mt: 2 }}
-        >
+        <Typography variant="subtitle1" fontWeight="bold" textAlign="center" sx={{ mb: 3, mt: 2 }}>
           INFORMACIÓN PRINCIPAL
         </Typography>
 
@@ -78,12 +78,8 @@ const FormularioModal = ({ open, onClose }) => {
             <TextField label="Correo" type="email" fullWidth required />
           </Grid>
         </Grid>
-        <Typography
-          variant="subtitle1"
-          fontWeight="bold"
-          textAlign="center"
-          sx={{ mb: 3, mt: 4 }}
-        >
+
+        <Typography variant="subtitle1" fontWeight="bold" textAlign="center" sx={{ mb: 3, mt: 4 }}>
           GERENTES CAMPAÑA
         </Typography>
 
@@ -99,12 +95,7 @@ const FormularioModal = ({ open, onClose }) => {
           </Grid>
         </Grid>
 
-        <Typography
-          variant="subtitle1"
-          fontWeight="bold"
-          textAlign="center"
-          sx={{ mb: 3, mt: 4 }}
-        >
+        <Typography variant="subtitle1" fontWeight="bold" textAlign="center" sx={{ mb: 3, mt: 4 }}>
           DATOS GENERALES
         </Typography>
 
@@ -113,40 +104,26 @@ const FormularioModal = ({ open, onClose }) => {
             <Select fullWidth displayEmpty defaultValue="" required>
               <MenuItem value="" disabled>Seleccione sede</MenuItem>
               <MenuItem value="Bogotá">Bogotá</MenuItem>
-              <MenuItem value="Medellín">Medellín</MenuItem>
-              <MenuItem value="Cali">Cali</MenuItem>
-              <MenuItem value="Barranquilla">Barranquilla</MenuItem>
+              <MenuItem value="Medellín">Pereira</MenuItem>
+              <MenuItem value="Cali">Manizales</MenuItem>
             </Select>
           </Grid>
 
           <Grid item xs={10}>
             <TextField label="N° Puesto De Operación" type="number" fullWidth required />
           </Grid>
-
           <Grid item xs={10}>
             <TextField label="N° Puesto De Estructura" type="number" fullWidth required />
           </Grid>
-
           <Grid item xs={10}>
             <TextField label="Segmento De Red" fullWidth required />
           </Grid>
-
           <Grid item xs={10}>
-            <TextField
-              label="Fecha Actualización"
-              type="date"
-              fullWidth
-              InputLabelProps={{ shrink: true }}
-              required
-            />
+            <TextField label="Fecha Actualización" type="date" fullWidth InputLabelProps={{ shrink: true }} required />
           </Grid>
         </Grid>
-        <Typography
-          variant="subtitle1"
-          fontWeight="bold"
-          textAlign="center"
-          sx={{ mb: 3, mt: 4 }}
-        >
+
+        <Typography variant="subtitle1" fontWeight="bold" textAlign="center" sx={{ mb: 3, mt: 4 }}>
           CONTACTOS
         </Typography>
 
@@ -171,30 +148,43 @@ const FormularioModal = ({ open, onClose }) => {
           </Grid>
         </Grid>
 
-        <Typography
-          variant="subtitle1"
-          fontWeight="bold"
-          textAlign="center"
-          sx={{ mb: 3, mt: 4 }}
-        >
+        <Typography variant="subtitle1" fontWeight="bold" textAlign="center" sx={{ mb: 3, mt: 4 }}>
           Imagenes
         </Typography>
 
-        <Grid container justifyContent="center">
-          <Grid item xs={10} textAlign="center">
-            <Button variant="outlined" component="label">
+        <Grid container spacing={2} justifyContent="center">
+          <Grid item xs={6} textAlign="center">
+            <Button variant="outlined" component="label" fullWidth>
               Subir Foto Sede
-              <input type="file" hidden accept="image/*" />
+              <input
+                type="file"
+                hidden
+                accept="image/*"
+                onChange={(e) => setFotoSede(e.target.files[0]?.name || "")}
+              />
             </Button>
+            {fotoSede && (
+              <Typography variant="body2" mt={1}>
+                 {fotoSede}
+              </Typography>
+            )}
           </Grid>
-        </Grid>
 
-         <Grid container justifyContent="center">
-          <Grid item xs={10} textAlign="center">
-            <Button variant="outlined" component="label">
+          <Grid item xs={6} textAlign="center">
+            <Button variant="outlined" component="label" fullWidth>
               Subir Foto De Cliente
-              <input type="file" hidden accept="image/*" />
+              <input
+                type="file"
+                hidden
+                accept="image/*"
+                onChange={(e) => setFotoCliente(e.target.files[0]?.name || "")}
+              />
             </Button>
+            {fotoCliente && (
+              <Typography variant="body2" mt={1}>
+                 {fotoCliente}
+              </Typography>
+            )}
           </Grid>
         </Grid>
 

@@ -42,11 +42,10 @@ const FormularioAplicativo = ({ onClose = () => {} }) => {
         position: "relative",
         maxWidth: 800,
         mx: "auto",
-        backgroundColor: "transparent", // 🔹 Fondo completamente transparente
-        boxShadow: "none", // 🔹 Sin sombra blanca
+        backgroundColor: "transparent", 
+        boxShadow: "none",
       }}
     >
-      {/* Botón cerrar */}
       <IconButton
         onClick={onClose}
         sx={{
@@ -59,15 +58,13 @@ const FormularioAplicativo = ({ onClose = () => {} }) => {
       >
         <CloseIcon />
       </IconButton>
-
-      {/* Título principal */}
       <Typography
         variant="h5"
         align="center"
         sx={{
           fontWeight: 700,
           mb: 1,
-          color: "#0d47a1",
+          color: "#000000ff",
           letterSpacing: 0.8,
         }}
       >
@@ -86,9 +83,7 @@ const FormularioAplicativo = ({ onClose = () => {} }) => {
         INFORMACIÓN PRINCIPAL
       </Typography>
 
-      {/* Campos del formulario */}
       <Grid container spacing={2} justifyContent="center">
-        {/* Primera fila */}
         <Grid item xs={12} md={4}>
           <FormControl fullWidth size="small" required>
             <Select
@@ -98,7 +93,7 @@ const FormularioAplicativo = ({ onClose = () => {} }) => {
               onChange={handleChange}
               sx={{
                 borderRadius: "6px",
-                backgroundColor: "rgba(255,255,255,0.9)", // 🔹 Leve transparencia
+                backgroundColor: "rgba(255,255,255,0.9)", 
               }}
             >
               <MenuItem value="" disabled>
@@ -135,8 +130,6 @@ const FormularioAplicativo = ({ onClose = () => {} }) => {
             sx={{ backgroundColor: "rgba(255,255,255,0.9)", borderRadius: "6px" }}
           />
         </Grid>
-
-        {/* Segunda fila */}
         <Grid item xs={12} md={6}>
           <TextField
             label="Puerto"
@@ -189,6 +182,28 @@ const FormularioAplicativo = ({ onClose = () => {} }) => {
             placeholder="Ej: Nivel 2"
             sx={{ backgroundColor: "rgba(255,255,255,0.9)", borderRadius: "6px" }}
           />
+        </Grid>
+
+        <Grid item xs={12} md={4}>
+          <FormControl fullWidth size="small" required>
+            <Select
+              displayEmpty
+              name="tipoCampana"
+              value={formData.tipoAplicativo}
+              onChange={handleChange}
+              sx={{
+                borderRadius: "6px",
+                backgroundColor: "rgba(255,255,255,0.9)", 
+              }}
+            >
+              <MenuItem value="" disabled>
+                Seleccione Camapaña
+              </MenuItem>
+              <MenuItem value="campana">Claro</MenuItem>
+              <MenuItem value="campana">Tigo</MenuItem>
+              <MenuItem value="campana">App Movistar</MenuItem>
+            </Select>
+          </FormControl>
         </Grid>
       </Grid>
 

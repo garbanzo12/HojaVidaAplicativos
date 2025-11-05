@@ -47,17 +47,14 @@ const Dashboard = () => {
 
   const sidebarItems = [
     { label: "Formularios", type: "dropdown" },
+    { label: "Campaña", route: "/campana" },
     { label: "Aplicativo ABAI", route: "/abai" },
     { label: "App Proveedor", route: "/proveedor" },
     { label: "App Internet", route: "/internet" },
     { label: "Matriz Escalamiento", route: "/matriz-escalamiento" },
   ];
 
-  const carouselImages = [
-    "https://images.unsplash.com/photo-1521737604893-d14cc237f11d",
-    "https://images.unsplash.com/photo-1498050108023-c5249f4df085",
-    "https://images.unsplash.com/photo-1504384308090-c894fdcc538d",
-  ];
+
 
   const sliderSettings = {
     dots: true,
@@ -78,7 +75,6 @@ const Dashboard = () => {
         fontFamily: "Poppins, sans-serif",
       }}
     >
-      {/* --- SIDEBAR --- */}
       <Drawer
         variant="permanent"
         sx={{
@@ -141,7 +137,6 @@ const Dashboard = () => {
             }}
           />
 
-          {/* --- BOTONES DEL SIDEBAR --- */}
           {sidebarItems.map((item, index) => (
             <Box key={index}>
               {item.type === "dropdown" ? (
@@ -174,7 +169,7 @@ const Dashboard = () => {
                     <MenuItem
                       onClick={() => {
                         handleMenuClose(item.label);
-                        setAbrirFormulario(true); // abrir formulario de campaña
+                        setAbrirFormulario(true); 
                       }}
                     >
                       Crear campaña
@@ -183,7 +178,7 @@ const Dashboard = () => {
                     <MenuItem
                       onClick={() => {
                         handleMenuClose(item.label);
-                        setAbrirAplicativo(true); // abrir formulario de aplicativo
+                        setAbrirAplicativo(true); 
                       }}
                     >
                       Crear aplicativos
@@ -214,7 +209,6 @@ const Dashboard = () => {
           ))}
         </Box>
 
-        {/* --- USUARIO --- */}
         <Box sx={{ textAlign: "center", pb: 3 }}>
           <IconButton sx={{ color: "white" }}>
             <AccountCircle sx={{ fontSize: 45 }} />
@@ -239,7 +233,6 @@ const Dashboard = () => {
         </Box>
       </Drawer>
 
-      {/* --- CONTENIDO PRINCIPAL --- */}
       <Box sx={{ flexGrow: 1, p: 4, overflowY: "auto" }}>
         <Typography
           variant="h4"
@@ -251,25 +244,6 @@ const Dashboard = () => {
           MENÚ PRINCIPAL DE APLICATIVOS
         </Typography>
 
-        <Box sx={{ maxWidth: "800px", mx: "auto", mb: 6 }}>
-          <Slider {...sliderSettings}>
-            {carouselImages.map((img, index) => (
-              <Box key={index}>
-                <img
-                  src={img}
-                  alt={`slide-${index}`}
-                  style={{
-                    width: "100%",
-                    height: "250px",
-                    objectFit: "cover",
-                    borderRadius: "16px",
-                    boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
-                  }}
-                />
-              </Box>
-            ))}
-          </Slider>
-        </Box>
 
         <Box
           sx={{
@@ -324,7 +298,6 @@ const Dashboard = () => {
           </Card>
         </Box>
 
-        {/* --- MODAL FORMULARIOS --- */}
         {abrirFormulario && (
           <FormularioModal
             open={abrirFormulario}
@@ -332,7 +305,6 @@ const Dashboard = () => {
           />
         )}
 
-        {/* --- MODAL APLICATIVOS --- */}
         {abrirAplicativo && (
           <Modal open={abrirAplicativo} onClose={() => setAbrirAplicativo(false)}>
             <Box
