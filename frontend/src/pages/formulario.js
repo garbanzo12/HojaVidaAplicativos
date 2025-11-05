@@ -153,8 +153,23 @@ const FormularioModal = ({ open, onClose }) => {
         </Typography>
 
         <Grid container spacing={2} justifyContent="center">
-          <Grid item xs={6} textAlign="center">
-            <Button variant="outlined" component="label" fullWidth>
+          <Grid item xs={12} sm={5}>
+            <Button
+              variant="outlined"
+              component="label"
+              fullWidth
+              sx={{
+                py: 1.2,
+                borderRadius: "10px",
+                borderColor: "#1565c0",
+                color: "#1565c0",
+                fontWeight: 600,
+                "&:hover": {
+                  backgroundColor: "#1565c0",
+                  color: "#fff",
+                },
+              }}
+            >
               Subir Foto Sede
               <input
                 type="file"
@@ -164,15 +179,30 @@ const FormularioModal = ({ open, onClose }) => {
               />
             </Button>
             {fotoSede && (
-              <Typography variant="body2" mt={1}>
-                 {fotoSede}
+              <Typography variant="body2" mt={1} textAlign="center">
+                📁 {fotoSede}
               </Typography>
             )}
           </Grid>
 
-          <Grid item xs={6} textAlign="center">
-            <Button variant="outlined" component="label" fullWidth>
-              Subir Foto De Cliente
+          <Grid item xs={12} sm={5}>
+            <Button
+              variant="outlined"
+              component="label"
+              fullWidth
+              sx={{
+                py: 1.2,
+                borderRadius: "10px",
+                borderColor: "#1565c0",
+                color: "#1565c0",
+                fontWeight: 600,
+                "&:hover": {
+                  backgroundColor: "#1565c0",
+                  color: "#fff",
+                },
+              }}
+            >
+              Subir Foto Cliente
               <input
                 type="file"
                 hidden
@@ -181,15 +211,32 @@ const FormularioModal = ({ open, onClose }) => {
               />
             </Button>
             {fotoCliente && (
-              <Typography variant="body2" mt={1}>
-                 {fotoCliente}
+              <Typography variant="body2" mt={1} textAlign="center">
+                📁 {fotoCliente}
               </Typography>
             )}
           </Grid>
         </Grid>
 
-        <Box textAlign="center">
-          <Button variant="contained" color="primary" type="submit" sx={{ mt: 4, width: "60%" }}>
+        <Box textAlign="center" mt={5}>
+          <Button
+            variant="contained"
+            color="primary"
+            type="submit"
+            sx={{
+              width: "60%",
+              py: 1.4,
+              borderRadius: "12px",
+              fontWeight: "bold",
+              fontSize: "1rem",
+              textTransform: "none",
+              boxShadow: "0 4px 12px rgba(21,101,192,0.3)",
+              "&:hover": {
+                backgroundColor: "#0d47a1",
+                boxShadow: "0 5px 15px rgba(13,71,161,0.4)",
+              },
+            }}
+          >
             CREAR
           </Button>
         </Box>
