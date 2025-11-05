@@ -4,9 +4,11 @@ import {
   Grid,
   TextField,
   Button,
-  MenuItem,
   Typography,
   IconButton,
+  FormControl,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 
@@ -19,22 +21,11 @@ const FormularioAplicativo = ({ onClose = () => {} }) => {
     url: "",
     tipoRed: "",
     escalamiento: "",
-    responsable: "",
-    correo: "",
-    fechaActualizacion: "",
   });
-
-  const tiposAplicativo = [
-    "Aplicativo ABAI",
-    "App Proveedor",
-    "App Internet",
-  ];
-
-  const tiposRed = ["LAN", "WAN", "VPN", "Internet", "Intranet"];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((p) => ({ ...p, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleCrear = () => {
@@ -43,64 +34,84 @@ const FormularioAplicativo = ({ onClose = () => {} }) => {
     onClose();
   };
 
-  const handleActualizar = () => {
-    console.log("Actualizando aplicativo:", formData);
-    alert(" Aplicativo actualizado correctamente");
-    onClose();
-  };
-
   return (
     <Box
       sx={{
+        p: { xs: 3, sm: 4 },
+        borderRadius: 4,
         position: "relative",
-        p: { xs: 2, sm: 3, md: 4 },
-        maxHeight: "80vh",
-        overflowY: "auto",
+        maxWidth: 800,
+        mx: "auto",
+        backgroundColor: "transparent", // 🔹 Fondo completamente transparente
+        boxShadow: "none", // 🔹 Sin sombra blanca
       }}
     >
+      {/* Botón cerrar */}
       <IconButton
         onClick={onClose}
-        sx={{ position: "absolute", right: 8, top: 8 }}
-        aria-label="cerrar"
+        sx={{
+          position: "absolute",
+          right: 12,
+          top: 12,
+          color: "#555",
+          "&:hover": { color: "#1565c0" },
+        }}
       >
         <CloseIcon />
       </IconButton>
 
+      {/* Título principal */}
       <Typography
         variant="h5"
         align="center"
-        sx={{ fontWeight: "700", mb: 2, letterSpacing: 0.6 }}
+        sx={{
+          fontWeight: 700,
+          mb: 1,
+          color: "#0d47a1",
+          letterSpacing: 0.8,
+        }}
       >
-        CREAR FORMULARIO
+        CREAR APLICATIVO
       </Typography>
 
       <Typography
         variant="subtitle2"
-        sx={{ fontWeight: 700, mb: 1, textAlign: "center" }}
+        align="center"
+        sx={{
+          fontWeight: 600,
+          color: "#424242",
+          mb: 3,
+        }}
       >
         INFORMACIÓN PRINCIPAL
       </Typography>
 
-      <Grid container spacing={2} sx={{ mb: 2 }}>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            select
-            label="Tipo de Aplicativo *"
-            name="tipoAplicativo"
-            value={formData.tipoAplicativo}
-            onChange={handleChange}
-            fullWidth
-            size="small"
-          >
-            {tiposAplicativo.map((t) => (
-              <MenuItem key={t} value={t}>
-                {t}
+      {/* Campos del formulario */}
+      <Grid container spacing={2} justifyContent="center">
+        {/* Primera fila */}
+        <Grid item xs={12} md={4}>
+          <FormControl fullWidth size="small" required>
+            <Select
+              displayEmpty
+              name="tipoAplicativo"
+              value={formData.tipoAplicativo}
+              onChange={handleChange}
+              sx={{
+                borderRadius: "6px",
+                backgroundColor: "rgba(255,255,255,0.9)", // 🔹 Leve transparencia
+              }}
+            >
+              <MenuItem value="" disabled>
+                Seleccione Aplicativo
               </MenuItem>
-            ))}
-          </TextField>
+              <MenuItem value="Aplicativo ABAI">Aplicativo ABAI</MenuItem>
+              <MenuItem value="App Proveedor">App Proveedor</MenuItem>
+              <MenuItem value="App Internet">App Internet</MenuItem>
+            </Select>
+          </FormControl>
         </Grid>
 
-        <Grid item xs={12} sm={6}>
+        <Grid item xs={12} md={4}>
           <TextField
             label="Nombre *"
             name="nombre"
@@ -108,10 +119,11 @@ const FormularioAplicativo = ({ onClose = () => {} }) => {
             onChange={handleChange}
             fullWidth
             size="small"
+            sx={{ backgroundColor: "rgba(255,255,255,0.9)", borderRadius: "6px" }}
           />
         </Grid>
 
-        <Grid item xs={12} sm={6}>
+        <Grid item xs={12} md={4}>
           <TextField
             label="Dirección IP"
             name="direccionIP"
@@ -120,10 +132,12 @@ const FormularioAplicativo = ({ onClose = () => {} }) => {
             fullWidth
             size="small"
             placeholder="192.168.0.1"
+            sx={{ backgroundColor: "rgba(255,255,255,0.9)", borderRadius: "6px" }}
           />
         </Grid>
 
-        <Grid item xs={12} sm={6}>
+        {/* Segunda fila */}
+        <Grid item xs={12} md={6}>
           <TextField
             label="Puerto"
             name="puerto"
@@ -132,10 +146,12 @@ const FormularioAplicativo = ({ onClose = () => {} }) => {
             onChange={handleChange}
             fullWidth
             size="small"
+            placeholder="8080"
+            sx={{ backgroundColor: "rgba(255,255,255,0.9)", borderRadius: "6px" }}
           />
         </Grid>
 
-        <Grid item xs={12} sm={6}>
+        <Grid item xs={12} md={6}>
           <TextField
             label="URL"
             name="url"
@@ -144,60 +160,25 @@ const FormularioAplicativo = ({ onClose = () => {} }) => {
             fullWidth
             size="small"
             placeholder="https://miapp.example"
+            sx={{ backgroundColor: "rgba(255,255,255,0.9)", borderRadius: "6px" }}
           />
         </Grid>
 
-        <Grid item xs={12} sm={6}>
+        {/* Tercera fila */}
+        <Grid item xs={12} md={6}>
           <TextField
-            select
             label="Tipo de Red"
             name="tipoRed"
             value={formData.tipoRed}
             onChange={handleChange}
             fullWidth
             size="small"
-          >
-            {tiposRed.map((t) => (
-              <MenuItem key={t} value={t}>
-                {t}
-              </MenuItem>
-            ))}
-          </TextField>
-        </Grid>
-      </Grid>
-
-      <Typography
-        variant="subtitle2"
-        sx={{ fontWeight: 700, mb: 1, textAlign: "center" }}
-      >
-        RESPONSABLES / CONTACTOS
-      </Typography>
-
-      <Grid container spacing={2} sx={{ mb: 2 }}>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            label="Responsable"
-            name="responsable"
-            value={formData.responsable}
-            onChange={handleChange}
-            fullWidth
-            size="small"
+            placeholder="Ej: LAN, WAN, VPN..."
+            sx={{ backgroundColor: "rgba(255,255,255,0.9)", borderRadius: "6px" }}
           />
         </Grid>
 
-        <Grid item xs={12} sm={6}>
-          <TextField
-            label="Correo"
-            name="correo"
-            type="email"
-            value={formData.correo}
-            onChange={handleChange}
-            fullWidth
-            size="small"
-          />
-        </Grid>
-
-        <Grid item xs={12} sm={6}>
+        <Grid item xs={12} md={6}>
           <TextField
             label="Escalamiento"
             name="escalamiento"
@@ -205,46 +186,39 @@ const FormularioAplicativo = ({ onClose = () => {} }) => {
             onChange={handleChange}
             fullWidth
             size="small"
-          />
-        </Grid>
-
-        <Grid item xs={12} sm={6}>
-          <TextField
-            label="Fecha actualización"
-            name="fechaActualizacion"
-            type="date"
-            value={formData.fechaActualizacion}
-            onChange={handleChange}
-            fullWidth
-            size="small"
-            InputLabelProps={{ shrink: true }}
+            placeholder="Ej: Nivel 2"
+            sx={{ backgroundColor: "rgba(255,255,255,0.9)", borderRadius: "6px" }}
           />
         </Grid>
       </Grid>
 
+      {/* Botón crear */}
       <Box
         sx={{
           display: "flex",
-          gap: 2,
           justifyContent: "center",
-          mt: 1,
-          pb: 2,
+          mt: 4,
         }}
       >
         <Button
           variant="contained"
           onClick={handleCrear}
-          sx={{ minWidth: 140 }}
+          sx={{
+            minWidth: 160,
+            py: 1,
+            backgroundColor: "#1565c0",
+            textTransform: "none",
+            fontWeight: "bold",
+            fontSize: "0.95rem",
+            borderRadius: "10px",
+            boxShadow: "0px 3px 8px rgba(21,101,192,0.3)",
+            "&:hover": {
+              backgroundColor: "#0d47a1",
+              boxShadow: "0px 4px 10px rgba(13,71,161,0.4)",
+            },
+          }}
         >
           CREAR
-        </Button>
-
-        <Button
-          variant="outlined"
-          onClick={handleActualizar}
-          sx={{ minWidth: 140 }}
-        >
-          ACTUALIZAR
         </Button>
       </Box>
     </Box>

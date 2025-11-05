@@ -1,3 +1,4 @@
+// dashboard.js
 import React from "react";
 import {
   Box,
@@ -10,6 +11,8 @@ import {
   Typography,
   Card,
   CardContent,
+  Modal,
+  Paper,
 } from "@mui/material";
 import {
   AccountCircle,
@@ -20,13 +23,15 @@ import {
 } from "@mui/icons-material";
 import Slider from "react-slick";
 import logo from "../img/abai-logo.png";
-import FormularioModal from "./formulario"; 
+import FormularioModal from "./formulario";
+import FormularioAplicativo from "./FormularioAplicativo";
 
 const drawerWidth = 260;
 
 const Dashboard = () => {
   const [menuAnchor, setMenuAnchor] = React.useState({});
   const [abrirFormulario, setAbrirFormulario] = React.useState(false);
+  const [abrirAplicativo, setAbrirAplicativo] = React.useState(false);
 
   const handleMenuClick = (event, menuName) => {
     setMenuAnchor({ ...menuAnchor, [menuName]: event.currentTarget });
@@ -169,7 +174,7 @@ const Dashboard = () => {
                     <MenuItem
                       onClick={() => {
                         handleMenuClose(item.label);
-                        setAbrirFormulario(true);
+                        setAbrirFormulario(true); // abrir formulario de campaña
                       }}
                     >
                       Crear campaña
@@ -178,7 +183,7 @@ const Dashboard = () => {
                     <MenuItem
                       onClick={() => {
                         handleMenuClose(item.label);
-                        setAbrirFormulario(true);
+                        setAbrirAplicativo(true); // abrir formulario de aplicativo
                       }}
                     >
                       Crear aplicativos
@@ -325,6 +330,34 @@ const Dashboard = () => {
             open={abrirFormulario}
             onClose={() => setAbrirFormulario(false)}
           />
+        )}
+
+        {/* --- MODAL APLICATIVOS --- */}
+        {abrirAplicativo && (
+          <Modal open={abrirAplicativo} onClose={() => setAbrirAplicativo(false)}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                minHeight: "100vh",
+                p: 2,
+              }}
+            >
+              <Paper
+                elevation={6}
+                sx={{
+                  width: "90%",
+                  maxWidth: 800,
+                  borderRadius: 3,
+                  p: 3,
+                  backgroundColor: "#f9f9f9",
+                }}
+              >
+                <FormularioAplicativo onClose={() => setAbrirAplicativo(false)} />
+              </Paper>
+            </Box>
+          </Modal>
         )}
       </Box>
     </Box>
