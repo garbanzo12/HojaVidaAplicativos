@@ -26,10 +26,10 @@ const modalStyle = {
   p: { xs: 3, sm: 5 },
   maxHeight: "90vh",
   overflowY: "auto",
-  "&::-webkit-scrollbar": { width: "6px" },
-  "&::-webkit-scrollbar-thumb": {
-    backgroundColor: "#ccc",
-    borderRadius: "4px",
+  scrollbarWidth: "none",
+  msOverflowStyle: "none", 
+  "&::-webkit-scrollbar": {
+    display: "none", 
   },
 };
 
@@ -55,7 +55,6 @@ const FormularioModal = ({ open, onClose }) => {
   return (
     <Modal open={open} onClose={() => null} disableEscapeKeyDown>
       <Box component="form" onSubmit={handleSubmit} sx={modalStyle}>
-        {/* Cerrar modal */}
         <IconButton
           onClick={onClose}
           sx={{
@@ -69,19 +68,20 @@ const FormularioModal = ({ open, onClose }) => {
           <CloseIcon />
         </IconButton>
 
-        {/* Título principal */}
         <Typography
           variant="h5"
-          fontWeight={800}
           textAlign="center"
-          sx={{ mb: 1, color: "#0d47a1", letterSpacing: 0.8 }}
+          sx={{
+            mb: 1,
+            color: "#0d47a1",
+            letterSpacing: 0.8,
+            fontWeight: "bold",
+          }}
         >
           CREAR FORMULARIO
         </Typography>
 
         <Divider sx={{ mb: 3 }} />
-
-        {/* INFORMACIÓN PRINCIPAL */}
         <Typography variant="subtitle1" sx={sectionTitle}>
           INFORMACIÓN PRINCIPAL
         </Typography>
@@ -102,7 +102,6 @@ const FormularioModal = ({ open, onClose }) => {
           )}
         </Grid>
 
-        {/* GERENTES CAMPAÑA */}
         <Typography variant="subtitle1" sx={sectionTitle}>
           GERENTES CAMPAÑA
         </Typography>
@@ -121,14 +120,19 @@ const FormularioModal = ({ open, onClose }) => {
           ))}
         </Grid>
 
-        {/* DATOS GENERALES */}
         <Typography variant="subtitle1" sx={sectionTitle}>
           DATOS GENERALES
         </Typography>
 
         <Grid container spacing={2} justifyContent="center">
           <Grid item xs={12} sm={10}>
-            <Select fullWidth displayEmpty defaultValue="" size="small" required>
+            <Select
+              fullWidth
+              displayEmpty
+              defaultValue=""
+              size="small"
+              required
+            >
               <MenuItem value="" disabled>
                 Seleccione sede
               </MenuItem>
@@ -138,7 +142,7 @@ const FormularioModal = ({ open, onClose }) => {
             </Select>
           </Grid>
 
-          {[
+          {[ 
             { label: "N° Puesto De Operación", type: "number" },
             { label: "N° Puesto De Estructura", type: "number" },
             { label: "Segmento De Red", type: "text" },
@@ -159,7 +163,6 @@ const FormularioModal = ({ open, onClose }) => {
           ))}
         </Grid>
 
-        {/* CONTACTOS */}
         <Typography variant="subtitle1" sx={sectionTitle}>
           CONTACTOS
         </Typography>
@@ -191,7 +194,6 @@ const FormularioModal = ({ open, onClose }) => {
           ))}
         </Grid>
 
-        {/* IMÁGENES */}
         <Typography variant="subtitle1" sx={sectionTitle}>
           IMÁGENES
         </Typography>
@@ -262,8 +264,6 @@ const FormularioModal = ({ open, onClose }) => {
           </Grid>
         </Grid>
 
-
-        {/* BOTÓN FINAL */}
         <Box textAlign="center" mt={5}>
           <Button
             variant="contained"
