@@ -7,7 +7,7 @@ import {
   deleteCampana,
   updateCampana,
 } from "../controllers/campana.js";
-import { campanaSchema } from "../validators/campanaSchema.js";
+import { campanaSchema } from "../validators/campanaValidator.js";
 import { validate } from "../validators/validateMiddleware.js";
 
 const router = express.Router();
