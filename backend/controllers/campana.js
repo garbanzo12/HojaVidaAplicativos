@@ -10,16 +10,13 @@ export const testConnection = (req, res) => {
 export const getCampanas = async (req, res) => {
   try {
     const campanas = await prisma.campana.findMany({
-      include: {
-        aplicativos: true,
-        matrizEscalamientos: true,
-        matrizEscalamientoGlobal: true,
-      },
+      select: { id: true, nombre_campana: true },
     });
-    res.status(200).json(campanas);
+
+    res.json({ success: true, campanas });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Error al obtener las campañas", error });
+    console.error("Error al obtener campañas:", error);
+    res.status(500).json({ success: false, message: "Error al obtener campañas" });
   }
 };
 

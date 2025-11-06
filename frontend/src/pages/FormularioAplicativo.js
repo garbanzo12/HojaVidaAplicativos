@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+
 import {
   Box,
   Grid,
@@ -25,27 +27,73 @@ const FormularioAplicativo = ({ onClose = () => {} }) => {
     tipoCampana: "",
   });
 
+  const [campanas, setCampanas] = useState([]); // ← aquí se guardan las campañas desde la BD
+
+  // 🔹 Cargar campañas al montar el componente
+  useEffect(() => {
+    const fetchCampanas = async () => {
+      try {
+        const res = await axios.get("http://localhost:4000/campana");
+        if (res.data.success) {
+          setCampanas(res.data.campanas);
+        } else {
+          console.log(res.data.campanas)
+          console.error("Error al obtener campañas:", res.data.message);
+        }
+      } catch (err) {
+        console.error("❌ Error al cargar campañas:", err.message);
+      }
+    };
+    fetchCampanas();
+  }, []);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleCrear = () => {
-    console.log("Creando aplicativo:", formData);
-    alert("✅ Aplicativo creado correctamente");
-    onClose();
+  const handleCrear = async () => {
+    try {
+      const dataToSend = {
+        nombre: formData.nombre,
+        direccion_ip: formData.direccionIP,
+        puerto: formData.puerto ? parseInt(formData.puerto) : null,
+        url: formData.url,
+        tipo_red: formData.tipoRed,
+        escalamiento: formData.escalamiento,
+        campanaId: parseInt(formData.tipoCampana) || null,
+        estado: "HABILITADO",
+        tipo_aplicativo:
+          formData.tipoAplicativo === "Aplicativo ABAI"
+            ? "abai"
+            : formData.tipoAplicativo === "App Internet"
+            ? "internet"
+            : "proveedor",
+      };
+
+      const response = await axios.post("http://localhost:4000/aplicativo", dataToSend, {
+        headers: { "Content-Type": "application/json" },
+      });
+
+      console.log("✅ Aplicativo creado:", response.data);
+      alert("✅ Aplicativo creado correctamente");
+      onClose();
+    } catch (error) {
+      console.error("❌ Error al crear el aplicativo:", error.response?.data || error.message);
+      alert("❌ Error al crear el aplicativo. Revisa la consola para más detalles.");
+    }
   };
 
   return (
     <Paper
-      elevation={0} 
+      elevation={0}
       sx={{
         p: { xs: 3, sm: 4 },
         borderRadius: 4,
         position: "relative",
         maxWidth: 750,
         mx: "auto",
-        backgroundColor: "transparent", 
+        backgroundColor: "transparent",
       }}
     >
       <IconButton
@@ -88,6 +136,7 @@ const FormularioAplicativo = ({ onClose = () => {} }) => {
       </Typography>
 
       <Grid container spacing={3} justifyContent="center">
+        {/* Tipo de aplicativo */}
         <Grid item xs={12} md={4}>
           <FormControl fullWidth size="small" required>
             <Select
@@ -97,7 +146,7 @@ const FormularioAplicativo = ({ onClose = () => {} }) => {
               onChange={handleChange}
               sx={{
                 borderRadius: 2,
-                backgroundColor: "transparent", 
+                backgroundColor: "transparent",
                 "& .MuiOutlinedInput-notchedOutline": {
                   borderColor: "#cfd8dc",
                 },
@@ -116,6 +165,7 @@ const FormularioAplicativo = ({ onClose = () => {} }) => {
           </FormControl>
         </Grid>
 
+        {/* Campos de texto */}
         {[
           { label: "Nombre", name: "nombre" },
           { label: "Dirección IP", name: "direccionIP", placeholder: "192.168.0.1" },
@@ -124,7 +174,12 @@ const FormularioAplicativo = ({ onClose = () => {} }) => {
           { label: "Tipo de Red", name: "tipoRed", placeholder: "Ej: LAN, WAN, VPN..." },
           { label: "Escalamiento", name: "escalamiento", placeholder: "Ej: Nivel 2" },
         ].map((field) => (
-          <Grid item xs={12} md={field.name === "nombre" || field.name === "direccionIP" ? 4 : 6} key={field.name}>
+          <Grid
+            item
+            xs={12}
+            md={field.name === "nombre" || field.name === "direccionIP" ? 4 : 6}
+            key={field.name}
+          >
             <TextField
               label={field.label}
               name={field.name}
@@ -135,7 +190,7 @@ const FormularioAplicativo = ({ onClose = () => {} }) => {
               size="small"
               placeholder={field.placeholder}
               sx={{
-                backgroundColor: "transparent", 
+                backgroundColor: "transparent",
                 borderRadius: 2,
                 "& .MuiOutlinedInput-root": {
                   "& fieldset": { borderColor: "#cfd8dc" },
@@ -146,6 +201,7 @@ const FormularioAplicativo = ({ onClose = () => {} }) => {
           </Grid>
         ))}
 
+        {/* Selector de campaña */}
         <Grid item xs={12} md={4}>
           <FormControl fullWidth size="small" required>
             <Select
@@ -155,7 +211,7 @@ const FormularioAplicativo = ({ onClose = () => {} }) => {
               onChange={handleChange}
               sx={{
                 borderRadius: 2,
-                backgroundColor: "transparent", 
+                backgroundColor: "transparent",
                 "& .MuiOutlinedInput-notchedOutline": {
                   borderColor: "#cfd8dc",
                 },
@@ -167,13 +223,19 @@ const FormularioAplicativo = ({ onClose = () => {} }) => {
               <MenuItem value="" disabled>
                 Seleccione Campaña
               </MenuItem>
-              <MenuItem value="Claro">Claro</MenuItem>
-              <MenuItem value="Tigo">Tigo</MenuItem>
-              <MenuItem value="Movistar">Movistar</MenuItem>
+
+              {/* 🔹 Campañas dinámicas desde la BD */}
+              {campanas.map((campana) => (
+                <MenuItem key={campana.id} value={campana.id}>
+                  {campana.nombre_campana}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
         </Grid>
       </Grid>
+
+      {/* Botón Crear */}
       <Box
         sx={{
           display: "flex",
