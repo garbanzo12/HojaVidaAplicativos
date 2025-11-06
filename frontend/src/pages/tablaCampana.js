@@ -17,19 +17,20 @@ import {
   Typography,
   Grid,
   Divider,
-  Chip,
   TextField,
   TablePagination,
-  Switch,
 } from "@mui/material";
+import Formulario from "./formulario";
 
 const TablaCampana = () => {
-  const [campañas, setCampañas] = useState([]);
+  const [rows, setData] = useState([]);
   const [selected, setSelected] = useState(null);
+  const [editing, setEditing] = useState(null);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
+  // 📌 Simulamos carga de datos
   useEffect(() => {
     const dataEjemplo = [
       {
@@ -85,22 +86,26 @@ const TablaCampana = () => {
         imagen: "https://via.placeholder.com/250",
       },
     ];
-    setCampañas(dataEjemplo);
+    setData(dataEjemplo);
   }, []);
 
-  const filteredCampañas = campañas.filter(
+  useEffect(() => {
+    setData((prev) => [...prev]);
+  }, [rows]);
+
+  const filtered = rows.filter(
     (c) =>
       c.nombreCampaña.toLowerCase().includes(search.toLowerCase()) ||
       c.directorOperacion.toLowerCase().includes(search.toLowerCase())
   );
 
   const handleToggleEstado = (id) => {
-    const updated = campañas.map((c) =>
+    const updated = rows.map((c) =>
       c.id === id
         ? { ...c, estado: c.estado === "Activo" ? "Inactivo" : "Activo" }
         : c
     );
-    setCampañas(updated);
+    setData(updated);
   };
 
   const handleChangePage = (_, newPage) => setPage(newPage);
@@ -111,36 +116,24 @@ const TablaCampana = () => {
 
   const handleVerDetalle = (campaña) => setSelected(campaña);
   const handleCerrarDetalle = () => setSelected(null);
+  const handleEditar = (campaña) => setEditing(campaña);
+  const handleCerrarEditar = () => setEditing(null);
 
   return (
     <>
-      {/* 🔹 Encabezado con título (1) y barra de búsqueda (2) */}
-      <Box
-        display="flex"
-        alignItems="center"
-        justifyContent="space-between"
-        mb={2}
-        gap={2}
-        flexWrap="wrap" // Responsivo: se apilan si no hay espacio
-      >
-        {/* Cuadro 1 - Título */}
+      <Box display="flex" justifyContent="space-between" mb={2} gap={2} flexWrap="wrap">
         <Typography
           variant="h5"
           fontWeight="bold"
           color="#002b5b"
           sx={{
-            backgroundColor: "white",
             borderRadius: 2,
-            boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
             padding: "10px 20px",
-            flex: "0 0 40%",
-            minWidth: "250px",
           }}
         >
           LISTA DE CAMPAÑAS
         </Typography>
 
-        {/* Cuadro 2 - Barra de búsqueda */}
         <TextField
           label="Buscar por campaña o director de operación"
           variant="outlined"
@@ -157,50 +150,40 @@ const TablaCampana = () => {
         />
       </Box>
 
-      {/* 🔹 Tabla de campañas */}
       <TableContainer
         component={Paper}
         sx={{
           mt: 2,
           borderRadius: 3,
           boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+          backgroundColor: "white",
         }}
       >
         <Table>
           <TableHead sx={{ backgroundColor: "#002b5b" }}>
             <TableRow>
-              <TableCell sx={{ color: "white", fontWeight: "bold" }}>
-                Imagen
-              </TableCell>
-              <TableCell sx={{ color: "white", fontWeight: "bold" }}>
-                Nombre de Campaña
-              </TableCell>
-              <TableCell sx={{ color: "white", fontWeight: "bold" }}>
-                Cliente
-              </TableCell>
-              <TableCell sx={{ color: "white", fontWeight: "bold" }}>
-                Director de Operación ABAI
-              </TableCell>
-              <TableCell sx={{ color: "white", fontWeight: "bold" }}>
-                Correo
-              </TableCell>
-              <TableCell
-                align="center"
-                sx={{ color: "white", fontWeight: "bold" }}
-              >
-                Estado
-              </TableCell>
-              <TableCell
-                align="center"
-                sx={{ color: "white", fontWeight: "bold" }}
-              >
-                Acciones
-              </TableCell>
+              {[
+                "Imagen",
+                "Campaña",
+                "Cliente",
+                "Director",
+                "Correo",
+                "Estado",
+                "Acciones",
+              ].map((h, i) => (
+                <TableCell
+                  key={i}
+                  align="center"
+                  sx={{ color: "white", fontWeight: "bold", textAlign: "center" }}
+                >
+                  {h}
+                </TableCell>
+              ))}
             </TableRow>
           </TableHead>
 
           <TableBody>
-            {filteredCampañas
+            {filtered
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map((c) => (
                 <TableRow
@@ -210,7 +193,7 @@ const TablaCampana = () => {
                     transition: "0.3s",
                   }}
                 >
-                  <TableCell>
+                  <TableCell align="center">
                     <Avatar
                       src={c.imagen}
                       alt={c.nombreCampaña}
@@ -218,31 +201,43 @@ const TablaCampana = () => {
                       sx={{ width: 60, height: 60 }}
                     />
                   </TableCell>
-                  <TableCell>{c.nombreCampaña}</TableCell>
-                  <TableCell>{c.cliente}</TableCell>
-                  <TableCell>{c.directorOperacion}</TableCell>
-                  <TableCell>{c.correo}</TableCell>
+                  <TableCell align="center">{c.nombreCampaña}</TableCell>
+                  <TableCell align="center">{c.cliente}</TableCell>
+                  <TableCell align="center">{c.directorOperacion}</TableCell>
+                  <TableCell align="center">{c.correo}</TableCell>
                   <TableCell align="center">
-                    <Switch
-                      checked={c.estado === "Activo"}
-                      onChange={() => handleToggleEstado(c.id)}
-                      color="success"
-                    />
-                    <Chip
-                      label={c.estado}
-                      color={c.estado === "Activo" ? "success" : "error"}
-                      variant="filled"
-                      sx={{ fontWeight: "bold", ml: 1 }}
-                    />
+                    <Button
+                      onClick={() => handleToggleEstado(c.id)}
+                      variant="contained"
+                      sx={{
+                        backgroundColor: c.estado === "Activo" ? "#4caf50" : "#e53935",
+                        "&:hover": {
+                          backgroundColor: c.estado === "Activo" ? "#43a047" : "#c62828",
+                        },
+                        borderRadius: "20px",
+                        textTransform: "none",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      {c.estado}
+                    </Button>
                   </TableCell>
                   <TableCell align="center">
                     <Button
-                      variant="contained"
-                      color="primary"
+                      variant="outlined"
                       size="small"
                       onClick={() => handleVerDetalle(c)}
                     >
                       Ver Detalle
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      size="small"
+                      sx={{ ml: 1 }}
+                      onClick={() => handleEditar(c)}
+                    >
+                      Editar
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -250,19 +245,21 @@ const TablaCampana = () => {
           </TableBody>
         </Table>
 
-        <TablePagination
-          component="div"
-          count={filteredCampañas.length}
-          page={page}
-          onPageChange={handleChangePage}
-          rowsPerPage={rowsPerPage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-          rowsPerPageOptions={[5, 10, 25]}
-        />
+        <Box display="flex" justifyContent="center" alignItems="center" py={1}>
+          <TablePagination
+            component="div"
+            count={filtered.length}
+            page={page}
+            onPageChange={handleChangePage}
+            rowsPerPage={rowsPerPage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            rowsPerPageOptions={[5, 10, 25]}
+            labelDisplayedRows={() => ""}
+            labelRowsPerPage=""
+          />
+        </Box>
       </TableContainer>
-
-      {/* 🔹 Modal de detalles */}
-      <Dialog
+    <Dialog
         open={Boolean(selected)}
         onClose={handleCerrarDetalle}
         fullWidth
@@ -441,6 +438,13 @@ const TablaCampana = () => {
           </>
         )}
       </Dialog>
+      {editing && (
+        <Formulario
+          open={Boolean(editing)}
+          onClose={handleCerrarEditar}
+          data={editing}
+        />
+      )}
     </>
   );
 };
