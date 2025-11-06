@@ -24,7 +24,8 @@ import {
 import logo from "../img/abai-logo.png";
 import FormularioModal from "./formulario";
 import FormularioAplicativo from "./FormularioAplicativo";
-import TablaCampana from "./tablaCampana"; // 👈 Importamos la tabla de campañas
+import TablaCampana from "./tablaCampana";
+import TablaAplicativos from "./tablaAplicativos";
 
 const drawerWidth = 260;
 
@@ -32,7 +33,7 @@ const Dashboard = () => {
   const [menuAnchor, setMenuAnchor] = React.useState({});
   const [abrirFormulario, setAbrirFormulario] = React.useState(false);
   const [abrirAplicativo, setAbrirAplicativo] = React.useState(false);
-  const [seccionActual, setSeccionActual] = React.useState("inicio"); // 👈 Control de vista actual
+  const [seccionActual, setSeccionActual] = React.useState("inicio");
 
   const handleMenuClick = (event, menuName) => {
     setMenuAnchor({ ...menuAnchor, [menuName]: event.currentTarget });
@@ -43,7 +44,11 @@ const Dashboard = () => {
   };
 
   const goTo = (path) => {
-    setSeccionActual(path); // 👈 Cambia la vista en lugar de redirigir
+    setSeccionActual(path);
+  };
+
+  const volverAlInicio = () => {
+    setSeccionActual("inicio");
   };
 
   const sidebarItems = [
@@ -52,6 +57,11 @@ const Dashboard = () => {
     { label: "Aplicativos", route: "abai" },
     { label: "Matriz Escalamiento", route: "matriz" },
   ];
+
+  // ✅ función para ver detalles del aplicativo (opcional)
+  const handleViewAplicativo = (row) => {
+    alert(`Ver aplicativo: ${row.nombre} (${row.ip})`);
+  };
 
   return (
     <Box
@@ -81,8 +91,8 @@ const Dashboard = () => {
         }}
       >
         <Box sx={{ p: 3, textAlign: "center" }}>
-          {/* Logo */}
           <Box
+            onClick={volverAlInicio}
             sx={{
               width: 100,
               height: 100,
@@ -95,6 +105,12 @@ const Dashboard = () => {
               mb: 2,
               boxShadow: "0px 0px 10px rgba(255, 255, 255, 0.4)",
               overflow: "hidden",
+              cursor: "pointer",
+              transition: "transform 0.2s, box-shadow 0.2s",
+              "&:hover": {
+                transform: "scale(1.05)",
+                boxShadow: "0px 0px 15px rgba(255, 230, 1, 0.6)",
+              },
             }}
           >
             <img
@@ -126,7 +142,6 @@ const Dashboard = () => {
             }}
           />
 
-          {/* Botones del Sidebar */}
           {sidebarItems.map((item, index) => (
             <Box key={index}>
               {item.type === "dropdown" ? (
@@ -205,7 +220,6 @@ const Dashboard = () => {
           ))}
         </Box>
 
-        {/* Footer Sidebar */}
         <Box sx={{ textAlign: "center", pb: 3 }}>
           <IconButton sx={{ color: "white" }}>
             <AccountCircle sx={{ fontSize: 45 }} />
@@ -252,7 +266,6 @@ const Dashboard = () => {
                 flexWrap: "wrap",
               }}
             >
-              {/* Tarjeta 1 */}
               <Card
                 sx={{
                   width: 220,
@@ -275,7 +288,6 @@ const Dashboard = () => {
                 </CardContent>
               </Card>
 
-              {/* Tarjeta 2 */}
               <Card
                 sx={{
                   width: 220,
@@ -304,11 +316,9 @@ const Dashboard = () => {
         {/* Vista de Campañas */}
         {seccionActual === "campana" && <TablaCampana />}
 
-        {/* Vista Aplicativos */}
+        {/* ✅ NUEVA VISTA DE APLICATIVOS */}
         {seccionActual === "abai" && (
-          <Typography variant="h5" textAlign="center" color="#002b5b">
-            Aquí puedes gestionar los aplicativos.
-          </Typography>
+          <TablaAplicativos onView={handleViewAplicativo} />
         )}
 
         {/* Vista Matriz */}
