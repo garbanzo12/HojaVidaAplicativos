@@ -114,30 +114,50 @@ const TablaCampana = () => {
 
   return (
     <>
-      <Typography
-        variant="h5"
-        fontWeight="bold"
-        color="#002b5b"
-        textAlign="center"
+      {/* 🔹 Encabezado con título (1) y barra de búsqueda (2) */}
+      <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="space-between"
         mb={2}
+        gap={2}
+        flexWrap="wrap" // Responsivo: se apilan si no hay espacio
       >
-        LISTA DE CAMPAÑAS
-      </Typography>
+        {/* Cuadro 1 - Título */}
+        <Typography
+          variant="h5"
+          fontWeight="bold"
+          color="#002b5b"
+          sx={{
+            backgroundColor: "white",
+            borderRadius: 2,
+            boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+            padding: "10px 20px",
+            flex: "0 0 40%",
+            minWidth: "250px",
+          }}
+        >
+          LISTA DE CAMPAÑAS
+        </Typography>
 
-      <TextField
-        label="Buscar por campaña o director de operación"
-        variant="outlined"
-        fullWidth
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        sx={{
-          mb: 2,
-          backgroundColor: "white",
-          borderRadius: 2,
-          boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-        }}
-      />
+        {/* Cuadro 2 - Barra de búsqueda */}
+        <TextField
+          label="Buscar por campaña o director de operación"
+          variant="outlined"
+          fullWidth
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          sx={{
+            backgroundColor: "white",
+            borderRadius: 2,
+            boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+            flex: 1,
+            minWidth: "300px",
+          }}
+        />
+      </Box>
 
+      {/* 🔹 Tabla de campañas */}
       <TableContainer
         component={Paper}
         sx={{
@@ -178,6 +198,7 @@ const TablaCampana = () => {
               </TableCell>
             </TableRow>
           </TableHead>
+
           <TableBody>
             {filteredCampañas
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
@@ -240,6 +261,7 @@ const TablaCampana = () => {
         />
       </TableContainer>
 
+      {/* 🔹 Modal de detalles */}
       <Dialog
         open={Boolean(selected)}
         onClose={handleCerrarDetalle}
@@ -262,7 +284,6 @@ const TablaCampana = () => {
               Detalles de Campaña
             </DialogTitle>
             <DialogContent dividers>
-              {/* Imagen */}
               <Box sx={{ textAlign: "center", mb: 3 }}>
                 <img
                   src={selected.imagen}
