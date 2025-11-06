@@ -24,6 +24,7 @@ app.use("/campana", campana);
 app.use("/matriz", matriz);
 app.use("/aplicativo", aplicativo);
 
+app.use("/uploads", express.static("uploads"));
 
 // ✅ Levantar servidor
 app.listen(4000, () => {

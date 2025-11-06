@@ -50,34 +50,42 @@ export const getCampanaById = async (req, res) => {
 
 // ✅ Crear nueva campaña
 export const createCampana = async (req, res) => {
-  const {
-    nombre_campana,
-    cliente,
-    director_operacion_abai,
-    correo_director,
-    segmento,
-    nombre_gte_campana,
-    correo_gte_campana,
-    ubicacion_sedes,
-    puestos_operacion,
-    puestos_estructura,
-    segmento_red,
-    fecha_actualizacion,
-    nombre_contacto_cliente,
-    correo_contacto_cliente,
-    telefono_contacto_cliente,
-    nombre_contacto_comercial,
-    correo_contacto_comercial,
-    telefono_contacto_comercial,
-    soporte_tecnico_abai,
-    correo_soporte_abai,
-    servicios_prestados,
-    imagen_cliente,
-    imagen_sede,
-    estado,
-  } = req.body;
-
+ 
   try {
+    const {
+      nombre_campana,
+      cliente,
+      director_operacion_abai,
+      correo_director,
+      segmento,
+      nombre_gte_campana,
+      correo_gte_campana,
+      ubicacion_sedes,
+      puestos_operacion,
+      puestos_estructura,
+      segmento_red,
+      fecha_actualizacion,
+      nombre_contacto_cliente,
+      correo_contacto_cliente,
+      telefono_contacto_cliente,
+      nombre_contacto_comercial,
+      correo_contacto_comercial,
+      telefono_contacto_comercial,
+      soporte_tecnico_abai,
+      correo_soporte_abai,
+      servicios_prestados,
+      estado,
+    } = req.body;
+
+    // 📸 Guardar nombres de archivo si existen
+    const imagen_cliente = req.files?.imagen_cliente
+      ? req.files.imagen_cliente[0].filename
+      : null;
+
+    const imagen_sede = req.files?.imagen_sede
+      ? req.files.imagen_sede[0].filename
+      : null;
+
     const nuevaCampana = await prisma.campana.create({
       data: {
         nombre_campana,
@@ -106,13 +114,19 @@ export const createCampana = async (req, res) => {
         estado,
       },
     });
-
-    res.status(201).json(nuevaCampana);
+     console.log("🧾 BODY:", req.body);
+    console.log("🖼️ FILES:", req.files);
+    res.status(201).json({
+      success: true,
+      message: "Campaña creada correctamente",
+      nuevaCampana,
+    });
   } catch (error) {
     console.error("❌ Error al crear la campaña:", error);
     res.status(500).json({ error: "Error al crear la campaña" });
   }
 };
+
 
 // ✅ Actualizar campaña
 export const updateCampana = async (req, res) => {

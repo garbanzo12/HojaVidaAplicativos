@@ -7,12 +7,10 @@ import {
   TextField,
   Grid,
   IconButton,
-  Select,
-  MenuItem,
   Divider,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import { crearCampana } from "../api/aplicativos";
+import axios from "axios";
 
 const modalStyle = {
   position: "absolute",
@@ -29,9 +27,7 @@ const modalStyle = {
   overflowY: "auto",
   scrollbarWidth: "none",
   msOverflowStyle: "none",
-  "&::-webkit-scrollbar": {
-    display: "none",
-  },
+  "&::-webkit-scrollbar": { display: "none" },
 };
 
 const sectionTitle = {
@@ -66,38 +62,65 @@ const FormularioModal = ({ open, onClose }) => {
     soporte_tecnico_abai: "",
     correo_soporte_abai: "",
     servicios_prestados: "",
-    estado: "",
+    estado: "HABILITADO",
   });
 
   const [imagenSede, setImagenSede] = useState(null);
   const [imagenCliente, setImagenCliente] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Manejar cambios de texto/select
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Enviar datos al backend
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+
     try {
-      setLoading(true);
+      // Crear el FormData para enviar texto + archivos
+      const formDataToSend = new FormData();
 
-      const dataToSend = {
-        ...formData,
-        imagen_sede: imagenSede ? imagenSede.name : null,
-        imagen_cliente: imagenCliente ? imagenCliente.name : null,
-        estado : 'HABILITADO',
-      };
+      // Agregar los campos de texto
+      Object.keys(formData).forEach((key) => {
+        formDataToSend.append(key, formData[key]);
+      });
 
-      const response = await crearCampana(dataToSend);
+      // Agregar las imágenes
+      if (imagenSede) formDataToSend.append("imagen_sede", imagenSede);
+      if (imagenCliente) formDataToSend.append("imagen_cliente", imagenCliente);
+      for (let pair of formDataToSend.entries()) {
+          console.log(pair[0], pair[1]);
+        }
+
+      // Verificación de contenido
+      console.log("📦 Datos enviados a backend:");
+      for (const pair of formDataToSend.entries()) {
+        console.log(pair[0], ":", pair[1]);
+      }
+
+      // Enviar con headers de multipart
+
+try {
+  const response = await axios.post("http://localhost:4000/campana", formDataToSend, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+
+  console.log("✅ Campaña creada:", response.data);
+} catch (error) {
+  console.error("❌ Error al crear la campaña:", error);
+}
+
+
       alert("✅ Campaña creada correctamente");
-      console.log("Respuesta del backend:", response);
+      
       onClose();
     } catch (error) {
-      console.error(error);
-      alert(`❌ Error: ${error.message || "Error al crear campaña"}`);
+      console.error("❌ Error al crear campaña:", error);
+      alert("❌ Error al crear la campaña");
     } finally {
       setLoading(false);
     }
@@ -229,7 +252,6 @@ const FormularioModal = ({ open, onClose }) => {
             { name: "soporte_tecnico_abai", label: "Soporte Técnico ABAI" },
             { name: "correo_soporte_abai", label: "Correo Soporte ABAI", type: "email" },
             { name: "servicios_prestados", label: "Servicios Prestados" },
-            { name: "estado", label: "Estado" },
           ].map((field) => (
             <Grid item xs={12} sm={10} key={field.name}>
               <TextField
@@ -250,7 +272,6 @@ const FormularioModal = ({ open, onClose }) => {
         <Typography variant="subtitle1" sx={sectionTitle}>
           IMÁGENES
         </Typography>
-
         <Grid container spacing={2} justifyContent="center">
           <Grid item xs={12} sm={5}>
             <Button
