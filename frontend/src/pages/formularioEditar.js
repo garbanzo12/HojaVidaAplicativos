@@ -1,0 +1,364 @@
+import React, { useState, useEffect } from "react";
+import {
+  Box,
+  Button,
+  Modal,
+  Typography,
+  TextField,
+  Grid,
+  IconButton,
+  Divider,
+} from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+import axios from "axios";
+
+const modalStyle = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: "92%",
+  maxWidth: 700,
+  bgcolor: "#ffffff",
+  borderRadius: "20px",
+  boxShadow: "0 10px 40px rgba(0,0,0,0.15)",
+  p: { xs: 3, sm: 5 },
+  maxHeight: "90vh",
+  overflowY: "auto",
+  scrollbarWidth: "none",
+  msOverflowStyle: "none",
+  "&::-webkit-scrollbar": { display: "none" },
+};
+
+const sectionTitle = {
+  fontWeight: 700,
+  textAlign: "center",
+  mt: 4,
+  mb: 2,
+  color: "#1565c0",
+  letterSpacing: 0.5,
+};
+
+const FormularioEditar = ({ open, onClose, idCampana }) => {
+  const [formData, setFormData] = useState({
+    nombre_campana: "",
+    cliente: "",
+    director_operacion_abai: "",
+    correo_director: "",
+    segmento: "",
+    nombre_gte_campana: "",
+    correo_gte_campana: "",
+    ubicacion_sedes: "",
+    puestos_operacion: "",
+    puestos_estructura: "",
+    segmento_red: "",
+    fecha_actualizacion: "",
+    nombre_contacto_cliente: "",
+    correo_contacto_cliente: "",
+    telefono_contacto_cliente: "",
+    nombre_contacto_comercial: "",
+    correo_contacto_comercial: "",
+    telefono_contacto_comercial: "",
+    soporte_tecnico_abai: "",
+    correo_soporte_abai: "",
+    servicios_prestados: "",
+    estado: "HABILITADO",
+  });
+
+  const [imagenSede, setImagenSede] = useState(null);
+  const [imagenCliente, setImagenCliente] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  // 🧠 Cargar datos existentes al abrir el modal
+  useEffect(() => {
+    if (open && idCampana) {
+      const fetchData = async () => {
+        try {
+          const { data } = await axios.get(`http://localhost:4000/campana/${idCampana}`);
+          setFormData(data); // asegúrate de que tu backend devuelva los campos con los mismos nombres
+        } catch (error) {
+          console.error("❌ Error al cargar datos de la campaña:", error);
+          alert("Error al cargar los datos de la campaña");
+        }
+      };
+      fetchData();
+    }
+  }, [open, idCampana]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const formDataToSend = new FormData();
+
+      Object.keys(formData).forEach((key) => {
+        formDataToSend.append(key, formData[key]);
+      });
+
+      if (imagenSede) formDataToSend.append("imagen_sede", imagenSede);
+      if (imagenCliente) formDataToSend.append("imagen_cliente", imagenCliente);
+
+      console.log("📦 Datos enviados a backend:");
+      for (const pair of formDataToSend.entries()) {
+        console.log(pair[0], ":", pair[1]);
+      }
+
+      const response = await axios.put(
+        `http://localhost:4000/campana/${idCampana}`,
+        formDataToSend,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
+
+      console.log("✅ Campaña actualizada:", response.data);
+      alert("✅ Campaña actualizada correctamente");
+      onClose();
+    } catch (error) {
+      console.error("❌ Error al actualizar campaña:", error);
+      alert("❌ Error al actualizar la campaña");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Modal open={open} onClose={() => null} disableEscapeKeyDown>
+      <Box component="form" onSubmit={handleSubmit} sx={modalStyle}>
+        {/* Botón cerrar */}
+        <IconButton
+          onClick={onClose}
+          sx={{
+            position: "absolute",
+            right: 16,
+            top: 16,
+            color: "#555",
+            "&:hover": { color: "#1565c0" },
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+
+        <Typography
+          variant="h5"
+          textAlign="center"
+          sx={{
+            mb: 1,
+            color: "#0d47a1",
+            letterSpacing: 0.8,
+            fontWeight: "bold",
+          }}
+        >
+          EDITAR CAMPAÑA
+        </Typography>
+
+        <Divider sx={{ mb: 3 }} />
+
+        {/* Reutilizamos la misma estructura */}
+        <Typography variant="subtitle1" sx={sectionTitle}>
+          INFORMACIÓN PRINCIPAL
+        </Typography>
+        <Grid container spacing={2} justifyContent="center">
+          {[
+            { name: "nombre_campana", label: "Nombre de Campaña" },
+            { name: "cliente", label: "Cliente" },
+            { name: "director_operacion_abai", label: "Director Operación ABAI" },
+            { name: "correo_director", label: "Correo Director", type: "email" },
+            { name: "segmento", label: "Segmento" },
+          ].map((field) => (
+            <Grid item xs={12} sm={10} key={field.name}>
+              <TextField
+                label={field.label}
+                name={field.name}
+                type={field.type || "text"}
+                fullWidth
+                size="small"
+                required
+                value={formData[field.name] || ""}
+                onChange={handleChange}
+              />
+            </Grid>
+          ))}
+        </Grid>
+
+        {/* GESTIÓN DE CAMPAÑA */}
+        <Typography variant="subtitle1" sx={sectionTitle}>
+          GESTIÓN DE CAMPAÑA
+        </Typography>
+        <Grid container spacing={2} justifyContent="center">
+          {[
+            { name: "nombre_gte_campana", label: "Nombre Gerente de Campaña" },
+            { name: "correo_gte_campana", label: "Correo Gerente de Campaña", type: "email" },
+            { name: "ubicacion_sedes", label: "Ubicación Sede" },
+            { name: "puestos_operacion", label: "N° Puestos de Operación", type: "number" },
+            { name: "puestos_estructura", label: "N° Puestos de Estructura", type: "number" },
+            { name: "segmento_red", label: "Segmento de Red" },
+            { name: "fecha_actualizacion", label: "Fecha Actualización", type: "date" },
+          ].map((field) => (
+            <Grid item xs={12} sm={10} key={field.name}>
+              <TextField
+                label={field.label}
+                name={field.name}
+                type={field.type || "text"}
+                fullWidth
+                size="small"
+                required
+                InputLabelProps={field.type === "date" ? { shrink: true } : undefined}
+                value={formData[field.name] || ""}
+                onChange={handleChange}
+              />
+            </Grid>
+          ))}
+        </Grid>
+
+        {/* CONTACTOS */}
+        <Typography variant="subtitle1" sx={sectionTitle}>
+          CONTACTOS
+        </Typography>
+        <Grid container spacing={2} justifyContent="center">
+          {[
+            { name: "nombre_contacto_cliente", label: "Nombre Contacto Cliente" },
+            { name: "correo_contacto_cliente", label: "Correo Cliente", type: "email" },
+            { name: "telefono_contacto_cliente", label: "Teléfono Cliente", type: "tel" },
+            { name: "nombre_contacto_comercial", label: "Nombre Contacto Comercial" },
+            { name: "correo_contacto_comercial", label: "Correo Comercial", type: "email" },
+            { name: "telefono_contacto_comercial", label: "Teléfono Comercial", type: "tel" },
+          ].map((field) => (
+            <Grid item xs={12} sm={10} key={field.name}>
+              <TextField
+                label={field.label}
+                name={field.name}
+                type={field.type || "text"}
+                fullWidth
+                size="small"
+                required
+                value={formData[field.name] || ""}
+                onChange={handleChange}
+              />
+            </Grid>
+          ))}
+        </Grid>
+
+        {/* SOPORTE Y SERVICIOS */}
+        <Typography variant="subtitle1" sx={sectionTitle}>
+          SOPORTE Y SERVICIOS
+        </Typography>
+        <Grid container spacing={2} justifyContent="center">
+          {[
+            { name: "soporte_tecnico_abai", label: "Soporte Técnico ABAI" },
+            { name: "correo_soporte_abai", label: "Correo Soporte ABAI", type: "email" },
+            { name: "servicios_prestados", label: "Servicios Prestados" },
+          ].map((field) => (
+            <Grid item xs={12} sm={10} key={field.name}>
+              <TextField
+                label={field.label}
+                name={field.name}
+                type={field.type || "text"}
+                fullWidth
+                size="small"
+                required
+                value={formData[field.name] || ""}
+                onChange={handleChange}
+              />
+            </Grid>
+          ))}
+        </Grid>
+
+        {/* IMÁGENES */}
+        <Typography variant="subtitle1" sx={sectionTitle}>
+          IMÁGENES
+        </Typography>
+        <Grid container spacing={2} justifyContent="center">
+          <Grid item xs={12} sm={5}>
+            <Button
+              variant="outlined"
+              component="label"
+              fullWidth
+              sx={{
+                py: 1.2,
+                borderRadius: "10px",
+                borderColor: "#1565c0",
+                color: "#1565c0",
+                fontWeight: 600,
+                "&:hover": { backgroundColor: "#1565c0", color: "#fff" },
+              }}
+            >
+              Cambiar Imagen Sede
+              <input
+                type="file"
+                hidden
+                accept="image/*"
+                onChange={(e) => setImagenSede(e.target.files[0])}
+              />
+            </Button>
+            {imagenSede && (
+              <Typography variant="body2" mt={1} textAlign="center">
+                📁 {imagenSede.name}
+              </Typography>
+            )}
+          </Grid>
+
+          <Grid item xs={12} sm={5}>
+            <Button
+              variant="outlined"
+              component="label"
+              fullWidth
+              sx={{
+                py: 1.2,
+                borderRadius: "10px",
+                borderColor: "#1565c0",
+                color: "#1565c0",
+                fontWeight: 600,
+                "&:hover": { backgroundColor: "#1565c0", color: "#fff" },
+              }}
+            >
+              Cambiar Imagen Cliente
+              <input
+                type="file"
+                hidden
+                accept="image/*"
+                onChange={(e) => setImagenCliente(e.target.files[0])}
+              />
+            </Button>
+            {imagenCliente && (
+              <Typography variant="body2" mt={1} textAlign="center">
+                📁 {imagenCliente.name}
+              </Typography>
+            )}
+          </Grid>
+        </Grid>
+
+        {/* BOTÓN ACTUALIZAR */}
+        <Box textAlign="center" mt={5}>
+          <Button
+            variant="contained"
+            color="primary"
+            type="submit"
+            disabled={loading}
+            sx={{
+              width: "60%",
+              py: 1.4,
+              borderRadius: "12px",
+              fontWeight: "bold",
+              fontSize: "1rem",
+              textTransform: "none",
+              boxShadow: "0 4px 12px rgba(21,101,192,0.3)",
+              "&:hover": {
+                backgroundColor: "#0d47a1",
+                boxShadow: "0 5px 15px rgba(13,71,161,0.4)",
+              },
+            }}
+          >
+            {loading ? "Actualizando..." : "ACTUALIZAR"}
+          </Button>
+        </Box>
+      </Box>
+    </Modal>
+  );
+};
+
+export default FormularioEditar;

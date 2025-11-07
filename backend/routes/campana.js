@@ -30,7 +30,10 @@ router.post(
 );
 router.get("/:id", getCampanaById);
 router.put("/estado/:id", updateEstadoCampana);
-router.put("/:id", validate(campanaSchema), updateCampana);
+router.put("/:id",upload.fields([
+    { name: "imagen_cliente", maxCount: 1 },
+    { name: "imagen_sede", maxCount: 1 },
+  ]), validate(campanaSchema), updateCampana);
 router.delete("/:id", deleteCampana);
 
 export default router;

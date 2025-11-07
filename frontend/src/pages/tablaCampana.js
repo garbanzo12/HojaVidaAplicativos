@@ -22,7 +22,7 @@ import {
   TablePagination,
   CircularProgress,
 } from "@mui/material";
-import Formulario from "./formulario";
+import FormularioEditar from "./formularioEditar.js";
 
 const TablaCampana = () => {
   const [rows, setRows] = useState([]);
@@ -332,12 +332,12 @@ const TablaCampana = () => {
       </Dialog>
 
       {editing && (
-        <Formulario
-          open={Boolean(editing)}
-          onClose={handleCerrarEditar}
-          data={editing}
-        />
-      )}
+  <FormularioEditar
+    open={Boolean(editing)}
+    onClose={handleCerrarEditar}
+    idCampana={editing.id}
+  />
+)}
     </>
   );
 };
