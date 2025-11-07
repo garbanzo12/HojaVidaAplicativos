@@ -5,6 +5,8 @@ import {
   createCampana,
   deleteCampana,
   updateCampana,
+  getCampanasDetalles,
+  updateEstadoCampana,
 } from "../controllers/campana.js";
 import { campanaSchema } from "../validators/campanaValidator.js";
 import { validate } from "../validators/validateMiddleware.js";
@@ -14,7 +16,7 @@ const router = express.Router();
 
 // Rutas
 router.get("/", getCampanas);
-router.get("/:id", getCampanaById);
+router.get("/detalles", getCampanasDetalles);
 
 // 🧠 Cambiamos esta ruta para aceptar archivos
 router.post(
@@ -26,7 +28,8 @@ router.post(
   validate(campanaSchema),
   createCampana
 );
-
+router.get("/:id", getCampanaById);
+router.put("/estado/:id", updateEstadoCampana);
 router.put("/:id", validate(campanaSchema), updateCampana);
 router.delete("/:id", deleteCampana);
 

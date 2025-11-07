@@ -19,6 +19,26 @@ export const getCampanas = async (req, res) => {
     res.status(500).json({ success: false, message: "Error al obtener campañas" });
   }
 };
+// ✅ Obtener todas las campañas con sus relaciones
+export const getCampanasDetalles = async (req, res) => {
+  try {
+    const campanas = await prisma.campana.findMany({
+      include: {
+        aplicativos: true,
+        matrizEscalamientos: true,
+        matrizEscalamientoGlobal: true,
+      },
+    });
+
+    res.json(campanas);
+  } catch (error) {
+    console.error("Error al obtener campañas:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error al obtener campañas.",
+    });
+  }
+};
 
 // ✅ Obtener campaña por ID
 export const getCampanaById = async (req, res) => {
@@ -150,5 +170,50 @@ export const deleteCampana = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error al eliminar la campaña" });
+  }
+};
+
+
+
+
+export const updateEstadoCampana = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // 1️⃣ Buscar la campaña por ID
+    const campana = await prisma.campana.findUnique({
+      where: { id: Number(id) },
+    });
+
+    // 2️⃣ Si no existe, devolver error
+    if (!campana) {
+      return res.status(404).json({
+        success: false,
+        message: "Campaña no encontrada.",
+      });
+    }
+
+    // 3️⃣ Determinar el nuevo estado
+    const nuevoEstado =
+      campana.estado === "HABILITADO" ? "DESHABILITADO" : "HABILITADO";
+
+    // 4️⃣ Actualizar en base de datos
+    const campanaActualizada = await prisma.campana.update({
+      where: { id: Number(id) },
+      data: { estado: nuevoEstado },
+    });
+
+    // 5️⃣ Responder con éxito
+    res.json({
+      success: true,
+      message: `Estado actualizado a ${nuevoEstado}`,
+      data: campanaActualizada,
+    });
+  } catch (error) {
+    console.error("Error al actualizar el estado de la campaña:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error al actualizar el estado de la campaña.",
+    });
   }
 };
