@@ -254,82 +254,378 @@ const TablaCampana = () => {
       </TableContainer>
 
       {/* 🔍 Modal Detalle */}
-      <Dialog
-        open={Boolean(selected)}
-        onClose={handleCerrarDetalle}
-        fullWidth
-        maxWidth="md"
-        PaperProps={{
-          sx: { borderRadius: 3, boxShadow: "0 5px 15px rgba(0,0,0,0.3)" },
+     <Dialog
+  open={Boolean(selected)}
+  onClose={handleCerrarDetalle}
+  fullWidth
+  maxWidth="md"
+  PaperProps={{
+    sx: {
+      borderRadius: 4,
+      boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
+      overflow: "hidden",
+      backgroundColor: "#f9fafc",
+    },
+  }}
+>
+  {selected && (
+    <>
+      <DialogTitle
+        sx={{
+          fontWeight: 700,
+          fontSize: "1.7rem",
+          color: "#fff",
+          background: "linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)",
+          borderBottom: "4px solid #1565c0",
+          textAlign: "center",
+          py: 2,
+          letterSpacing: 0.8,
         }}
       >
-        {selected && (
-          <>
-            <DialogTitle
+        DETALLES DE LA CAMPAÑA
+      </DialogTitle>
+
+      <DialogContent
+        sx={{
+          p: 0,
+          background: "linear-gradient(180deg, #f9fafc 0%, #ffffff 100%)",
+          maxHeight: "80vh",
+          overflowY: "auto",
+          scrollbarWidth: "none",
+          "&::-webkit-scrollbar": { display: "none" },
+        }}
+      >
+        {/* Imagen */}
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            py: 4,
+            borderBottom: "1px solid #e0e0e0",
+          }}
+        >
+          <Box
+            sx={{
+              position: "relative",
+              "&::after": {
+                content: '""',
+                position: "absolute",
+                inset: -10,
+                background: "linear-gradient(135deg, #667eea 0%, #ad4fe4ff 100%)",
+                borderRadius: 4,
+                zIndex: -1,
+                opacity: 0.15,
+              },
+            }}
+          >
+            <img
+              src={selected.imagen}
+              alt={selected.nombreCampaña}
+              style={{
+                width: "260px",
+                height: "auto",
+                borderRadius: "16px",
+                border: "4px solid #fff",
+                boxShadow: "0 10px 24px rgba(0,0,0,0.15)",
+                objectFit: "cover",
+              }}
+            />
+          </Box>
+        </Box>
+
+        {/* Secciones Centradas */}
+        {[
+          {
+            color: "#1e3c72",
+            title: "Información Principal",
+            bg: "#ffffffff",
+            border: "#1565c0",
+            fields: [
+              ["Nombre de Campaña", selected.nombreCampaña],
+              ["Cliente", selected.cliente],
+              ["Director de Operación", selected.directorOperacion],
+              ["Correo", selected.correo],
+            ],
+          },
+          {
+            color: "#5e35b1",
+            title: "Gerente de Campaña",
+            bg: "#ffffffff",
+            border: "#9777eeff",
+            fields: [
+              ["Segmento Campaña", selected.segmento || "No definido"],
+              ["Nombre Campaña ", selected.nombreGerente || "No disponible"],
+              ["Correo Campaña", selected.correoGerente || "No disponible"],
+            ],
+          },
+          {
+            color: "#006064",
+            title: "Datos Generales",
+            bg: "#fff",
+            border: "#00acc1",
+            fields: [
+              ["Sede", selected.sede],
+              ["Puesto de Operación", selected.puestoOperacion],
+              ["Puesto de Estructura", selected.puestoEstructura],
+              ["Segmento de Red", selected.segmentoRed],
+            ],
+          },
+        ].map((section, index) => (
+          <Box
+            key={index}
+            sx={{
+              px: 4,
+              py: 3,
+              backgroundColor: section.bg,
+            }}
+          >
+            {/* Título centrado */}
+            <Box sx={{ textAlign: "center", mb: 2.5 }}>
+              <Typography
+                variant="h6"
+                sx={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 1,
+                  fontWeight: 700,
+                  color: section.color,
+                  borderBottom: `3px solid ${section.border}`,
+                  pb: 0.5,
+                }}
+              >
+                {section.icon} {section.title}
+              </Typography>
+            </Box>
+
+            {/* Contenido centrado */}
+            <Box
               sx={{
-                fontWeight: "bold",
-                color: "#002b5b",
-                borderBottom: "1px solid #ddd",
-                textAlign: "center",
+                display: "flex",
+                justifyContent: "center",
+                backgroundColor: "#fff",
+                borderRadius: 3,
+                p: 3,
+                boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
               }}
             >
-              Detalles de Campaña
-            </DialogTitle>
-            <DialogContent dividers>
-              <Box sx={{ textAlign: "center", mb: 3 }}>
-                <img
-                  src={selected.imagen}
-                  alt={selected.nombreCampaña}
-                  style={{
-                    width: "250px",
-                    borderRadius: 12,
-                    boxShadow: "0 3px 8px rgba(0,0,0,0.25)",
-                  }}
-                />
-              </Box>
-
-              <Typography variant="h6" color="#1565c0">
-                Información Principal
-              </Typography>
-              <Divider sx={{ mb: 2 }} />
-              <Grid container spacing={2}>
-                <Grid item xs={6}>
-                  <Typography><strong>Nombre de Campaña:</strong> {selected.nombreCampaña}</Typography>
-                  <Typography><strong>Cliente:</strong> {selected.cliente}</Typography>
-                  <Typography><strong>Director de Operación:</strong> {selected.directorOperacion}</Typography>
-                  <Typography><strong>Correo:</strong> {selected.correo}</Typography>
-                  <Typography><strong>Segmento:</strong> {selected.segmento}</Typography>
-                  <Typography><strong>Nombre Gerente Campaña:</strong> {selected.nombreGerente}</Typography>
-                  <Typography><strong>Correo Gerente Campaña:</strong> {selected.correoGerente}</Typography>
-                  <Typography><strong>Sede:</strong> {selected.sede}</Typography>
-                  <Typography><strong>Puesto de Operacion:</strong> {selected.puestoOperacion}</Typography>
-                  <Typography><strong>Puesto de Estructura:</strong> {selected.puestoEstructura}</Typography>
-                  <Typography><strong>Segmento de Red:</strong> {selected.segmentoRed}</Typography>
-                </Grid>
-                <Grid item xs={6}>
-                  <Typography><strong>Contacto Cliente:</strong> {selected.contactoCliente}</Typography>
-                  <Typography><strong>Correo Cliente: :</strong> {selected.correoCliente}</Typography>
-                  <Typography><strong>Telefono Cliente: :</strong> {selected.telefonoCliente}</Typography>
-                  <Typography><strong>Contacto Comercial:</strong> {selected.contactoComercial}</Typography>
-                  <Typography><strong>Correo Comercial:</strong> {selected.correoComercial}</Typography>
-                  <Typography><strong>Telefono Comercial:</strong> {selected.telefonoComercial}</Typography>
-                  <Typography><strong>Contacto Tecnico:</strong> {selected.contactoTecnico}</Typography>
-                  <Typography><strong>Correo Tecnico:</strong> {selected.correoTecnico}</Typography>
-                  <Typography><strong>Servicios Prestados:</strong> {selected.serviciosTecnico}</Typography>
-                  <Typography><strong>Estado:</strong> {selected.estado}</Typography>
-                  <Typography><strong>Fecha Actualización:</strong> {selected.fechaActualizacion}</Typography>
-                </Grid>
+              <Grid
+                container
+                spacing={2.5}
+                justifyContent="center"
+                alignItems="center"
+                sx={{ maxWidth: 800 }}
+              >
+                {section.fields.map(([label, value], i) => (
+                  <Grid item xs={12} sm={6} md={3} key={i}>
+                    <Typography
+                      sx={{
+                        color: "#5a6c7d",
+                        fontSize: "0.9rem",
+                        mb: 0.5,
+                        textAlign: "center",
+                      }}
+                    >
+                      <strong style={{ color: section.color }}>{label}:</strong>
+                    </Typography>
+                    <Typography
+                      sx={{
+                        textAlign: "center",
+                        color: "#2c3e50",
+                        wordBreak: "break-word",
+                      }}
+                    >
+                      {value || "—"}
+                    </Typography>
+                  </Grid>
+                ))}
               </Grid>
-            </DialogContent>
+            </Box>
+          </Box>
+        ))}
 
-            <DialogActions sx={{ justifyContent: "center" }}>
-              <Button variant="contained" onClick={handleCerrarDetalle}>
-                Cerrar
-              </Button>
-            </DialogActions>
-          </>
-        )}
-      </Dialog>
+        {/* 📞 Contactos */}
+        <Box sx={{ px: 4, py: 3, backgroundColor: "#fff" }}>
+          <Box sx={{ textAlign: "center", mb: 2.5 }}>
+            <Typography
+              variant="h6"
+              sx={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 1,
+                fontWeight: 700,
+                color: "#2e7d32",
+                borderBottom: "3px solid #43a047",
+                pb: 0.5,
+              }}
+            >
+              Contactos
+            </Typography>
+          </Box>
+
+          <Grid container spacing={3} justifyContent="center" alignItems="stretch">
+            {[
+              {
+                titulo: "Cliente",
+                color: "#2e7d32",
+                borde: "#FFAA00",
+                contacto: selected.contactoCliente,
+                correo: selected.correoCliente,
+                telefono: selected.telefonoCliente,
+              },
+              {
+                titulo: "Comercial",
+                color: "#1565c0",
+                borde: "#0054D1",
+                contacto: selected.contactoComercial,
+                correo: selected.correoComercial,
+                telefono: selected.telefonoComercial,
+              },
+              {
+                titulo: "Técnico",
+                color: "#e65100",
+                borde: "#f57c00",
+                contacto: selected.contactoTecnico,
+                correo: selected.correoTecnico,
+                telefono: selected.serviciosTecnico,
+              },
+            ].map((tipo, i) => (
+              <Grid item xs={12} sm={6} md={3.5} key={i}>
+                <Box
+                  sx={{
+                    backgroundColor: "#fff",
+                    borderRadius: 2,
+                    p: 2.5,
+                    borderLeft: `5px solid ${tipo.borde}`,
+                    boxShadow: "0 3px 10px rgba(0,0,0,0.06)",
+                    textAlign: "center",
+                  }}
+                >
+                  <Typography
+                    sx={{
+                      fontWeight: 700,
+                      color: tipo.color,
+                      mb: 2,
+                      fontSize: "1.05rem",
+                    }}
+                  >
+                    {tipo.titulo}
+                  </Typography>
+                  <Typography sx={{ fontSize: "0.9rem", mb: 1 }}>
+                    <strong style={{ color: "#5a6c7d" }}>Contacto:</strong>
+                    <br />
+                    <span style={{ color: "#2c3e50" }}>
+                      {tipo.contacto || "—"}
+                    </span>
+                  </Typography>
+                  <Typography sx={{ fontSize: "0.9rem", mb: 1 }}>
+                    <strong style={{ color: "#5a6c7d" }}>Correo:</strong>
+                    <br />
+                    <span style={{ color: "#2c3e50" }}>
+                      {tipo.correo || "—"}
+                    </span>
+                  </Typography>
+                  <Typography sx={{ fontSize: "0.9rem" }}>
+                    <strong style={{ color: "#5a6c7d" }}>
+                      Teléfono / Servicio:
+                    </strong>
+                    <br />
+                    <span style={{ color: "#2c3e50" }}>
+                      {tipo.telefono || "—"}
+                    </span>
+                  </Typography>
+                </Box>
+              </Grid>
+            ))}
+          </Grid>
+
+          {/* Estado y Fecha */}
+          <Box
+            sx={{
+              mt: 4,
+              display: "flex",
+              justifyContent: "center",
+              flexWrap: "wrap",
+              gap: 2,
+            }}
+          >
+            <Box
+              sx={{
+                backgroundColor: "#fff",
+                px: 3,
+                py: 1.5,
+                borderRadius: 2,
+                boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
+              }}
+            >
+              <Typography sx={{ fontSize: "0.9rem", color: "#5a6c7d" }}>
+                <strong>Estado:</strong>{" "}
+                <span
+                  style={{
+                    color:
+                      selected.estado === "Activo" ? "#43a047" : "#f44336",
+                    fontWeight: 600,
+                  }}
+                >
+                  {selected.estado}
+                </span>
+              </Typography>
+            </Box>
+            <Box
+              sx={{
+                backgroundColor: "#fff",
+                px: 3,
+                py: 1.5,
+                borderRadius: 2,
+                boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
+              }}
+            >
+              <Typography sx={{ fontSize: "0.9rem", color: "#5a6c7d" }}>
+                <strong>Última Actualización:</strong>{" "}
+                <span style={{ color: "#2c3e50" }}>
+                  {selected.fechaActualizacion}
+                </span>
+              </Typography>
+            </Box>
+          </Box>
+        </Box>
+      </DialogContent>
+
+      <DialogActions
+        sx={{
+          justifyContent: "center",
+          py: 2.5,
+          background: "linear-gradient(180deg, #ffffff 0%, #f5f7fa 100%)",
+          borderTop: "1px solid #e0e0e0",
+        }}
+      >
+        <Button
+          variant="contained"
+          onClick={handleCerrarDetalle}
+          sx={{
+            px: 4,
+            py: 1.2,
+            borderRadius: 2,
+            background: "linear-gradient(135deg, #325fdbff ",
+            textTransform: "none",
+            fontSize: "1rem",
+            fontWeight: 600,
+            boxShadow: "0 4px 12px rgba(102,126,234,0.4)",
+            "&:hover": {
+              background: "linear-gradient(135deg, #5568d3 0%, #63408b 100%)",
+            },
+          }}
+        >
+          Cerrar
+        </Button>
+      </DialogActions>
+    </>
+  )}
+</Dialog>
+
+
 
       {editing && (
   <FormularioEditar
