@@ -336,8 +336,48 @@ const TablaCampana = () => {
     open={Boolean(editing)}
     onClose={handleCerrarEditar}
     idCampana={editing.id}
+    onUpdate={() => {
+      // 🔄 Recargar campañas después de editar
+      setLoading(true);
+      axios
+        .get("http://localhost:4000/campana/detalles")
+        .then((res) => {
+          const data = res.data.map((c) => ({
+            id: c.id,
+            nombreCampaña: c.nombre_campana,
+            cliente: c.cliente,
+            directorOperacion: c.director_operacion_abai,
+            correo: c.correo_director,
+            segmento: c.segmento,
+            nombreGerente: c.nombre_gte_campana,
+            correoGerente: c.correo_gte_campana,
+            sede: c.ubicacion_sedes,
+            puestoOperacion: c.puestos_operacion,
+            puestoEstructura: c.puestos_estructura,
+            segmentoRed: c.segmento_red,
+            fechaActualizacion: c.fecha_actualizacion,
+            contactoCliente: c.nombre_contacto_cliente,
+            correoCliente: c.correo_contacto_cliente,
+            telefonoCliente: c.telefono_contacto_cliente,
+            contactoComercial: c.nombre_contacto_comercial,
+            correoComercial: c.correo_contacto_comercial,
+            telefonoComercial: c.telefono_contacto_comercial,
+            contactoTecnico: c.soporte_tecnico_abai,
+            correoTecnico: c.correo_soporte_abai,
+            serviciosTecnico: c.servicios_prestados,
+            estado: c.estado === "HABILITADO" ? "Activo" : "Inactivo",
+            imagen: c.imagen_cliente
+              ? `http://localhost:4000/uploads/${c.imagen_cliente}`
+              : "https://via.placeholder.com/250",
+          }));
+          setRows(data);
+        })
+        .catch((err) => console.error("❌ Error al recargar campañas:", err))
+        .finally(() => setLoading(false));
+    }}
   />
 )}
+
     </>
   );
 };

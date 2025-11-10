@@ -39,7 +39,8 @@ const sectionTitle = {
   letterSpacing: 0.5,
 };
 
-const FormularioEditar = ({ open, onClose, idCampana }) => {
+
+const FormularioEditar = ({ open, onClose, idCampana, onUpdate }) => {
   const [formData, setFormData] = useState({
     nombre_campana: "",
     cliente: "",
@@ -69,13 +70,12 @@ const FormularioEditar = ({ open, onClose, idCampana }) => {
   const [imagenCliente, setImagenCliente] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // 🧠 Cargar datos existentes al abrir el modal
   useEffect(() => {
     if (open && idCampana) {
       const fetchData = async () => {
         try {
           const { data } = await axios.get(`http://localhost:4000/campana/${idCampana}`);
-          setFormData(data); // asegúrate de que tu backend devuelva los campos con los mismos nombres
+          setFormData(data);
         } catch (error) {
           console.error("❌ Error al cargar datos de la campaña:", error);
           alert("Error al cargar los datos de la campaña");
@@ -117,6 +117,9 @@ const FormularioEditar = ({ open, onClose, idCampana }) => {
 
       console.log("✅ Campaña actualizada:", response.data);
       alert("✅ Campaña actualizada correctamente");
+
+      if (onUpdate) onUpdate();
+
       onClose();
     } catch (error) {
       console.error("❌ Error al actualizar campaña:", error);
@@ -158,7 +161,7 @@ const FormularioEditar = ({ open, onClose, idCampana }) => {
 
         <Divider sx={{ mb: 3 }} />
 
-        {/* Reutilizamos la misma estructura */}
+        {/* INFORMACIÓN PRINCIPAL */}
         <Typography variant="subtitle1" sx={sectionTitle}>
           INFORMACIÓN PRINCIPAL
         </Typography>
