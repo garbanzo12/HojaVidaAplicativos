@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import {
   Box,
   Table,
@@ -19,105 +20,106 @@ import {
   Divider,
   TextField,
   TablePagination,
+  CircularProgress,
 } from "@mui/material";
-import Formulario from "./formulario";
+import FormularioEditar from "./formularioEditar.js";
 
 const TablaCampana = () => {
-  const [rows, setData] = useState([]);
+  const [rows, setRows] = useState([]);
   const [selected, setSelected] = useState(null);
   const [editing, setEditing] = useState(null);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [loading, setLoading] = useState(false);
 
-  // 📌 Simulamos carga de datos
+  // 🔹 Cargar campañas desde backend
   useEffect(() => {
-    const dataEjemplo = [
-      {
-        id: 1,
-        nombreCampaña: "Lanzamiento 2025",
-        cliente: "TechCorp",
-        directorOperacion: "Juan Pérez",
-        correo: "juan@techcorp.com",
-        segmento: "Tecnología",
-        nombreGerente: "María López",
-        correoGerente: "maria@techcorp.com",
-        sede: "CDMX",
-        puestoOperacion: "15",
-        puestoEstructura: "5",
-        segmentoRed: "Red Norte",
-        fechaActualizacion: "2025-11-05",
-        contactoCliente: "Carlos Méndez",
-        correoCliente: "carlos@techcorp.com",
-        telefonoCliente: "555-123-456",
-        contactoComercial: "Ana Ruiz",
-        correoComercial: "ana@comercial.com",
-        telefonoComercial: "555-654-321",
-        contactoTecnico: "Luis Gómez",
-        correoTecnico: "luis@abai.com",
-        serviciosTecnico: "Soporte, Mantenimiento, Capacitación",
-        estado: "Activo",
-        imagen: "https://via.placeholder.com/250",
-      },
-      {
-        id: 2,
-        nombreCampaña: "Campaña Primavera",
-        cliente: "EcoMarket",
-        directorOperacion: "Laura García",
-        correo: "laura@ecomarket.com",
-        segmento: "Retail",
-        nombreGerente: "José Martínez",
-        correoGerente: "jose@ecomarket.com",
-        sede: "Bogotá",
-        puestoOperacion: "22",
-        puestoEstructura: "8",
-        segmentoRed: "Red Sur",
-        fechaActualizacion: "2025-10-12",
-        contactoCliente: "Sofía Torres",
-        correoCliente: "sofia@ecomarket.com",
-        telefonoCliente: "601-999-888",
-        contactoComercial: "Pedro Ramírez",
-        correoComercial: "pedro@ventas.com",
-        telefonoComercial: "601-111-222",
-        contactoTecnico: "Carlos Rojas",
-        correoTecnico: "carlos@abai.com",
-        serviciosTecnico: "Monitoreo y soporte de incidencias",
-        estado: "Inactivo",
-        imagen: "https://via.placeholder.com/250",
-      },
-    ];
-    setData(dataEjemplo);
+    const fetchCampanas = async () => {
+      setLoading(true);
+      try {
+        const res = await axios.get("http://localhost:4000/campana/detalles");
+        const data = res.data.map((c) => ({
+          id: c.id,
+          nombreCampaña: c.nombre_campana,
+          cliente: c.cliente,
+          directorOperacion: c.director_operacion_abai,
+          correo: c.correo_director,
+          segmento: c.segmento,
+          nombreGerente: c.nombre_gte_campana,
+          correoGerente: c.correo_gte_campana,
+          sede: c.ubicacion_sedes,
+          puestoOperacion: c.puestos_operacion,
+          puestoEstructura: c.puestos_estructura,
+          segmentoRed: c.segmento_red,
+          fechaActualizacion: c.fecha_actualizacion,
+          contactoCliente: c.nombre_contacto_cliente,
+          correoCliente: c.correo_contacto_cliente,
+          telefonoCliente: c.telefono_contacto_cliente,
+          contactoComercial: c.nombre_contacto_comercial,
+          correoComercial: c.correo_contacto_comercial,
+          telefonoComercial: c.telefono_contacto_comercial,
+          contactoTecnico: c.soporte_tecnico_abai,
+          correoTecnico: c.correo_soporte_abai,
+          serviciosTecnico: c.servicios_prestados,
+          estado: c.estado === "HABILITADO" ? "Activo" : "Inactivo",
+          imagen: c.imagen_cliente
+            ? `http://localhost:4000/uploads/${c.imagen_cliente}`
+            : "https://via.placeholder.com/250",
+        }));
+        setRows(data);
+      } catch (err) {
+        console.error("❌ Error al obtener campañas:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCampanas();
   }, []);
 
-  useEffect(() => {
-    setData((prev) => [...prev]);
-  }, [rows]);
+  // 🔁 Cambiar estado (Habilitar / Deshabilitar)
+  const handleToggleEstado = async (id, currentEstado) => {
+    const nuevoEstado = currentEstado === "Activo" ? "DESHABILITADO" : "HABILITADO";
+    try {
+      await axios.put(`http://localhost:4000/campana/estado/${id}`, { estado: nuevoEstado });
+      setRows((prev) =>
+        prev.map((c) =>
+          c.id === id
+            ? { ...c, estado: nuevoEstado === "HABILITADO" ? "Activo" : "Inactivo" }
+            : c
+        )
+      );
+    } catch (error) {
+      console.error("❌ Error al actualizar estado:", error);
+    }
+  };
 
+  // 📋 Filtrado de búsqueda
   const filtered = rows.filter(
     (c) =>
       c.nombreCampaña.toLowerCase().includes(search.toLowerCase()) ||
       c.directorOperacion.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleToggleEstado = (id) => {
-    const updated = rows.map((c) =>
-      c.id === id
-        ? { ...c, estado: c.estado === "Activo" ? "Inactivo" : "Activo" }
-        : c
-    );
-    setData(updated);
-  };
-
+  // 🧩 Paginación
   const handleChangePage = (_, newPage) => setPage(newPage);
   const handleChangeRowsPerPage = (e) => {
     setRowsPerPage(parseInt(e.target.value, 10));
     setPage(0);
   };
 
+  // 🔍 Detalle y edición
   const handleVerDetalle = (campaña) => setSelected(campaña);
   const handleCerrarDetalle = () => setSelected(null);
   const handleEditar = (campaña) => setEditing(campaña);
   const handleCerrarEditar = () => setEditing(null);
+
+  if (loading)
+    return (
+      <Box display="flex" justifyContent="center" mt={5}>
+        <CircularProgress />
+      </Box>
+    );
 
   return (
     <>
@@ -126,10 +128,7 @@ const TablaCampana = () => {
           variant="h5"
           fontWeight="bold"
           color="#002b5b"
-          sx={{
-            borderRadius: 2,
-            padding: "10px 20px",
-          }}
+          sx={{ borderRadius: 2, padding: "10px 20px" }}
         >
           LISTA DE CAMPAÑAS
         </Typography>
@@ -162,23 +161,17 @@ const TablaCampana = () => {
         <Table>
           <TableHead sx={{ backgroundColor: "#002b5b" }}>
             <TableRow>
-              {[
-                "Imagen",
-                "Campaña",
-                "Cliente",
-                "Director",
-                "Correo",
-                "Estado",
-                "Acciones",
-              ].map((h, i) => (
-                <TableCell
-                  key={i}
-                  align="center"
-                  sx={{ color: "white", fontWeight: "bold", textAlign: "center" }}
-                >
-                  {h}
-                </TableCell>
-              ))}
+              {["Imagen", "Campaña", "Cliente", "Director", "Correo", "Estado", "Acciones"].map(
+                (h, i) => (
+                  <TableCell
+                    key={i}
+                    align="center"
+                    sx={{ color: "white", fontWeight: "bold", textAlign: "center" }}
+                  >
+                    {h}
+                  </TableCell>
+                )
+              )}
             </TableRow>
           </TableHead>
 
@@ -207,7 +200,7 @@ const TablaCampana = () => {
                   <TableCell align="center">{c.correo}</TableCell>
                   <TableCell align="center">
                     <Button
-                      onClick={() => handleToggleEstado(c.id)}
+                      onClick={() => handleToggleEstado(c.id, c.estado)}
                       variant="contained"
                       sx={{
                         backgroundColor: c.estado === "Activo" ? "#4caf50" : "#e53935",
@@ -259,7 +252,9 @@ const TablaCampana = () => {
           />
         </Box>
       </TableContainer>
-    <Dialog
+
+      {/* 🔍 Modal Detalle */}
+      <Dialog
         open={Boolean(selected)}
         onClose={handleCerrarDetalle}
         fullWidth
@@ -299,133 +294,30 @@ const TablaCampana = () => {
               <Divider sx={{ mb: 2 }} />
               <Grid container spacing={2}>
                 <Grid item xs={6}>
-                  <Typography>
-                    <strong>Nombre de Campaña:</strong> {selected.nombreCampaña}
-                  </Typography>
-                  <Typography>
-                    <strong>Cliente:</strong> {selected.cliente}
-                  </Typography>
-                  <Typography>
-                    <strong>Director de Operación:</strong>{" "}
-                    {selected.directorOperacion}
-                  </Typography>
-                  <Typography>
-                    <strong>Correo:</strong> {selected.correo}
-                  </Typography>
+                  <Typography><strong>Nombre de Campaña:</strong> {selected.nombreCampaña}</Typography>
+                  <Typography><strong>Cliente:</strong> {selected.cliente}</Typography>
+                  <Typography><strong>Director de Operación:</strong> {selected.directorOperacion}</Typography>
+                  <Typography><strong>Correo:</strong> {selected.correo}</Typography>
+                  <Typography><strong>Segmento:</strong> {selected.segmento}</Typography>
+                  <Typography><strong>Nombre Gerente Campaña:</strong> {selected.nombre_gte_campana}</Typography>
+                  <Typography><strong>Correo Gerente Campaña:</strong> {selected.correoGerente}</Typography>
+                  <Typography><strong>Sede:</strong> {selected.sede}</Typography>
+                  <Typography><strong>Puesto de Operacion:</strong> {selected.puestoOperacion}</Typography>
+                  <Typography><strong>Puesto de Estructura:</strong> {selected.puestoEstructura}</Typography>
+                  <Typography><strong>Segmento de Red:</strong> {selected.segmentoRed}</Typography>
                 </Grid>
                 <Grid item xs={6}>
-                  <Typography>
-                    <strong>Estado:</strong> {selected.estado}
-                  </Typography>
-                  <Typography>
-                    <strong>Fecha Actualización:</strong>{" "}
-                    {selected.fechaActualizacion}
-                  </Typography>
-                </Grid>
-              </Grid>
-
-              <Typography variant="h6" color="#1565c0" mt={3}>
-                Gerentes Campaña
-              </Typography>
-              <Divider sx={{ mb: 2 }} />
-              <Grid container spacing={2}>
-                <Grid item xs={6}>
-                  <Typography>
-                    <strong>Segmento:</strong> {selected.segmento}
-                  </Typography>
-                </Grid>
-                <Grid item xs={6}>
-                  <Typography>
-                    <strong>Nombre:</strong> {selected.nombreGerente}
-                  </Typography>
-                </Grid>
-                <Grid item xs={6}>
-                  <Typography>
-                    <strong>Correo:</strong> {selected.correoGerente}
-                  </Typography>
-                </Grid>
-              </Grid>
-
-              <Typography variant="h6" color="#1565c0" mt={3}>
-                Datos Generales
-              </Typography>
-              <Divider sx={{ mb: 2 }} />
-              <Grid container spacing={2}>
-                <Grid item xs={6}>
-                  <Typography>
-                    <strong>Sede:</strong> {selected.sede}
-                  </Typography>
-                </Grid>
-                <Grid item xs={6}>
-                  <Typography>
-                    <strong>N° Puesto de Operación:</strong>{" "}
-                    {selected.puestoOperacion}
-                  </Typography>
-                  <Typography>
-                    <strong>N° Puesto de Estructura:</strong>{" "}
-                    {selected.puestoEstructura}
-                  </Typography>
-                </Grid>
-                <Grid item xs={6}>
-                  <Typography>
-                    <strong>Segmento de Red:</strong> {selected.segmentoRed}
-                  </Typography>
-                </Grid>
-              </Grid>
-
-              <Typography variant="h6" color="#1565c0" mt={3}>
-                Contactos
-              </Typography>
-              <Divider sx={{ mb: 2 }} />
-              <Grid container spacing={2}>
-                <Grid item xs={6}>
-                  <Typography>
-                    <strong>Nombre Contacto Cliente:</strong>{" "}
-                    {selected.contactoCliente}
-                  </Typography>
-                  <Typography>
-                    <strong>Correo Cliente:</strong>{" "}
-                    {selected.correoCliente}
-                  </Typography>
-                  <Typography>
-                    <strong>Teléfono Cliente:</strong>{" "}
-                    {selected.telefonoCliente}
-                  </Typography>
-                </Grid>
-                <Grid item xs={6}>
-                  <Typography>
-                    <strong>Nombre Contacto Comercial:</strong>{" "}
-                    {selected.contactoComercial}
-                  </Typography>
-                  <Typography>
-                    <strong>Correo Comercial:</strong>{" "}
-                    {selected.correoComercial}
-                  </Typography>
-                  <Typography>
-                    <strong>Teléfono Comercial:</strong>{" "}
-                    {selected.telefonoComercial}
-                  </Typography>
-                </Grid>
-              </Grid>
-
-              <Typography variant="h6" color="#1565c0" mt={3}>
-                Soporte Técnico ABAI
-              </Typography>
-              <Divider sx={{ mb: 2 }} />
-              <Grid container spacing={2}>
-                <Grid item xs={6}>
-                  <Typography>
-                    <strong>Soporte Técnico ABAI:</strong>{" "}
-                    {selected.contactoTecnico}
-                  </Typography>
-                  <Typography>
-                    <strong>Correo Técnico:</strong>{" "}
-                    {selected.correoTecnico}
-                  </Typography>
-                  <Typography>
-                    <strong>Servicios Prestados:</strong>{" "}
-                    {selected.serviciosTecnico}
-                  </Typography>
+                  <Typography><strong>Contacto Cliente:</strong> {selected.contactoCliente}</Typography>
+                  <Typography><strong>Correo Cliente: :</strong> {selected.correoCliente}</Typography>
+                  <Typography><strong>Telefono Cliente: :</strong> {selected.telefonoCliente}</Typography>
+                  <Typography><strong>Contacto Comercial:</strong> {selected.contactoComercial}</Typography>
+                  <Typography><strong>Correo Comercial:</strong> {selected.correoComercial}</Typography>
+                  <Typography><strong>Telefono Comercial:</strong> {selected.telefonoComercial}</Typography>
+                  <Typography><strong>Contacto Tecnico:</strong> {selected.contactoTecnico}</Typography>
+                  <Typography><strong>Correo Tecnico:</strong> {selected.correoTecnico}</Typography>
+                  <Typography><strong>Servicios Prestados:</strong> {selected.serviciosTecnico}</Typography>
+                  <Typography><strong>Estado:</strong> {selected.estado}</Typography>
+                  <Typography><strong>Fecha Actualización:</strong> {selected.fechaActualizacion}</Typography>
                 </Grid>
               </Grid>
             </DialogContent>
@@ -438,13 +330,14 @@ const TablaCampana = () => {
           </>
         )}
       </Dialog>
+
       {editing && (
-        <Formulario
-          open={Boolean(editing)}
-          onClose={handleCerrarEditar}
-          data={editing}
-        />
-      )}
+  <FormularioEditar
+    open={Boolean(editing)}
+    onClose={handleCerrarEditar}
+    idCampana={editing.id}
+  />
+)}
     </>
   );
 };
