@@ -299,7 +299,7 @@ const TablaCampana = () => {
                   <Typography><strong>Director de Operación:</strong> {selected.directorOperacion}</Typography>
                   <Typography><strong>Correo:</strong> {selected.correo}</Typography>
                   <Typography><strong>Segmento:</strong> {selected.segmento}</Typography>
-                  <Typography><strong>Nombre Gerente Campaña:</strong> {selected.nombre_gte_campana}</Typography>
+                  <Typography><strong>Nombre Gerente Campaña:</strong> {selected.nombreGerente}</Typography>
                   <Typography><strong>Correo Gerente Campaña:</strong> {selected.correoGerente}</Typography>
                   <Typography><strong>Sede:</strong> {selected.sede}</Typography>
                   <Typography><strong>Puesto de Operacion:</strong> {selected.puestoOperacion}</Typography>
