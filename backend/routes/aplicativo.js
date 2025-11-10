@@ -4,6 +4,7 @@ import {
   getAplicativos,
   getAplicativoById,
   updateAplicativo,
+  updateEstadoaplicativo,
 } from "../controllers/aplicativo.js";
 import { validate } from "../validators/validateMiddleware.js";
 import { aplicativoSchema } from "../validators/aplicativoValidator.js";
@@ -14,6 +15,7 @@ const router = express.Router();
 router.post("/", validate(aplicativoSchema), createAplicativo);
 router.get("/", getAplicativos);
 router.get("/:id", getAplicativoById);
+router.put("/estado/:id", updateEstadoaplicativo);
 router.put("/:id", validate(aplicativoSchema), updateAplicativo);
 
 export default router;

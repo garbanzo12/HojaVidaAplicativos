@@ -30,6 +30,7 @@ router.post(
 );
 router.get("/:id", getCampanaById);
 router.put("/estado/:id", updateEstadoCampana);
+
 router.put("/:id",upload.fields([
     { name: "imagen_cliente", maxCount: 1 },
     { name: "imagen_sede", maxCount: 1 },

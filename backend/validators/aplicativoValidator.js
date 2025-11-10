@@ -18,14 +18,7 @@ export const aplicativoSchema = z.object({
       "Debe ser una dirección IP válida."
     ),
 
-  puerto: z
-    .number({
-      required_error: "El puerto es obligatorio.",
-      invalid_type_error: "El puerto debe ser un número.",
-    })
-    .int("El puerto debe ser un número entero.")
-    .min(1, "El puerto no puede ser menor que 1.")
-    .max(65535, "El puerto no puede ser mayor que 65535."),
+   puerto: z.preprocess((val) => Number(val), z.number().int().positive()),
 
   url: z
     .string({

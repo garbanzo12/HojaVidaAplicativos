@@ -1,94 +1,87 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
+  Typography,
   TextField,
+  Paper,
   Table,
   TableHead,
-  TableBody,
   TableRow,
   TableCell,
-  TableContainer,
-  Paper,
-  Typography,
+  TableBody,
   Button,
   Modal,
 } from "@mui/material";
-import FormularioAplicativo from "./FormularioAplicativo";
+import axios from "axios";
+import FormularioEditarAplicativo from "./FormularioEditarAplicativo";
 
-const mockData = [
-  {
-    id: 1,
-    tipo: "Aplicativo ABAI",
-    nombre: "App Ventas",
-    ip: "192.168.1.10",
-    puerto: "8080",
-    url: "https://ventas.miempresa.com",
-    tipoRed: "Intranet",
-    escalamiento: "Soporte Nivel 1",
-    campana: "Campaña Q4",
-    activo: true,
-  },
-  {
-    id: 2,
-    tipo: "App Proveedor",
-    nombre: "Auth Service",
-    ip: "10.0.0.5",
-    puerto: "443",
-    url: "https://auth.miempresa.com",
-    tipoRed: "Externa",
-    escalamiento: "Soporte Nivel 2",
-    campana: "Campaña Credenciales",
-    activo: false,
-  },
-];
-
-const TablaAplicativos = ({ rows = mockData }) => {
+const ListarAplicativo = () => {
+  const [rows, setRows] = useState([]);
   const [query, setQuery] = useState("");
-  const [data, setData] = useState(rows);
-  const [page, setPage] = useState(0);
-  const [rowsPerPage] = useState(5);
-  const [openEdit, setOpenEdit] = useState(false);
-  const [selectedRow, setSelectedRow] = useState(null);
+  const [editing, setEditing] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  // 🔹 Cargar los aplicativos al iniciar
+  const fetchAplicativos = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get("http://localhost:4000/aplicativo");
+      const data = res.data.map((a) => ({
+        id: a.id,
+        nombre: a.nombre,
+        direccion_ip: a.direccion_ip,
+        puerto: a.puerto,
+        url: a.url,
+        tipo_red: a.tipo_red,
+        escalamiento: a.escalamiento,
+        campanaId: a.campanaId,
+        estado: a.estado,
+      }));
+      setRows(data);
+    } catch (err) {
+      console.error("❌ Error al obtener aplicativos:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    setData(rows);
-  }, [rows]);
+    fetchAplicativos();
+  }, []);
+// Cambiar estado del aplicativo
+const toggleEstado = async (id, estadoActual) => {
+  const nuevoEstado = estadoActual === "HABILITADO" ? "DESHABILITADO" : "HABILITADO";
+  try {
+    await axios.put(`http://localhost:4000/aplicativo/estado/${id}`, { estado: nuevoEstado });
 
-  const handleSearch = (e) => {
-    setQuery(e.target.value);
-    setPage(0);
-  };
-
-  const filteredData = data.filter(
-    (item) =>
-      item.tipo.toLowerCase().includes(query.toLowerCase()) ||
-      item.campana.toLowerCase().includes(query.toLowerCase()) ||
-      item.nombre.toLowerCase().includes(query.toLowerCase())
-  );
-
-  const handleToggleActivo = (id) => {
-    setData((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, activo: !item.activo } : item
+    // Actualizar en tiempo real sin recargar la página
+    setRows((prev) =>
+      prev.map((row) =>
+        row.id === id ? { ...row, estado: nuevoEstado } : row
       )
     );
-  };
+  } catch (err) {
+    console.error("❌ Error al cambiar estado:", err);
+  }
+};
 
-  const handleEdit = (row) => {
-    setSelectedRow(row);
-    setOpenEdit(true);
-  };
+  const handleBuscar = (e) => setQuery(e.target.value.toLowerCase());
 
-  const handleCloseEdit = () => {
-    setOpenEdit(false);
-    setSelectedRow(null);
-  };
+  const filteredRows = rows.filter(
+    (row) =>
+      row.nombre.toLowerCase().includes(query) ||
+      row.tipo_red.toLowerCase().includes(query) ||
+      row.escalamiento.toLowerCase().includes(query)
+  );
+
+  const handleCerrarEditar = () => setEditing(null);
 
   return (
     <Box
       sx={{
         padding: "40px",
         minHeight: "100vh",
+        backgroundColor: "#f7f9fc",
       }}
     >
       {/* 🔹 Encabezado */}
@@ -115,11 +108,11 @@ const TablaAplicativos = ({ rows = mockData }) => {
         </Typography>
 
         <TextField
-          label="Buscar por aplicativo, campaña o nombre"
+          label="Buscar por nombre, tipo o escalamiento"
           variant="outlined"
           fullWidth
           value={query}
-          onChange={handleSearch}
+          onChange={handleBuscar}
           sx={{
             backgroundColor: "white",
             borderRadius: 2,
@@ -130,20 +123,19 @@ const TablaAplicativos = ({ rows = mockData }) => {
         />
       </Box>
 
-      {/* 🔹 Tabla principal */}
-      <TableContainer
-        component={Paper}
+      {/* 🔹 Tabla */}
+      <Paper
         sx={{
           borderRadius: 3,
           boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
           backgroundColor: "white",
+          overflowX: "auto",
         }}
       >
         <Table>
           <TableHead sx={{ backgroundColor: "#002b5b" }}>
             <TableRow>
               {[
-                "Tipo",
                 "Nombre",
                 "Dirección IP",
                 "Puerto",
@@ -153,9 +145,9 @@ const TablaAplicativos = ({ rows = mockData }) => {
                 "Campaña",
                 "Estado",
                 "Acciones",
-              ].map((head, index) => (
+              ].map((head, i) => (
                 <TableCell
-                  key={index}
+                  key={i}
                   align="center"
                   sx={{
                     color: "white",
@@ -172,141 +164,84 @@ const TablaAplicativos = ({ rows = mockData }) => {
           </TableHead>
 
           <TableBody>
-            {filteredData
-              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              .map((row, index) => (
-                <TableRow
-                  key={row.id}
-                  sx={{
-                    backgroundColor: index % 2 === 0 ? "#fafafa" : "#ffffff",
-                    "&:hover": {
-                      backgroundColor: "#e3f2fd",
-                    },
-                    transition: "0.2s",
-                  }}
-                >
-                  <TableCell align="center">{row.tipo}</TableCell>
-                  <TableCell align="center">{row.nombre}</TableCell>
-                  <TableCell align="center">{row.ip}</TableCell>
-                  <TableCell align="center">{row.puerto}</TableCell>
-                  <TableCell align="center">
-                  <TableCell align="center">{row.url}</TableCell>
-                  </TableCell>
-                  <TableCell align="center">{row.tipoRed}</TableCell>
-                  <TableCell align="center">{row.escalamiento}</TableCell>
-                  <TableCell align="center">{row.campana}</TableCell>
+            {filteredRows.map((row, index) => (
+              <TableRow
+                key={row.id}
+                sx={{
+                  backgroundColor: index % 2 === 0 ? "#fafafa" : "#ffffff",
+                  "&:hover": { backgroundColor: "#e3f2fd" },
+                  transition: "0.2s",
+                }}
+              >
+                <TableCell align="center">{row.nombre}</TableCell>
+                <TableCell align="center">{row.direccion_ip}</TableCell>
+                <TableCell align="center">{row.puerto}</TableCell>
+                <TableCell align="center">
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => window.open(row.url, "_blank")}
+                    sx={{
+                      textTransform: "none",
+                      color: "#1565c0",
+                      borderColor: "#1565c0",
+                    }}
+                  >
+                    Ver URL
+                  </Button>
+                </TableCell>
+                <TableCell align="center">{row.tipo_red}</TableCell>
+                <TableCell align="center">{row.escalamiento}</TableCell>
+                <TableCell align="center">{row.campanaId}</TableCell>
+                <TableCell align="center">
+                  <Button
+  variant="contained"
+  size="small"
+  onClick={() => toggleEstado(row.id, row.estado)}
+  sx={{
+    backgroundColor:
+      row.estado === "HABILITADO" ? "#4caf50" : "#e53935",
+    "&:hover": {
+      backgroundColor:
+        row.estado === "HABILITADO" ? "#43a047" : "#c62828",
+    },
+    textTransform: "none",
+    fontWeight: 600,
+    borderRadius: "20px",
+    px: 2,
+  }}
+>
+  {row.estado === "HABILITADO" ? "Activo" : "Inactivo"}
+</Button>
 
-                  {/* Estado */}
-                  <TableCell align="center">
-                    <Button
-                      variant="contained"
-                      size="small"
-                      onClick={() => handleToggleActivo(row.id)}
-                      sx={{
-                        backgroundColor: row.activo ? "#4caf50" : "#e53935",
-                        "&:hover": {
-                          backgroundColor: row.activo
-                            ? "#43a047"
-                            : "#c62828",
-                        },
-                        textTransform: "none",
-                        fontWeight: 600,
-                        borderRadius: "20px",
-                        px: 2,
-                      }}
-                    >
-                      {row.activo ? "Activo" : "Inactivo"}
-                    </Button>
-                  </TableCell>
+                </TableCell>
 
-                  {/* Acciones */}
-                  <TableCell align="center">
-                    <Button
-                      variant="contained"
-                      size="small"
-                      sx={{
-                        backgroundColor: "#1565c0",
-                        "&:hover": { backgroundColor: "#0d47a1" },
-                        borderRadius: "8px",
-                        textTransform: "none",
-                        fontWeight: "bold",
-                      }}
-                      onClick={() => handleEdit(row)}
-                    >
-                      Editar
-                    </Button>
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      sx={{
-                        mr: 1,
-                        textTransform: "none",
-                        borderRadius: "8px",
-                        borderColor: "#1976d2",
-                        color: "#1976d2",
-                        "&:hover": {
-                          backgroundColor: "#e3f2fd",
-                        },
-                      }}
-                      onClick={() => window.open(row.url, "_blank")}
-                    >
-                      Ver URL
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
+                {/* Acciones */}
+                <TableCell align="center">
+                  <Button
+                    variant="contained"
+                    size="small"
+                    sx={{
+                      backgroundColor: "#1565c0",
+                      "&:hover": { backgroundColor: "#0d47a1" },
+                      borderRadius: "8px",
+                      textTransform: "none",
+                      fontWeight: "bold",
+                      mr: 1,
+                    }}
+                    onClick={() => setEditing(row)}
+                  >
+                    Editar
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
-      </TableContainer>
+      </Paper>
 
-      {/* 🔹 Paginación centrada */}
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          gap: 1,
-          mt: 3,
-        }}
-      >
-        <Button
-          onClick={() => setPage((p) => Math.max(p - 1, 0))}
-          disabled={page === 0}
-          sx={{
-            minWidth: "36px",
-            color: page === 0 ? "#ccc" : "#1976d2",
-            "&:hover": {
-              backgroundColor: "#f0f0f0",
-            },
-          }}
-        >
-          ‹
-        </Button>
-        <Button
-          onClick={() =>
-            setPage((p) =>
-              p < Math.ceil(filteredData.length / rowsPerPage) - 1
-                ? p + 1
-                : p
-            )
-          }
-          disabled={page >= Math.ceil(filteredData.length / rowsPerPage) - 1}
-          sx={{
-            minWidth: "36px",
-            color:
-              page >= Math.ceil(filteredData.length / rowsPerPage) - 1
-                ? "#ccc"
-                : "#1976d2",
-            "&:hover": {
-              backgroundColor: "#f0f0f0",
-            },
-          }}
-        >
-          ›
-        </Button>
-      </Box>
-
-      {/* 🔹 Modal para editar */}
-      <Modal open={openEdit} onClose={handleCloseEdit}>
+      {/* 🔹 Modal de edición */}
+      <Modal open={Boolean(editing)} onClose={handleCerrarEditar}>
         <Box
           sx={{
             position: "absolute",
@@ -321,15 +256,41 @@ const TablaAplicativos = ({ rows = mockData }) => {
             maxWidth: 800,
           }}
         >
-          <FormularioAplicativo
-            onClose={handleCloseEdit}
-            data={selectedRow}
-            modoEdicion
-          />
+          {editing && (
+            <FormularioEditarAplicativo
+              open={Boolean(editing)}
+              onClose={handleCerrarEditar}
+              idAplicativo={editing.id}
+              onUpdate={() => {
+                // 🔄 Recargar aplicativos después de editar
+                setLoading(true);
+                axios
+                  .get("http://localhost:4000/aplicativo")
+                  .then((res) => {
+                    const data = res.data.map((a) => ({
+                      id: a.id,
+                      nombre: a.nombre,
+                      direccion_ip: a.direccion_ip,
+                      puerto: a.puerto,
+                      url: a.url,
+                      tipo_red: a.tipo_red,
+                      escalamiento: a.escalamiento,
+                      campanaId: a.campanaId,
+                      estado: a.estado,
+                    }));
+                    setRows(data);
+                  })
+                  .catch((err) =>
+                    console.error("❌ Error al recargar aplicativos:", err)
+                  )
+                  .finally(() => setLoading(false));
+              }}
+            />
+          )}
         </Box>
       </Modal>
     </Box>
   );
 };
 
-export default TablaAplicativos;
+export default ListarAplicativo;
