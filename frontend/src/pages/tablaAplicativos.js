@@ -88,7 +88,6 @@ const TablaAplicativos = ({ rows = mockData }) => {
     <Box
       sx={{
         padding: "40px",
-        backgroundColor: "#f4f6f9",
         minHeight: "100vh",
       }}
     >
@@ -106,9 +105,7 @@ const TablaAplicativos = ({ rows = mockData }) => {
           fontWeight="bold"
           color="#002b5b"
           sx={{
-            backgroundColor: "white",
             borderRadius: 2,
-            boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
             padding: "10px 20px",
             flex: "0 0 40%",
             minWidth: "250px",
