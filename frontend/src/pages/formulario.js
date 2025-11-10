@@ -168,7 +168,6 @@ try {
             { name: "cliente", label: "Cliente" },
             { name: "director_operacion_abai", label: "Director Operación ABAI" },
             { name: "correo_director", label: "Correo Director", type: "email" },
-            { name: "segmento", label: "Segmento" },
           ].map((field) => (
             <Grid item xs={12} sm={10} key={field.name}>
               <TextField
@@ -185,19 +184,42 @@ try {
           ))}
         </Grid>
 
-        {/* GESTIÓN DE CAMPAÑA */}
+        {/* GERENTES  DE CAMPAÑA */}
         <Typography variant="subtitle1" sx={sectionTitle}>
-          GESTIÓN DE CAMPAÑA
+          GERENTES DE CAMPAÑA
         </Typography>
         <Grid container spacing={2} justifyContent="center">
           {[
+            { name: "segmento", label: "Segmento" },
             { name: "nombre_gte_campana", label: "Nombre Gerente de Campaña" },
             { name: "correo_gte_campana", label: "Correo Gerente de Campaña", type: "email" },
+          ].map((field) => (
+            <Grid item xs={12} sm={10} key={field.name}>
+              <TextField
+                label={field.label}
+                name={field.name}
+                type={field.type || "text"}
+                fullWidth
+                size="small"
+                required
+                value={formData[field.name]}
+                onChange={handleChange}
+              />
+            </Grid>
+          ))}
+        </Grid>
+
+        <Typography variant="subtitle1" sx={sectionTitle}>
+          DATOS GENERALES 
+        </Typography>
+        <Grid container spacing={2} justifyContent="center">
+          {[
             { name: "ubicacion_sedes", label: "Ubicación Sede" },
             { name: "puestos_operacion", label: "N° Puestos de Operación", type: "number" },
             { name: "puestos_estructura", label: "N° Puestos de Estructura", type: "number" },
             { name: "segmento_red", label: "Segmento de Red" },
             { name: "fecha_actualizacion", label: "Fecha Actualización", type: "date" },
+
           ].map((field) => (
             <Grid item xs={12} sm={10} key={field.name}>
               <TextField

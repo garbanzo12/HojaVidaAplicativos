@@ -13,6 +13,9 @@ import {
   CardContent,
   Modal,
   Paper,
+    Select,
+   FormControl,
+  InputLabel,
 } from "@mui/material";
 import {
   AccountCircle,
@@ -26,6 +29,10 @@ import FormularioModal from "./formulario";
 import FormularioAplicativo from "./FormularioAplicativo";
 import TablaCampana from "./tablaCampana";
 import TablaAplicativos from "./tablaAplicativos";
+import FormularioMatriz from "./formularioMatriz";
+import TablaMatriz from "./tablaMatriz";
+import TablaGlobal from "./tablaGlobal";
+
 
 const drawerWidth = 260;
 
@@ -34,6 +41,9 @@ const Dashboard = () => {
   const [abrirFormulario, setAbrirFormulario] = React.useState(false);
   const [abrirAplicativo, setAbrirAplicativo] = React.useState(false);
   const [seccionActual, setSeccionActual] = React.useState("inicio");
+  const [abrirMatriz, setAbrirMatriz] = React.useState(false);
+   const [tipoMatriz, setTipoMatriz] = React.useState("matriz");
+
 
   const handleMenuClick = (event, menuName) => {
     setMenuAnchor({ ...menuAnchor, [menuName]: event.currentTarget });
@@ -58,7 +68,6 @@ const Dashboard = () => {
     { label: "Matriz Escalamiento", route: "matriz" },
   ];
 
-  // ✅ función para ver detalles del aplicativo (opcional)
   const handleViewAplicativo = (row) => {
     alert(`Ver aplicativo: ${row.nombre} (${row.ip})`);
   };
@@ -187,6 +196,14 @@ const Dashboard = () => {
                       }}
                     >
                       Crear aplicativos
+                    </MenuItem>
+                    <MenuItem
+                      onClick={() => {
+                        handleMenuClose(item.label);
+                        setAbrirMatriz(true);
+                      }}
+                    >
+                      Crear Matriz
                     </MenuItem>
                   </Menu>
                 </>
@@ -321,12 +338,32 @@ const Dashboard = () => {
           <TablaAplicativos onView={handleViewAplicativo} />
         )}
 
-        {/* Vista Matriz */}
-        {seccionActual === "matriz" && (
-          <Typography variant="h5" textAlign="center" color="#002b5b">
-            Aquí estará la matriz de escalamiento.
-          </Typography>
-        )}
+        {/* === MATRIZ CON SELECT === */}
+       {seccionActual === "matriz" && (
+  <Box sx={{ textAlign: "center" }}>
+    <Typography variant="h5" fontWeight="bold" color="#002b5b" mb={2}>
+      MATRIZ DE ESCALAMIENTO
+    </Typography>
+
+    <FormControl sx={{ minWidth: 200, mb: 3 }}>
+      <InputLabel>Seleccionar vista</InputLabel>
+      <Select
+        value={tipoMatriz}
+        label="Seleccionar vista"
+        onChange={(e) => setTipoMatriz(e.target.value)}
+      >
+        <MenuItem value="matriz">Matriz</MenuItem>
+        <MenuItem value="global">Matriz Global</MenuItem>
+      </Select>
+    </FormControl>
+
+    {tipoMatriz === "matriz" ? (
+      <TablaMatriz />
+    ) : (
+      <TablaGlobal />
+    )}
+  </Box>
+)}
       </Box>
 
       {/* === MODALES === */}
@@ -360,6 +397,22 @@ const Dashboard = () => {
             >
               <FormularioAplicativo onClose={() => setAbrirAplicativo(false)} />
             </Paper>
+          </Box>
+        </Modal>
+      )}
+
+      {abrirMatriz && (
+        <Modal open={abrirMatriz} onClose={() => setAbrirMatriz(false)}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              minHeight: "100vh",
+              p: 2,
+            }}
+          >
+            <FormularioMatriz onClose={() => setAbrirMatriz(false)} />
           </Box>
         </Modal>
       )}
