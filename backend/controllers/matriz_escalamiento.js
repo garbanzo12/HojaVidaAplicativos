@@ -1,21 +1,42 @@
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
-// 📌 Crear una matriz
+// ✅ Crear matriz
 export const createMatrizEscalamiento = async (req, res) => {
   try {
-    const { proveedor, codigo_servicio, telefono_proveedor, telefono_asesor } = req.body;
+    const {
+      proveedor,
+      codigo_servicio,
+      n_telefono_proveedor,
+      n_telefono_asesor,
+      campanaId,
+    } = req.body;
 
-    const nuevo = await prisma.matriz_escalamiento.create({
-      data: { proveedor, codigo_servicio, telefono_proveedor, telefono_asesor },
+    const nuevaMatriz = await prisma.matrizEscalamiento.create({
+      data: {
+        proveedor,
+        codigo_servicio,
+        n_telefono_proveedor,
+        n_telefono_asesor,
+        campanaId: Number(campanaId),
+        estado: "HABILITADO",
+      },
     });
 
-    res.status(201).json(nuevo);
+    res.json({
+      success: true,
+      message: "Matriz creada exitosamente.",
+      data: nuevaMatriz,
+    });
   } catch (error) {
-    console.error('Error al crear matriz de escalamiento:', error);
-    res.status(500).json({ error: 'Error al crear matriz de escalamiento' });
+    console.error("Error al crear matriz:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error al crear la matriz.",
+    });
   }
 };
+
 
 
 // 📌 Obtener todas las matrices
