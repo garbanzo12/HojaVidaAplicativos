@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Paper,
   Table,
@@ -10,15 +10,17 @@ import {
   Switch,
   Box,
   TextField,
-  Button,
 } from "@mui/material";
-import axios from "axios";
 
-// ======================= //
-//   COMPONENTE TABLA
-// ======================= //
-const TablaMatriz = ({ registros = [], onEstadoChange }) => {
+const TablaMatriz = ({ registros = [] }) => {
   const [busqueda, setBusqueda] = useState("");
+  const [estados, setEstados] = useState(registros.map(() => true));
+
+  const handleToggle = (index) => {
+    const nuevos = [...estados];
+    nuevos[index] = !nuevos[index];
+    setEstados(nuevos);
+  };
 
   const filtrados = registros.filter((fila) =>
     Object.values(fila).some((v) =>
@@ -28,7 +30,6 @@ const TablaMatriz = ({ registros = [], onEstadoChange }) => {
 
   return (
     <Box sx={{ width: "90%", mx: "auto", mt: 4 }}>
-      {/* 🔹 Encabezado: título + barra de búsqueda (igual que tablaAplicativos) */}
       <Box
         display="flex"
         alignItems="center"
@@ -50,10 +51,6 @@ const TablaMatriz = ({ registros = [], onEstadoChange }) => {
         >
           MATRIZ
         </Typography>
-      <Typography variant="h6" fontWeight="bold" mb={2}>
-        MATRIZ DE ESCALAMIENTO
-      </Typography>
-
 
         <TextField
           label="Buscar proveedor o código de servicio"
@@ -71,7 +68,6 @@ const TablaMatriz = ({ registros = [], onEstadoChange }) => {
         />
       </Box>
 
-      {/* 🔹 Tabla principal */}
       <Paper
         sx={{
           borderRadius: 3,
@@ -116,7 +112,6 @@ const TablaMatriz = ({ registros = [], onEstadoChange }) => {
               </TableRow>
             ) : (
               filtrados.map((fila, index) => (
-
                 <TableRow
                   key={index}
                   sx={{
@@ -135,40 +130,6 @@ const TablaMatriz = ({ registros = [], onEstadoChange }) => {
                       onChange={() => handleToggle(index)}
                       color="success"
                     />
-
-                <TableRow key={index}>
-                  <TableCell>{fila.proveedor}</TableCell>
-                  <TableCell>{fila.codigo_servicio}</TableCell>
-                  <TableCell>{fila.n_telefono_proveedor}</TableCell>
-                  <TableCell>{fila.n_telefono_asesor}</TableCell>
-                  <TableCell>
-                    <Button
-                      onClick={() => onEstadoChange(fila.id, fila.estado)}
-                      variant="contained"
-                      sx={{
-                        backgroundColor:
-                          fila.estado.toLowerCase() === "activo" ||
-                          fila.estado.toLowerCase() === "habilitado"
-                            ? "#4caf50"
-                            : "#e53935",
-                        "&:hover": {
-                          backgroundColor:
-                            fila.estado.toLowerCase() === "activo" ||
-                            fila.estado.toLowerCase() === "habilitado"
-                              ? "#43a047"
-                              : "#c62828",
-                        },
-                        borderRadius: "20px",
-                        textTransform: "none",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      {fila.estado.toLowerCase() === "habilitado"
-                        ? "Activo"
-                        : fila.estado.toLowerCase() === "activo"
-                        ? "Activo"
-                        : "Inactivo"}
-                  </Button>
                   </TableCell>
                 </TableRow>
               ))
@@ -180,68 +141,4 @@ const TablaMatriz = ({ registros = [], onEstadoChange }) => {
   );
 };
 
-// ======================= //
-//   COMPONENTE MATRIZ PAGE
-// ======================= //
-const MatrizPage = () => {
-  const [registros, setRegistros] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  // ✅ Cargar datos desde la API
-  const obtenerMatriz = async () => {
-    try {
-      const response = await axios.get("http://localhost:4000/matriz");
-      console.log(response.data)
-      setRegistros(response.data);
-    } catch (error) {
-      console.error("Error al cargar la matriz:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-
-const handleEstadoChange = async (id, estadoActual) => {
-  const nuevoEstado =
-    estadoActual === "habilitado" || estadoActual === "activo"
-      ? "INACTIVO"
-      : "ACTIVO";
-  try {
-    await axios.put(`http://localhost:4000/matriz/estado/${id}`, {
-      estado: nuevoEstado,
-    });
-
-    // 🔁 Actualiza localmente sin recargar la página
-    setRegistros((prev) =>
-      prev.map((fila) =>
-        fila.id === id ? { ...fila, estado: nuevoEstado } : fila
-      )
-    );
-  } catch (error) {
-    console.error("Error al actualizar estado:", error);
-  }
-};
-
-
-  useEffect(() => {
-    obtenerMatriz();
-  }, []);
-
-  return (
-    <Box sx={{ p: 4 }}>
-      <Typography variant="h5" mb={3} fontWeight="bold">
-        Gestión de Matriz
-      </Typography>
-
-      {loading ? (
-        <Typography>Cargando datos...</Typography>
-      ) : (
-        <TablaMatriz registros={registros} onEstadoChange={handleEstadoChange} />
-      )}
-
-
-    </Box>
-  );
-};
-
-export default MatrizPage;
+export default TablaMatriz;

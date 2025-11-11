@@ -58,7 +58,7 @@ const Dashboard = () => {
     { label: "Formularios", type: "dropdown" },
     { label: "Campaña", route: "campana" },
     { label: "Aplicativos", route: "abai" },
-    { label: "Matriz Escalamiento", type: "dropdownMatriz" },
+    { label: "Matrizes ", type: "dropdownMatriz" },
   ];
 
   return (

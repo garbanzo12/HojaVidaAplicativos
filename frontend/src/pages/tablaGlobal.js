@@ -15,7 +15,6 @@ import {
 const TablaGlobal = ({ registros = [], onAgregarCampaña }) => {
   const [busqueda, setBusqueda] = useState("");
 
-  // Filtra dinámicamente según el texto ingresado en el buscador.
   const filtrados = registros.filter((fila) =>
     Object.values(fila).some((v) =>
       String(v).toLowerCase().includes(busqueda.toLowerCase())
@@ -24,7 +23,6 @@ const TablaGlobal = ({ registros = [], onAgregarCampaña }) => {
 
   return (
     <Box sx={{ width: "90%", mx: "auto", mt: 4 }}>
-      {/* 🔹 Encabezado: título + barra de búsqueda */}
       <Box
         display="flex"
         alignItems="center"
@@ -63,7 +61,6 @@ const TablaGlobal = ({ registros = [], onAgregarCampaña }) => {
         />
       </Box>
 
-      {/* 🔹 Tabla principal */}
       <Paper
         sx={{
           borderRadius: 3,
