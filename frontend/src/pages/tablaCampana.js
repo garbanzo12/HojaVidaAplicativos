@@ -33,7 +33,6 @@ const TablaCampana = () => {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [loading, setLoading] = useState(false);
 
-  // 🔹 Cargar campañas desde backend
   useEffect(() => {
     const fetchCampanas = async () => {
       setLoading(true);
@@ -77,7 +76,6 @@ const TablaCampana = () => {
     fetchCampanas();
   }, []);
 
-  // 🔁 Cambiar estado (Habilitar / Deshabilitar)
   const handleToggleEstado = async (id, currentEstado) => {
     const nuevoEstado = currentEstado === "Activo" ? "DESHABILITADO" : "HABILITADO";
     try {
@@ -94,21 +92,18 @@ const TablaCampana = () => {
     }
   };
 
-  // 📋 Filtrado de búsqueda
   const filtered = rows.filter(
     (c) =>
       c.nombreCampaña.toLowerCase().includes(search.toLowerCase()) ||
       c.directorOperacion.toLowerCase().includes(search.toLowerCase())
   );
 
-  // 🧩 Paginación
   const handleChangePage = (_, newPage) => setPage(newPage);
   const handleChangeRowsPerPage = (e) => {
     setRowsPerPage(parseInt(e.target.value, 10));
     setPage(0);
   };
 
-  // 🔍 Detalle y edición
   const handleVerDetalle = (campaña) => setSelected(campaña);
   const handleCerrarDetalle = () => setSelected(null);
   const handleEditar = (campaña) => setEditing(campaña);
@@ -122,40 +117,57 @@ const TablaCampana = () => {
     );
 
   return (
-    <>
-      <Box display="flex" justifyContent="space-between" mb={2} gap={2} flexWrap="wrap">
-        <Typography
-          variant="h5"
-          fontWeight="bold"
-          color="#002b5b"
-          sx={{ borderRadius: 2, padding: "10px 20px" }}
-        >
-          LISTA DE CAMPAÑAS
-        </Typography>
-
-        <TextField
-          label="Buscar por campaña o director de operación"
-          variant="outlined"
-          fullWidth
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
+    <Box
           sx={{
-            backgroundColor: "white",
-            borderRadius: 2,
-            boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-            flex: 1,
-            minWidth: "300px",
+            padding: "40px",
+            minHeight: "100vh",
           }}
-        />
-      </Box>
+     >
+      <Box
+          display="flex"
+          alignItems="center"
+          justifyContent="space-between"
+          mb={3}
+          gap={2}
+          flexWrap="wrap"
+        >
+          <Typography
+            variant="h5"
+            fontWeight="bold"
+            color="#002b5b"
+            sx={{
+              borderRadius: 2,
+              padding: "10px 20px",
+              flex: "0 0 40%",
+              minWidth: "250px",
+            }}
+          >
+            LISTA DE CAMPAÑAS
+          </Typography>
+
+          <TextField
+            label="Buscar por campaña o director de operación"
+            variant="outlined"
+            fullWidth
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            sx={{
+              backgroundColor: "white",
+              borderRadius: 2,
+              boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+              flex: 1,
+              minWidth: "300px",
+            }}
+          />
+        </Box>
 
       <TableContainer
         component={Paper}
         sx={{
-          mt: 2,
-          borderRadius: 3,
+         borderRadius: 3,
           boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
           backgroundColor: "white",
+          overflowX: "auto",
         }}
       >
         <Table>
@@ -166,7 +178,11 @@ const TablaCampana = () => {
                   <TableCell
                     key={i}
                     align="center"
-                    sx={{ color: "white", fontWeight: "bold", textAlign: "center" }}
+                    sx={{  color: "white",
+                    fontWeight: "bold",
+                    textAlign: "center",
+                    fontSize: "14px",
+                    py: 1.5, }}
                   >
                     {h}
                   </TableCell>
@@ -182,7 +198,7 @@ const TablaCampana = () => {
                 <TableRow
                   key={c.id}
                   sx={{
-                    "&:hover": { backgroundColor: "rgba(0,0,0,0.04)" },
+                    "&:hover": { backgroundColor: "#e3f2fd  " },
                     transition: "0.3s",
                   }}
                 >
@@ -217,21 +233,56 @@ const TablaCampana = () => {
                   </TableCell>
                   <TableCell align="center">
                     <Button
-                      variant="outlined"
-                      size="small"
-                      onClick={() => handleVerDetalle(c)}
-                    >
-                      Ver Detalle
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      size="small"
-                      sx={{ ml: 1 }}
-                      onClick={() => handleEditar(c)}
-                    >
-                      Editar
-                    </Button>
+                        variant="outlined"
+                        size="small"
+                        onClick={() => handleVerDetalle(c)}
+                        sx={{
+                          color: "#0288d1",
+                          borderColor: "#0288d1",
+                          backgroundColor: "#e3f2fd",
+                          textTransform: "none",
+                          borderRadius: "10px",
+                          px: 2,
+                          py: 0.5,
+                          fontWeight: 600,
+                          boxShadow: "0 1px 3px rgba(2, 136, 209, 0.2)",
+                          transition: "all 0.25s ease",
+                          "&:hover": {
+                            backgroundColor: "#0288d1",
+                            color: "#fff",
+                            borderColor: "#0288d1",
+                            boxShadow: "0 3px 6px rgba(2, 136, 209, 0.3)",
+                            transform: "scale(1.05)",
+                          },
+                        }}
+                      >
+                        Ver Detalle
+                      </Button>
+
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        size="small"
+                        sx={{
+                          ml: 1,
+                          textTransform: "none",
+                          borderRadius: "10px",
+                          px: 2,
+                          py: 0.5,
+                          fontWeight: 600,
+                          backgroundColor: "#1565c0",
+                          boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+                          transition: "all 0.25s ease",
+                          "&:hover": {
+                            backgroundColor: "#0d47a1",
+                            transform: "scale(1.05)",
+                            boxShadow: "0 3px 8px rgba(0,0,0,0.25)",
+                          },
+                        }}
+                        onClick={() => handleEditar(c)}
+                      >
+                        Editar
+                      </Button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -337,7 +388,7 @@ const TablaCampana = () => {
         {/* Secciones Centradas */}
         {[
           {
-            color: "#1e3c72",
+            color: "#000000ff",
             title: "Información Principal",
             bg: "#ffffffff",
             border: "#1565c0",
@@ -349,10 +400,10 @@ const TablaCampana = () => {
             ],
           },
           {
-            color: "#5e35b1",
+            color: "#000000ff",
             title: "Gerente de Campaña",
             bg: "#ffffffff",
-            border: "#9777eeff",
+            border: "#FFAA00",
             fields: [
               ["Segmento Campaña", selected.segmento || "No definido"],
               ["Nombre Campaña ", selected.nombreGerente || "No disponible"],
@@ -360,10 +411,10 @@ const TablaCampana = () => {
             ],
           },
           {
-            color: "#006064",
+            color: "#000000ff",
             title: "Datos Generales",
             bg: "#fff",
-            border: "#00acc1",
+            border: "#1565c0",
             fields: [
               ["Sede", selected.sede],
               ["Puesto de Operación", selected.puestoOperacion],
@@ -445,7 +496,6 @@ const TablaCampana = () => {
           </Box>
         ))}
 
-        {/* 📞 Contactos */}
         <Box sx={{ px: 4, py: 3, backgroundColor: "#fff" }}>
           <Box sx={{ textAlign: "center", mb: 2.5 }}>
             <Typography
@@ -456,8 +506,8 @@ const TablaCampana = () => {
                 justifyContent: "center",
                 gap: 1,
                 fontWeight: 700,
-                color: "#2e7d32",
-                borderBottom: "3px solid #43a047",
+                color: "#000000ff",
+                borderBottom: "3px solid #FFAA00",
                 pb: 0.5,
               }}
             >
@@ -489,7 +539,7 @@ const TablaCampana = () => {
                 borde: "#f57c00",
                 contacto: selected.contactoTecnico,
                 correo: selected.correoTecnico,
-                telefono: selected.serviciosTecnico,
+                servicio: selected.serviciosTecnico,
               },
             ].map((tipo, i) => (
               <Grid item xs={12} sm={6} md={3.5} key={i}>
@@ -529,11 +579,20 @@ const TablaCampana = () => {
                   </Typography>
                   <Typography sx={{ fontSize: "0.9rem" }}>
                     <strong style={{ color: "#5a6c7d" }}>
-                      Teléfono / Servicio:
+                      Teléfono:
                     </strong>
                     <br />
                     <span style={{ color: "#2c3e50" }}>
-                      {tipo.telefono || "—"}
+                      {tipo.telefono || "No Aplica"}
+                    </span>
+                  </Typography>
+                  <Typography sx={{ fontSize: "0.9rem" }}>
+                    <strong style={{ color: "#5a6c7d" }}>
+                      Servicio:
+                    </strong>
+                    <br />
+                    <span style={{ color: "#2c3e50" }}>
+                      {tipo.servicio || "No Aplica"}
                     </span>
                   </Typography>
                 </Box>
@@ -560,7 +619,7 @@ const TablaCampana = () => {
                 boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
               }}
             >
-              <Typography sx={{ fontSize: "0.9rem", color: "#5a6c7d" }}>
+              <Typography sx={{ fontSize: "0.9rem", color: "#000000ff" }}>
                 <strong>Estado:</strong>{" "}
                 <span
                   style={{
@@ -582,7 +641,7 @@ const TablaCampana = () => {
                 boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
               }}
             >
-              <Typography sx={{ fontSize: "0.9rem", color: "#5a6c7d" }}>
+              <Typography sx={{ fontSize: "0.9rem", color: "#000000ff" }}>
                 <strong>Última Actualización:</strong>{" "}
                 <span style={{ color: "#2c3e50" }}>
                   {selected.fechaActualizacion}
@@ -674,7 +733,7 @@ const TablaCampana = () => {
   />
 )}
 
-    </>
+    </Box>
   );
 };
 

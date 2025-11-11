@@ -21,7 +21,6 @@ const ListarAplicativo = () => {
   const [editing, setEditing] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // 🔹 Cargar los aplicativos al iniciar
   const fetchAplicativos = async () => {
     try {
       setLoading(true);
@@ -48,22 +47,23 @@ const ListarAplicativo = () => {
   useEffect(() => {
     fetchAplicativos();
   }, []);
-// Cambiar estado del aplicativo
-const toggleEstado = async (id, estadoActual) => {
-  const nuevoEstado = estadoActual === "HABILITADO" ? "DESHABILITADO" : "HABILITADO";
-  try {
-    await axios.put(`http://localhost:4000/aplicativo/estado/${id}`, { estado: nuevoEstado });
 
-    // Actualizar en tiempo real sin recargar la página
-    setRows((prev) =>
-      prev.map((row) =>
-        row.id === id ? { ...row, estado: nuevoEstado } : row
-      )
-    );
-  } catch (err) {
-    console.error("❌ Error al cambiar estado:", err);
-  }
-};
+  const toggleEstado = async (id, estadoActual) => {
+    const nuevoEstado =
+      estadoActual === "HABILITADO" ? "DESHABILITADO" : "HABILITADO";
+    try {
+      await axios.put(`http://localhost:4000/aplicativo/estado/${id}`, {
+        estado: nuevoEstado,
+      });
+      setRows((prev) =>
+        prev.map((row) =>
+          row.id === id ? { ...row, estado: nuevoEstado } : row
+        )
+      );
+    } catch (err) {
+      console.error("❌ Error al cambiar estado:", err);
+    }
+  };
 
   const handleBuscar = (e) => setQuery(e.target.value.toLowerCase());
 
@@ -76,15 +76,21 @@ const toggleEstado = async (id, estadoActual) => {
 
   const handleCerrarEditar = () => setEditing(null);
 
+  const handleVerUrl = (url) => {
+    if (url) {
+      window.open(url, "_blank", "noopener,noreferrer");
+    } else {
+      alert("❌ Este aplicativo no tiene URL registrada.");
+    }
+  };
+
   return (
     <Box
       sx={{
         padding: "40px",
         minHeight: "100vh",
-        backgroundColor: "#f7f9fc",
       }}
-    >
-      {/* 🔹 Encabezado */}
+     >
       <Box
         display="flex"
         alignItems="center"
@@ -123,7 +129,6 @@ const toggleEstado = async (id, estadoActual) => {
         />
       </Box>
 
-      {/* 🔹 Tabla */}
       <Paper
         sx={{
           borderRadius: 3,
@@ -176,63 +181,86 @@ const toggleEstado = async (id, estadoActual) => {
                 <TableCell align="center">{row.nombre}</TableCell>
                 <TableCell align="center">{row.direccion_ip}</TableCell>
                 <TableCell align="center">{row.puerto}</TableCell>
-                <TableCell align="center">
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    onClick={() => window.open(row.url, "_blank")}
-                    sx={{
-                      textTransform: "none",
-                      color: "#1565c0",
-                      borderColor: "#1565c0",
-                    }}
-                  >
-                    Ver URL
-                  </Button>
-                </TableCell>
+                <TableCell align="center">{row.url}</TableCell>
                 <TableCell align="center">{row.tipo_red}</TableCell>
                 <TableCell align="center">{row.escalamiento}</TableCell>
                 <TableCell align="center">{row.campanaId}</TableCell>
-                <TableCell align="center">
-                  <Button
-  variant="contained"
-  size="small"
-  onClick={() => toggleEstado(row.id, row.estado)}
-  sx={{
-    backgroundColor:
-      row.estado === "HABILITADO" ? "#4caf50" : "#e53935",
-    "&:hover": {
-      backgroundColor:
-        row.estado === "HABILITADO" ? "#43a047" : "#c62828",
-    },
-    textTransform: "none",
-    fontWeight: 600,
-    borderRadius: "20px",
-    px: 2,
-  }}
->
-  {row.estado === "HABILITADO" ? "Activo" : "Inactivo"}
-</Button>
 
-                </TableCell>
-
-                {/* Acciones */}
                 <TableCell align="center">
                   <Button
                     variant="contained"
                     size="small"
+                    onClick={() => toggleEstado(row.id, row.estado)}
                     sx={{
-                      backgroundColor: "#1565c0",
-                      "&:hover": { backgroundColor: "#0d47a1" },
-                      borderRadius: "8px",
+                      backgroundColor:
+                        row.estado === "HABILITADO" ? "#4caf50" : "#e53935",
+                      "&:hover": {
+                        backgroundColor:
+                          row.estado === "HABILITADO" ? "#43a047" : "#c62828",
+                      },
                       textTransform: "none",
-                      fontWeight: "bold",
-                      mr: 1,
+                      fontWeight: 600,
+                      borderRadius: "20px",
+                      px: 2,
                     }}
-                    onClick={() => setEditing(row)}
                   >
-                    Editar
+                    {row.estado === "HABILITADO" ? "Activo" : "Inactivo"}
                   </Button>
+                </TableCell>
+
+                <TableCell align="center">
+                  <Box display="flex" justifyContent="center" gap={1.5}>
+                    <Button
+                      variant="contained"
+                      size="small"
+                      color="primary"
+                      sx={{
+                        textTransform: "none",
+                        borderRadius: "10px",
+                        px: 2,
+                        py: 0.5,
+                        fontWeight: 600,
+                        backgroundColor: "#1565c0",
+                        boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+                        transition: "all 0.25s ease",
+                        "&:hover": {
+                          backgroundColor: "#0d47a1",
+                          transform: "scale(1.05)",
+                          boxShadow: "0 3px 8px rgba(0,0,0,0.25)",
+                        },
+                      }}
+                      onClick={() => setEditing(row)}
+                    >
+                      Editar
+                    </Button>
+
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={() => handleVerUrl(row.url)}
+                      sx={{
+                        color: "#0288d1",
+                        borderColor: "#0288d1",
+                        backgroundColor: "#e3f2fd",
+                        textTransform: "none",
+                        borderRadius: "10px",
+                        px: 2,
+                        py: 0.5,
+                        fontWeight: 600,
+                        boxShadow: "0 1px 3px rgba(2, 136, 209, 0.2)",
+                        transition: "all 0.25s ease",
+                        "&:hover": {
+                          backgroundColor: "#0288d1",
+                          color: "#fff",
+                          borderColor: "#0288d1",
+                          boxShadow: "0 3px 6px rgba(2, 136, 209, 0.3)",
+                          transform: "scale(1.05)",
+                        },
+                      }}
+                    >
+                      Ver URL
+                    </Button>
+                  </Box>
                 </TableCell>
               </TableRow>
             ))}
@@ -240,7 +268,7 @@ const toggleEstado = async (id, estadoActual) => {
         </Table>
       </Paper>
 
-      {/* 🔹 Modal de edición */}
+      {/* MODAL DE EDICIÓN */}
       <Modal open={Boolean(editing)} onClose={handleCerrarEditar}>
         <Box
           sx={{
@@ -261,30 +289,7 @@ const toggleEstado = async (id, estadoActual) => {
               open={Boolean(editing)}
               onClose={handleCerrarEditar}
               idAplicativo={editing.id}
-              onUpdate={() => {
-                // 🔄 Recargar aplicativos después de editar
-                setLoading(true);
-                axios
-                  .get("http://localhost:4000/aplicativo")
-                  .then((res) => {
-                    const data = res.data.map((a) => ({
-                      id: a.id,
-                      nombre: a.nombre,
-                      direccion_ip: a.direccion_ip,
-                      puerto: a.puerto,
-                      url: a.url,
-                      tipo_red: a.tipo_red,
-                      escalamiento: a.escalamiento,
-                      campanaId: a.campanaId,
-                      estado: a.estado,
-                    }));
-                    setRows(data);
-                  })
-                  .catch((err) =>
-                    console.error("❌ Error al recargar aplicativos:", err)
-                  )
-                  .finally(() => setLoading(false));
-              }}
+              onUpdate={() => fetchAplicativos()}
             />
           )}
         </Box>
