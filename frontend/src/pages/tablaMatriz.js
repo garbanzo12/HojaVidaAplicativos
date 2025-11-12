@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Paper,
   Table,
@@ -7,20 +7,18 @@ import {
   TableHead,
   TableRow,
   Typography,
-  Switch,
+
   Box,
   TextField,
+  Button,
 } from "@mui/material";
+import axios from "axios";
 
-const TablaMatriz = ({ registros = [] }) => {
+// ======================= //
+//   COMPONENTE TABLA
+// ======================= //
+const TablaMatriz = ({ registros = [], onEstadoChange }) => {
   const [busqueda, setBusqueda] = useState("");
-  const [estados, setEstados] = useState(registros.map(() => true));
-
-  const handleToggle = (index) => {
-    const nuevos = [...estados];
-    nuevos[index] = !nuevos[index];
-    setEstados(nuevos);
-  };
 
   const filtrados = registros.filter((fila) =>
     Object.values(fila).some((v) =>
@@ -30,76 +28,48 @@ const TablaMatriz = ({ registros = [] }) => {
 
   return (
     <Box sx={{ width: "90%", mx: "auto", mt: 4 }}>
-      <Box
-        display="flex"
-        alignItems="center"
-        justifyContent="space-between"
-        mb={3}
-        gap={2}
-        flexWrap="wrap"
-      >
-        <Typography
-          variant="h5"
-          fontWeight="bold"
-          color="#002b5b"
-          sx={{
-            borderRadius: 2,
-            padding: "10px 20px",
-            flex: "0 0 40%",
-            minWidth: "250px",
-          }}
-        >
-          MATRIZ
-        </Typography>
+      <Typography variant="h6" fontWeight="bold" mb={2}>
+        MATRIZ DE ESCALAMIENTO
+      </Typography>
 
-        <TextField
-          label="Buscar proveedor o código de servicio"
-          variant="outlined"
-          fullWidth
-          value={busqueda}
-          onChange={(e) => setBusqueda(e.target.value)}
-          sx={{
-            backgroundColor: "white",
-            borderRadius: 2,
-            boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-            flex: 1,
-            minWidth: "300px",
-          }}
-        />
-      </Box>
+      <TextField
+        fullWidth
+        placeholder="Buscar proveedor o código de servicio"
+        value={busqueda}
+        onChange={(e) => setBusqueda(e.target.value)}
+        sx={{
+          mb: 2,
+          backgroundColor: "white",
+          borderRadius: 2,
+          boxShadow: "0px 2px 6px rgba(0,0,0,0.1)",
+        }}
+      />
 
       <Paper
         sx={{
           borderRadius: 3,
           overflow: "hidden",
           boxShadow: "0px 4px 15px rgba(0,0,0,0.15)",
-          backgroundColor: "white",
         }}
       >
         <Table>
           <TableHead>
             <TableRow sx={{ backgroundColor: "#002b5b" }}>
-              {[
-                "Proveedor",
-                "Código Servicio",
-                "Teléfono Proveedor",
-                "Teléfono Asesor",
-                "Estado",
-              ].map((titulo, index) => (
-                <TableCell
-                  key={index}
-                  align="center"
-                  sx={{
-                    color: "white",
-                    fontWeight: "bold",
-                    textAlign: "center",
-                    fontSize: "14px",
-                    py: 1.5,
-                  }}
-                >
-                  {titulo}
-                </TableCell>
-              ))}
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>
+                Proveedor
+              </TableCell>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>
+                Código Servicio
+              </TableCell>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>
+                Teléfono Proveedor
+              </TableCell>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>
+                Teléfono Asesor
+              </TableCell>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>
+                Estado
+              </TableCell>
             </TableRow>
           </TableHead>
 
@@ -112,24 +82,40 @@ const TablaMatriz = ({ registros = [] }) => {
               </TableRow>
             ) : (
               filtrados.map((fila, index) => (
-                <TableRow
-                  key={index}
-                  sx={{
-                    backgroundColor: index % 2 === 0 ? "#fafafa" : "#ffffff",
-                    "&:hover": { backgroundColor: "#e3f2fd" },
-                    transition: "0.2s",
-                  }}
-                >
-                  <TableCell align="center">{fila.proveedor}</TableCell>
-                  <TableCell align="center">{fila.codigoServicio}</TableCell>
-                  <TableCell align="center">{fila.telefonoProveedor}</TableCell>
-                  <TableCell align="center">{fila.telefonoAsesor}</TableCell>
-                  <TableCell align="center">
-                    <Switch
-                      checked={estados[index]}
-                      onChange={() => handleToggle(index)}
-                      color="success"
-                    />
+                <TableRow key={index}>
+                  <TableCell>{fila.proveedor}</TableCell>
+                  <TableCell>{fila.codigo_servicio}</TableCell>
+                  <TableCell>{fila.n_telefono_proveedor}</TableCell>
+                  <TableCell>{fila.n_telefono_asesor}</TableCell>
+                  <TableCell>
+                    
+                  <Button
+                                        onClick={() => onEstadoChange(fila.id, fila.estado)}
+                                        variant="contained"
+                                        sx={{
+                                          backgroundColor:
+                                            fila.estado.toLowerCase() === "activo" ||
+                                            fila.estado.toLowerCase() === "habilitado"
+                                              ? "#4caf50"
+                                              : "#e53935",
+                                          "&:hover": {
+                                            backgroundColor:
+                                              fila.estado.toLowerCase() === "activo" ||
+                                              fila.estado.toLowerCase() === "habilitado"
+                                                ? "#43a047"
+                                                : "#c62828",
+                                          },
+                                          borderRadius: "20px",
+                                          textTransform: "none",
+                                          fontWeight: "bold",
+                                        }}
+                                      >
+                                        {fila.estado.toLowerCase() === "habilitado"
+                                          ? "Activo"
+                                          : fila.estado.toLowerCase() === "activo"
+                                          ? "Activo"
+                                          : "Inactivo"}
+                                    </Button>
                   </TableCell>
                 </TableRow>
               ))
@@ -141,4 +127,75 @@ const TablaMatriz = ({ registros = [] }) => {
   );
 };
 
-export default TablaMatriz;
+// ======================= //
+//   COMPONENTE MATRIZ PAGE
+// ======================= //
+const MatrizPage = () => {
+  const [registros, setRegistros] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // ✅ Cargar datos desde la API
+  const obtenerMatriz = async () => {
+    try {
+      const response = await axios.get("http://localhost:4000/matriz");
+      console.log(response.data)
+      setRegistros(response.data);
+    } catch (error) {
+      console.error("Error al cargar la matriz:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+const handleEstadoChange = async (id, currentEstado) => {
+  const estadoNormalizado = currentEstado.toLowerCase();
+
+  const nuevoEstado =
+    estadoNormalizado === "habilitado" || estadoNormalizado === "activo"
+      ? "DESHABILITADO"
+      : "HABILITADO";
+
+  // Y cómo quieres mostrarlo en el front
+  const nuevoEstadoFront = nuevoEstado === "HABILITADO" ? "Activo" : "Inactivo";
+
+  try {
+    await axios.put(`http://localhost:4000/matriz/estado/${id}`, {
+      estado: nuevoEstado,
+    });
+
+    // 🔁 Actualiza localmente sin recargar la página
+    setRegistros((prev) =>
+      prev.map((c) =>
+        c.id === id ? { ...c, estado: nuevoEstadoFront } : c
+      )
+    );
+  } catch (error) {
+    console.error("❌ Error al actualizar estado:", error);
+  }
+};
+
+
+
+  useEffect(() => {
+    obtenerMatriz();
+  }, []);
+
+  return (
+    <Box sx={{ p: 4 }}>
+      <Typography variant="h5" mb={3} fontWeight="bold">
+        Gestión de Matriz
+      </Typography>
+
+      {loading ? (
+        <Typography>Cargando datos...</Typography>
+      ) : (
+        <TablaMatriz registros={registros} onEstadoChange={handleEstadoChange} />
+      )}
+
+
+    </Box>
+  );
+};
+
+export default MatrizPage;
