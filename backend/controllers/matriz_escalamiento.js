@@ -169,3 +169,32 @@ export const updateEstadomatrizGlobal= async (req, res) => {
     });
   }
 };
+
+
+
+
+
+// ✏️ Actualizar registro
+export const updateMatriz = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const data = req.validatedData;
+
+    const matrizActualizado = await prisma.matrizEscalamiento.update({
+      where: { id: Number(id) },
+      data,
+    });
+
+    res.json({
+      success: true,
+      message: "Matriz actualizado exitosamente.",
+      data: matrizActualizado,
+    });
+  } catch (error) {
+    console.error("Error al actualizar Matriz:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error al actualizar el Matriz.",
+    });
+  }
+};

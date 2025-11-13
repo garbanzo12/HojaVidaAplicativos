@@ -7,17 +7,15 @@ import {
   TableHead,
   TableRow,
   Typography,
-
   Box,
   TextField,
   Button,
+  Modal,
 } from "@mui/material";
 import axios from "axios";
+import FormularioEditarMatriz from "./FormularioEditarMatriz";
 
-// ======================= //
-//   COMPONENTE TABLA
-// ======================= //
-const TablaMatriz = ({ registros = [], onEstadoChange }) => {
+const TablaMatriz = ({ registros = [], onEstadoChange, onEditar }) => {
   const [busqueda, setBusqueda] = useState("");
 
   const filtrados = registros.filter((fila) =>
@@ -55,28 +53,28 @@ const TablaMatriz = ({ registros = [], onEstadoChange }) => {
         <Table>
           <TableHead>
             <TableRow sx={{ backgroundColor: "#002b5b" }}>
-              <TableCell sx={{ color: "white", fontWeight: "bold" }}>
-                Proveedor
-              </TableCell>
-              <TableCell sx={{ color: "white", fontWeight: "bold" }}>
-                Código Servicio
-              </TableCell>
-              <TableCell sx={{ color: "white", fontWeight: "bold" }}>
-                Teléfono Proveedor
-              </TableCell>
-              <TableCell sx={{ color: "white", fontWeight: "bold" }}>
-                Teléfono Asesor
-              </TableCell>
-              <TableCell sx={{ color: "white", fontWeight: "bold" }}>
-                Estado
-              </TableCell>
+              {[
+                "Proveedor",
+                "Código Servicio",
+                "Teléfono Proveedor",
+                "Teléfono Asesor",
+                "Estado",
+                "Acciones",
+              ].map((title) => (
+                <TableCell
+                  key={title}
+                  sx={{ color: "white", fontWeight: "bold" }}
+                >
+                  {title}
+                </TableCell>
+              ))}
             </TableRow>
           </TableHead>
 
           <TableBody>
             {filtrados.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} align="center">
+                <TableCell colSpan={6} align="center">
                   No hay registros
                 </TableCell>
               </TableRow>
@@ -88,34 +86,52 @@ const TablaMatriz = ({ registros = [], onEstadoChange }) => {
                   <TableCell>{fila.n_telefono_proveedor}</TableCell>
                   <TableCell>{fila.n_telefono_asesor}</TableCell>
                   <TableCell>
-                    
-                  <Button
-                                        onClick={() => onEstadoChange(fila.id, fila.estado)}
-                                        variant="contained"
-                                        sx={{
-                                          backgroundColor:
-                                            fila.estado.toLowerCase() === "activo" ||
-                                            fila.estado.toLowerCase() === "habilitado"
-                                              ? "#4caf50"
-                                              : "#e53935",
-                                          "&:hover": {
-                                            backgroundColor:
-                                              fila.estado.toLowerCase() === "activo" ||
-                                              fila.estado.toLowerCase() === "habilitado"
-                                                ? "#43a047"
-                                                : "#c62828",
-                                          },
-                                          borderRadius: "20px",
-                                          textTransform: "none",
-                                          fontWeight: "bold",
-                                        }}
-                                      >
-                                        {fila.estado.toLowerCase() === "habilitado"
-                                          ? "Activo"
-                                          : fila.estado.toLowerCase() === "activo"
-                                          ? "Activo"
-                                          : "Inactivo"}
-                                    </Button>
+                    <Button
+                      onClick={() => onEstadoChange(fila.id, fila.estado)}
+                      variant="contained"
+                      sx={{
+                        backgroundColor:
+                          fila.estado.toLowerCase() === "habilitado" ||
+                          fila.estado.toLowerCase() === "activo"
+                            ? "#4caf50"
+                            : "#e53935",
+                        "&:hover": {
+                          backgroundColor:
+                            fila.estado.toLowerCase() === "habilitado" ||
+                            fila.estado.toLowerCase() === "activo"
+                              ? "#43a047"
+                              : "#c62828",
+                        },
+                        borderRadius: "20px",
+                        textTransform: "none",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      {fila.estado.toLowerCase() === "habilitado" ||
+                      fila.estado.toLowerCase() === "activo"
+                        ? "Activo"
+                        : "Inactivo"}
+                    </Button>
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={() => onEditar(fila.id)}
+                      sx={{
+                        textTransform: "none",
+                        borderRadius: "10px",
+                        px: 2,
+                        py: 0.5,
+                        fontWeight: 600,
+                        backgroundColor: "#1565c0",
+                        "&:hover": {
+                          backgroundColor: "#0d47a1",
+                        },
+                      }}
+                    >
+                      Editar
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))
@@ -127,18 +143,14 @@ const TablaMatriz = ({ registros = [], onEstadoChange }) => {
   );
 };
 
-// ======================= //
-//   COMPONENTE MATRIZ PAGE
-// ======================= //
 const MatrizPage = () => {
   const [registros, setRegistros] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [editando, setEditando] = useState(null);
 
-  // ✅ Cargar datos desde la API
   const obtenerMatriz = async () => {
     try {
       const response = await axios.get("http://localhost:4000/matriz");
-      console.log(response.data)
       setRegistros(response.data);
     } catch (error) {
       console.error("Error al cargar la matriz:", error);
@@ -147,35 +159,26 @@ const MatrizPage = () => {
     }
   };
 
+  const handleEstadoChange = async (id, currentEstado) => {
+    const estadoNormalizado = currentEstado.toLowerCase();
+    const nuevoEstado =
+      estadoNormalizado === "habilitado" || estadoNormalizado === "activo"
+        ? "DESHABILITADO"
+        : "HABILITADO";
 
-const handleEstadoChange = async (id, currentEstado) => {
-  const estadoNormalizado = currentEstado.toLowerCase();
-
-  const nuevoEstado =
-    estadoNormalizado === "habilitado" || estadoNormalizado === "activo"
-      ? "DESHABILITADO"
-      : "HABILITADO";
-
-  // Y cómo quieres mostrarlo en el front
-  const nuevoEstadoFront = nuevoEstado === "HABILITADO" ? "Activo" : "Inactivo";
-
-  try {
-    await axios.put(`http://localhost:4000/matriz/estado/${id}`, {
-      estado: nuevoEstado,
-    });
-
-    // 🔁 Actualiza localmente sin recargar la página
-    setRegistros((prev) =>
-      prev.map((c) =>
-        c.id === id ? { ...c, estado: nuevoEstadoFront } : c
-      )
-    );
-  } catch (error) {
-    console.error("❌ Error al actualizar estado:", error);
-  }
-};
-
-
+    try {
+      await axios.put(`http://localhost:4000/matriz/estado/${id}`, {
+        estado: nuevoEstado,
+      });
+      setRegistros((prev) =>
+        prev.map((c) =>
+          c.id === id ? { ...c, estado: nuevoEstado } : c
+        )
+      );
+    } catch (error) {
+      console.error("❌ Error al actualizar estado:", error);
+    }
+  };
 
   useEffect(() => {
     obtenerMatriz();
@@ -190,10 +193,26 @@ const handleEstadoChange = async (id, currentEstado) => {
       {loading ? (
         <Typography>Cargando datos...</Typography>
       ) : (
-        <TablaMatriz registros={registros} onEstadoChange={handleEstadoChange} />
+        <TablaMatriz
+          registros={registros}
+          onEstadoChange={handleEstadoChange}
+          onEditar={setEditando}
+        />
       )}
 
-
+      {/* ✅ Modal de edición */}
+      <Modal open={Boolean(editando)} onClose={() => setEditando(null)}>
+        <Box>
+          {editando && (
+            <FormularioEditarMatriz
+              open={Boolean(editando)}
+              idMatriz={editando}
+              onClose={() => setEditando(null)}
+              onUpdate={obtenerMatriz}
+            />
+          )}
+        </Box>
+      </Modal>
     </Box>
   );
 };
