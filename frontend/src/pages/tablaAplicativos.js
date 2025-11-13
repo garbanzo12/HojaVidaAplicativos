@@ -33,7 +33,7 @@ const ListarAplicativo = () => {
         tipoAplicativo: a.tipo_aplicativo,
         tipo_red: a.tipo_red,
         escalamiento: a.escalamiento,
-        campanaId: a.campanaId,
+        nombreCampana: a.campana.nombre_campana,
         estado: a.estado,
       }));
       setRows(data);
@@ -113,20 +113,7 @@ const ListarAplicativo = () => {
           LISTA DE APLICATIVOS
         </Typography>
 
-        <TextField
-          label="Buscar por nombre, tipo o escalamiento"
-          variant="outlined"
-          fullWidth
-          value={query}
-          onChange={handleBuscar}
-          sx={{
-            backgroundColor: "white",
-            borderRadius: 2,
-            boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-            flex: 1,
-            minWidth: "300px",
-          }}
-        />
+
       </Box>
 
       <Paper
@@ -184,7 +171,7 @@ const ListarAplicativo = () => {
                 <TableCell align="center">{row.tipoAplicativo}</TableCell>
                 <TableCell align="center">{row.tipo_red}</TableCell>
                 <TableCell align="center">{row.escalamiento}</TableCell>
-                <TableCell align="center">{row.campanaId}</TableCell>
+                <TableCell align="center">{row.nombreCampana}</TableCell>
 
                 <TableCell align="center">
                   <Button

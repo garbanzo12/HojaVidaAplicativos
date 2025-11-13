@@ -145,20 +145,7 @@ const TablaCampana = () => {
             LISTA DE CAMPAÑAS
           </Typography>
 
-          <TextField
-            label="Buscar por campaña o director de operación"
-            variant="outlined"
-            fullWidth
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            sx={{
-              backgroundColor: "white",
-              borderRadius: 2,
-              boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-              flex: 1,
-              minWidth: "300px",
-            }}
-          />
+
         </Box>
 
       <TableContainer

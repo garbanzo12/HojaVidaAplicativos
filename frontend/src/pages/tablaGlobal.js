@@ -32,18 +32,6 @@ const TablaMatriz = ({ registros = [], onEstadoChange }) => {
         MATRIZ DE ESCALAMIENTO GLOBAL
       </Typography>
 
-      <TextField
-        fullWidth
-        placeholder="Buscar proveedor o código de servicio"
-        value={busqueda}
-        onChange={(e) => setBusqueda(e.target.value)}
-        sx={{
-          mb: 2,
-          backgroundColor: "white",
-          borderRadius: 2,
-          boxShadow: "0px 2px 6px rgba(0,0,0,0.1)",
-        }}
-      />
 
       <Paper
         sx={{
@@ -68,6 +56,9 @@ const TablaMatriz = ({ registros = [], onEstadoChange }) => {
                 Teléfono Asesor
               </TableCell>
               <TableCell sx={{ color: "white", fontWeight: "bold" }}>
+                Nombre Campaña
+              </TableCell>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>
                 Estado
               </TableCell>
             </TableRow>
@@ -87,6 +78,7 @@ const TablaMatriz = ({ registros = [], onEstadoChange }) => {
                   <TableCell>{fila.codigo_servicio}</TableCell>
                   <TableCell>{fila.n_telefono_proveedor}</TableCell>
                   <TableCell>{fila.n_telefono_asesor}</TableCell>
+                  <TableCell>{fila.campana.nombre_campana}</TableCell>
                   <TableCell>
                     <Button
                       onClick={() => onEstadoChange(fila.id, fila.estado)}

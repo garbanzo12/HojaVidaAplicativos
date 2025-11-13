@@ -1,11 +1,12 @@
 import express from 'express';
-import { createMatrizEscalamiento,getMatriz, getMatrizById,updateEstadomatriz,getMatrizGlobal,updateEstadomatrizGlobal,updateMatriz} from '../controllers/matriz_escalamiento.js';
+import { createMatrizEscalamiento,createMatrizEscalamientoGlobal,getMatriz, getMatrizById,updateEstadomatriz,getMatrizGlobal,updateEstadomatrizGlobal,updateMatriz} from '../controllers/matriz_escalamiento.js';
 import { validate } from "../validators/validateMiddleware.js";
 import { matrizSchema } from "../validators/matrizValidator.js";
 const router = express.Router();
 
 // ✅ Rutas
 router.post('/', validate(matrizSchema), createMatrizEscalamiento);
+router.post('/global', validate(matrizSchema), createMatrizEscalamientoGlobal);
 router.get('/global', getMatrizGlobal);
 router.get('/', getMatriz);
 router.put('/:id', validate(matrizSchema), updateMatriz);

@@ -28,6 +28,14 @@ export const createAplicativo = async (req, res) => {
 export const getAplicativos = async (req, res) => {
   try {
     const aplicativos = await prisma.aplicativo.findMany({
+      include: {
+        campana: {
+          select: {
+            id: true,
+            nombre_campana: true,
+          },
+        },
+      },
     });
     res.json(aplicativos);
   } catch (error) {

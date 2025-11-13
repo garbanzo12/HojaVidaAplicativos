@@ -37,12 +37,55 @@ export const createMatrizEscalamiento = async (req, res) => {
   }
 };
 
+export const createMatrizEscalamientoGlobal = async (req, res) => {
+  try {
+    const {
+      proveedor,
+      codigo_servicio,
+      n_telefono_proveedor,
+      n_telefono_asesor,
+      campanaId,
+    } = req.body;
+
+    const nuevaMatrizGlobal = await prisma.matrizEscalamientoGlobal.create({
+      data: {
+        proveedor,
+        codigo_servicio,
+        n_telefono_proveedor,
+        n_telefono_asesor,
+        campanaId: Number(campanaId),
+        estado: "HABILITADO",
+      },
+    });
+
+    res.json({
+      success: true,
+      message: "Matriz creada exitosamente.",
+      data: nuevaMatrizGlobal,
+    });
+  } catch (error) {
+    console.error("Error al crear matriz:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error al crear la matriz.",
+    });
+  }
+};
 
 
 // 📌 Obtener todas las matrices
 export const getMatriz = async (req, res) => {
   try {
-    const matrices = await prisma.matrizEscalamiento.findMany();
+    const matrices = await prisma.matrizEscalamiento.findMany({
+      include: {
+        campana: {
+          select: {
+            id: true,
+            nombre_campana: true,
+          },
+        },
+      },
+    });
     res.json(matrices);
   } catch (error) {
     console.error('Error al obtener las matrices:', error);
@@ -54,7 +97,16 @@ export const getMatriz = async (req, res) => {
 // 📌 Obtener todas las matrices
 export const getMatrizGlobal = async (req, res) => {
   try {
-    const matrices = await prisma.matrizEscalamientoGlobal.findMany();
+    const matrices = await prisma.matrizEscalamientoGlobal.findMany({
+      include: {
+        campana: {
+          select: {
+            id: true,
+            nombre_campana: true,
+          },
+        },
+      },
+    });
     res.json(matrices);
   } catch (error) {
     console.error('Error al obtener las matrices:', error);

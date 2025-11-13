@@ -26,6 +26,7 @@ import FormularioAplicativo from "./FormularioAplicativo";
 import TablaCampana from "./tablaCampana";
 import TablaAplicativos from "./tablaAplicativos";
 import FormularioMatriz from "./formularioMatriz";
+import FormularioMatrizGlobal from "./formularioMatrizGlobal";
 import TablaMatriz from "./tablaMatriz";
 import TablaGlobal from "./tablaGlobal";
 
@@ -36,6 +37,7 @@ const Dashboard = () => {
   const [abrirFormulario, setAbrirFormulario] = React.useState(false);
   const [abrirAplicativo, setAbrirAplicativo] = React.useState(false);
   const [abrirMatriz, setAbrirMatriz] = React.useState(false);
+  const [abrirMatrizGlobal, setAbrirMatrizGlobal] = React.useState(false);
   const [seccionActual, setSeccionActual] = React.useState("inicio");
 
   const handleMenuClick = (event, menuName) => {
@@ -185,7 +187,15 @@ const Dashboard = () => {
                         setAbrirMatriz(true);
                       }}
                     >
-                      Crear matriz
+                      Crear matriz E.
+                    </MenuItem>
+                    <MenuItem
+                      onClick={() => {
+                        handleMenuClose(item.label);
+                        setAbrirMatrizGlobal(true);
+                      }}
+                    >
+                      Crear matriz EG.
                     </MenuItem>
                   </Menu>
                 </>
@@ -418,6 +428,21 @@ const Dashboard = () => {
             }}
           >
             <FormularioMatriz onClose={() => setAbrirMatriz(false)} />
+          </Box>
+        </Modal>
+      )}
+      {abrirMatrizGlobal && (
+        <Modal open={abrirMatrizGlobal} onClose={() => setAbrirMatrizGlobal(false)}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              minHeight: "100vh",
+              p: 2,
+            }}
+          >
+            <FormularioMatrizGlobal onClose={() => setAbrirMatrizGlobal(false)} />
           </Box>
         </Modal>
       )}
