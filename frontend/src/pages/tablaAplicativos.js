@@ -30,7 +30,7 @@ const ListarAplicativo = () => {
         nombre: a.nombre,
         direccion_ip: a.direccion_ip,
         puerto: a.puerto,
-        url: a.url,
+        tipoAplicativo: a.tipo_aplicativo,
         tipo_red: a.tipo_red,
         escalamiento: a.escalamiento,
         campanaId: a.campanaId,
@@ -144,7 +144,7 @@ const ListarAplicativo = () => {
                 "Nombre",
                 "Dirección IP",
                 "Puerto",
-                "URL",
+                "Tipo Aplicativo",
                 "Tipo de Red",
                 "Escalamiento",
                 "Campaña",
@@ -181,7 +181,7 @@ const ListarAplicativo = () => {
                 <TableCell align="center">{row.nombre}</TableCell>
                 <TableCell align="center">{row.direccion_ip}</TableCell>
                 <TableCell align="center">{row.puerto}</TableCell>
-                <TableCell align="center">{row.url}</TableCell>
+                <TableCell align="center">{row.tipoAplicativo}</TableCell>
                 <TableCell align="center">{row.tipo_red}</TableCell>
                 <TableCell align="center">{row.escalamiento}</TableCell>
                 <TableCell align="center">{row.campanaId}</TableCell>
