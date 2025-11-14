@@ -8,6 +8,10 @@ import {
   Grid,
   IconButton,
   Divider,
+  MenuItem,
+  Select,
+  InputLabel,
+  FormControl,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import axios from "axios";
@@ -47,54 +51,87 @@ const FormularioEditarAplicativo = ({ open, onClose, idAplicativo, onUpdate }) =
     url: "",
     tipo_red: "internet",
     escalamiento: "",
-    campanaId: "",
     estado: "HABILITADO",
+    campanaId: "",
+    tipo_aplicativo: "", 
   });
 
+
+  const [campanas, setCampanas] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Cargar datos del aplicativo al abrir el modal
+  // 📌 Cargar campañas
+  const cargarCampanas = async () => {
+    try {
+      const { data } = await axios.get("http://localhost:4000/campana");
+
+      if (Array.isArray(data.campanas)) {
+        setCampanas(data.campanas);
+      } else {
+        setCampanas([]);
+        console.warn("⚠️ Formato inesperado al cargar campañas:", data);
+      }
+    } catch (error) {
+      console.error("❌ Error cargando campañas:", error);
+    }
+  };
+
+  // 📌 Cargar datos del aplicativo
+  const cargarAplicativo = async () => {
+    if (!idAplicativo) return;
+
+    try {
+      const { data } = await axios.get(`http://localhost:4000/aplicativo/${idAplicativo}`);
+
+      setFormData({
+        nombre: data.nombre || "",
+        direccion_ip: data.direccion_ip || "",
+        puerto: data.puerto || "",
+        url: data.url || "",
+        tipo_red: data.tipo_red || "",
+        escalamiento: data.escalamiento || "",
+        estado: data.estado || "HABILITADO",
+        campanaId: data.campanaId || "",
+        tipo_aplicativo: data.tipo_aplicativo || "",
+
+      });
+    } catch (error) {
+      console.error("❌ Error al cargar el aplicativo:", error);
+  alert(
+    "Error al guardar la matriz. " +
+      error.response?.data?.message || error.message
+  );    }
+  };
+
+  // 🔁 Efecto al abrir modal
   useEffect(() => {
-    if (open && idAplicativo) {
-      const fetchData = async () => {
-        try {
-          const { data } = await axios.get(`http://localhost:4000/aplicativo/${idAplicativo}`);
-          setFormData(data);
-        } catch (error) {
-          console.error("❌ Error al cargar los datos del aplicativo:", error);
-          alert("Error al cargar los datos del aplicativo");
-        }
-      };
-      fetchData();
+    if (open) {
+      cargarCampanas();
+      cargarAplicativo();
     }
   }, [open, idAplicativo]);
 
-  // Manejar cambios en los inputs
+  // 📝 Cambios en los campos
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Enviar actualización
+  // 💾 Guardar actualización
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const response = await axios.put(
-        `http://localhost:4000/aplicativo/${idAplicativo}`,
-        formData
-      );
-
-      console.log("✅ Aplicativo actualizado:", response.data);
-      alert("✅ Aplicativo actualizado correctamente");
-
-      if (onUpdate) onUpdate();
+      await axios.put(`http://localhost:4000/aplicativo/${idAplicativo}`, formData);
+      onUpdate();
       onClose();
     } catch (error) {
       console.error("❌ Error al actualizar aplicativo:", error);
-      alert("❌ Error al actualizar el aplicativo");
-    } finally {
+  alert(
+    "Error al guardar la matriz. " +
+      error.response?.data?.message || error.message
+  );    } finally {
       setLoading(false);
     }
   };
@@ -102,6 +139,7 @@ const FormularioEditarAplicativo = ({ open, onClose, idAplicativo, onUpdate }) =
   return (
     <Modal open={open} onClose={() => null} disableEscapeKeyDown>
       <Box component="form" onSubmit={handleSubmit} sx={modalStyle}>
+        
         {/* Botón cerrar */}
         <IconButton
           onClick={onClose}
@@ -131,15 +169,15 @@ const FormularioEditarAplicativo = ({ open, onClose, idAplicativo, onUpdate }) =
 
         <Divider sx={{ mb: 3 }} />
 
-        {/* DATOS PRINCIPALES */}
         <Typography variant="subtitle1" sx={sectionTitle}>
-          DATOS PRINCIPALES
+          DATOS DEL APLICATIVO
         </Typography>
+
         <Grid container spacing={2} justifyContent="center">
           {[
             { name: "nombre", label: "Nombre del Aplicativo" },
             { name: "direccion_ip", label: "Dirección IP" },
-            { name: "puerto", label: "Puerto", type: "number" },
+            { name: "puerto", label: "Puerto" },
             { name: "url", label: "URL" },
             { name: "tipo_red", label: "Tipo de Red" },
             { name: "escalamiento", label: "Escalamiento" },
@@ -148,7 +186,6 @@ const FormularioEditarAplicativo = ({ open, onClose, idAplicativo, onUpdate }) =
               <TextField
                 label={field.label}
                 name={field.name}
-                type={field.type || "text"}
                 fullWidth
                 size="small"
                 required
@@ -157,9 +194,48 @@ const FormularioEditarAplicativo = ({ open, onClose, idAplicativo, onUpdate }) =
               />
             </Grid>
           ))}
+
+          {/* SELECTOR DE CAMPAÑA */}
+          <Grid item xs={12} sm={10}>
+            <FormControl fullWidth size="small" required>
+              <InputLabel id="campana-label">Campaña</InputLabel>
+              <Select
+                labelId="campana-label"
+                name="campanaId"
+                value={formData.campanaId || ""}
+                onChange={handleChange}
+                label="Campaña"
+              >
+                {campanas.length === 0 ? (
+                  <MenuItem value="">No hay campañas</MenuItem>
+                ) : (
+                  campanas.map((campana) => (
+                    <MenuItem key={campana.id} value={campana.id}>
+                      {campana.nombre_campana}
+                    </MenuItem>
+                  ))
+                )}
+              </Select>
+            </FormControl>
+          </Grid>
+                  {/* SELECT: Tipo de aplicativo */}
+        <Grid item xs={12} sm={10}>
+          <FormControl fullWidth size="small" required>
+            <InputLabel id="tipo-aplicativo-label">Tipo de aplicativo</InputLabel>
+            <Select
+              labelId="tipo-aplicativo-label"
+              name="tipo_aplicativo"
+              value={formData.tipo_aplicativo}
+              onChange={handleChange}
+              label="Tipo de aplicativo"
+            >
+              <MenuItem value="internet">Internet</MenuItem>
+              <MenuItem value="abai">Abai</MenuItem>
+              <MenuItem value="proveedor">Proveedor</MenuItem>
+            </Select>
+          </FormControl>
         </Grid>
-
-
+        </Grid>
 
         {/* BOTÓN ACTUALIZAR */}
         <Box textAlign="center" mt={5}>
@@ -182,7 +258,7 @@ const FormularioEditarAplicativo = ({ open, onClose, idAplicativo, onUpdate }) =
               },
             }}
           >
-            {loading ? "Actualizando..." : "ACTUALIZAR"}
+            {loading ? "Actualizando..." : "ACTUALIZAR APLICATIVO"}
           </Button>
         </Box>
       </Box>

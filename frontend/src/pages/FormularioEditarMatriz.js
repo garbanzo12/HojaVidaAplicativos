@@ -61,7 +61,14 @@ const cargarCampanas = async () => {
     const { data } = await axios.get("http://localhost:4000/campana");
 
     if (Array.isArray(data.campanas)) {
-      setCampanas(data.campanas);
+
+      // 🔥 Filtrar solo campañas HABILITADAS
+      const habilitadas = data.campanas.filter(
+        (campana) => campana.estado === "HABILITADO"
+      );
+
+      setCampanas(habilitadas);
+
     } else {
       setCampanas([]);
       console.warn("⚠️ El formato de respuesta no es un array:", data);
@@ -70,6 +77,7 @@ const cargarCampanas = async () => {
     console.error("❌ Error al cargar campañas:", error);
   }
 };
+
 
 
   const cargarMatriz = async () => {
@@ -86,7 +94,7 @@ const cargarCampanas = async () => {
       });
     } catch (error) {
       console.error("❌ Error al cargar la matriz:", error);
-      alert("Error al cargar los datos de la matriz");
+      alert("Error al cargar los datos de la matriz", error.message);
     }
   };
 
