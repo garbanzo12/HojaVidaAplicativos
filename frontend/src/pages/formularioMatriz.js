@@ -37,22 +37,34 @@ const FormularioMatriz = ({ onSave, onClose }) => {
   };
 
   // 🔹 Cargar campañas
-  useEffect(() => {
-    const fetchCampanas = async () => {
-      try {
-        const res = await axios.get("http://localhost:4000/campana");
-        if (res.data.success) {
-          setCampanas(res.data.campanas);
-          showAlert("Campañas cargadas correctamente", "success");
-        } else {
-          showAlert(res.data.message || "Error al obtener campañas", "warning");
-        }
-      } catch (err) {
-        showAlert("Error al cargar campañas: " + err.message, "error");
+useEffect(() => {
+  const fetchCampanas = async () => {
+    try {
+      const res = await axios.get("http://localhost:4000/campana");
+
+      if (res.data.success && Array.isArray(res.data.campanas)) {
+        
+        // 🔍 Filtrar campañas con estado HABILITADO
+        const campanasHabilitadas = res.data.campanas.filter((c) => {
+          const estado = c.estado?.toString().trim().toUpperCase();
+          return estado === "HABILITADO";
+        });
+
+        setCampanas(campanasHabilitadas);
+
+        showAlert("Campañas cargadas correctamente", "success");
+      } else {
+        showAlert(res.data.message || "Error al obtener campañas", "warning");
+        setCampanas([]);
       }
-    };
-    fetchCampanas();
-  }, []);
+    } catch (err) {
+      showAlert("Error al cargar campañas: " + err.message, "error");
+      setCampanas([]);
+    }
+  };
+
+  fetchCampanas();
+}, []);
 
   // 🔹 Manejar cambios
   const handleChange = (e) => {
@@ -80,7 +92,6 @@ const FormularioMatriz = ({ onSave, onClose }) => {
 
       showAlert("Matriz creada correctamente", "success");
 
-      onClose();
       onSave && onSave(res.data);
 
       setFormData({

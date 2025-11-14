@@ -10,7 +10,7 @@ export const testConnection = (req, res) => {
 export const getCampanas = async (req, res) => {
   try {
     const campanas = await prisma.campana.findMany({
-      select: { id: true, nombre_campana: true },
+      select: { id: true, nombre_campana: true , estado : true },
     });
 
     res.json({ success: true, campanas });

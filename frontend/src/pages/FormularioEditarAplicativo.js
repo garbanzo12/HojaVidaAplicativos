@@ -61,20 +61,25 @@ const FormularioEditarAplicativo = ({ open, onClose, idAplicativo, onUpdate }) =
   const [loading, setLoading] = useState(false);
 
   // 📌 Cargar campañas
-  const cargarCampanas = async () => {
-    try {
-      const { data } = await axios.get("http://localhost:4000/campana");
+const cargarCampanas = async () => {
+  try {
+    const { data } = await axios.get("http://localhost:4000/campana");
+    console.log(data)
+    if (Array.isArray(data.campanas)) {
+      const campanasHabilitadas = data.campanas.filter(
+        (campana) => campana.estado?.toUpperCase() === "HABILITADO"
+      );
 
-      if (Array.isArray(data.campanas)) {
-        setCampanas(data.campanas);
-      } else {
-        setCampanas([]);
-        console.warn("⚠️ Formato inesperado al cargar campañas:", data);
-      }
-    } catch (error) {
-      console.error("❌ Error cargando campañas:", error);
+      setCampanas(campanasHabilitadas);
+    } else {
+      setCampanas([]);
+      console.warn("⚠️ El formato de respuesta no es un array:", data);
     }
-  };
+  } catch (error) {
+    console.error("❌ Error al cargar campañas:", error);
+  }
+};
+
 
   // 📌 Cargar datos del aplicativo
   const cargarAplicativo = async () => {

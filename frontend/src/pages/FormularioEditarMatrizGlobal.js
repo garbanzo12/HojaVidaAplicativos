@@ -46,10 +46,25 @@ const FormularioEditarMatrizGlobal = ({
   const [campanas, setCampanas] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const cargarCampanas = async () => {
+const cargarCampanas = async () => {
+  try {
     const { data } = await axios.get("http://localhost:4000/campana");
-    setCampanas(data.campanas || []);
-  };
+    console.log(data)
+    if (Array.isArray(data.campanas)) {
+      const campanasHabilitadas = data.campanas.filter(
+        (campana) => campana.estado?.toUpperCase() === "HABILITADO"
+      );
+
+      setCampanas(campanasHabilitadas);
+    } else {
+      setCampanas([]);
+      console.warn("⚠️ El formato de respuesta no es un array:", data);
+    }
+  } catch (error) {
+    console.error("❌ Error al cargar campañas:", error);
+  }
+};
+
 
   const cargarMatriz = async () => {
     const { data } = await axios.get(

@@ -1,220 +1,213 @@
 import React, { useState, useEffect } from "react";
 import {
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  Typography,
   Box,
+  TextField,
   Button,
-  Modal,
+  Typography,
+  Paper,
+  Stack,
+  FormControl,
+  Select,
+  MenuItem,
+  Snackbar,
+  Alert as MuiAlert,
 } from "@mui/material";
 import axios from "axios";
-import FormularioEditarMatrizGlobal from "./FormularioEditarMatrizGlobal";
 
-// ===============================
-//   TABLA
-// ===============================
-const TablaMatrizGlobal = ({ registros = [], onEstadoChange, onEditar }) => {
-  const [busqueda, setBusqueda] = useState("");
+const FormularioMatriz = ({ onSave, onClose }) => {
+  const [formData, setFormData] = useState({
+    proveedor: "",
+    codigoServicio: "",
+    telefonoProveedor: "",
+    telefonoAsesor: "",
+    tipoCampana: "",
+  });
 
-  const filtrados = registros.filter((fila) =>
-    Object.values(fila).some((v) =>
-      String(v).toLowerCase().includes(busqueda.toLowerCase())
-    )
-  );
+  const [campanas, setCampanas] = useState([]);
 
-  return (
-    <Box sx={{ width: "90%", mx: "auto", mt: 4 }}>
-      <Typography variant="h6" fontWeight="bold" mb={2}>
-        MATRIZ DE ESCALAMIENTO GLOBAL
-      </Typography>
+  // 🔹 Estados del Snackbar
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertSeverity, setAlertSeverity] = useState("success");
 
-      <Paper
-        sx={{
-          borderRadius: 3,
-          overflow: "hidden",
-          boxShadow: "0px 4px 15px rgba(0,0,0,0.15)",
-        }}
-      >
-        <Table>
-          <TableHead>
-            <TableRow sx={{ backgroundColor: "#002b5b" }}>
-              {[
-                "Proveedor",
-                "Código Servicio",
-                "Teléfono Proveedor",
-                "Teléfono Asesor",
-                "Nombre campaña",
-                "Estado",
-                "Acciones",
-              ].map((title) => (
-                <TableCell
-                  key={title}
-                  sx={{ color: "white", fontWeight: "bold" }}
-                >
-                  {title}
-                </TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
+  const showAlert = (message, severity = "info") => {
+    setAlertMessage(message);
+    setAlertSeverity(severity);
+    setAlertOpen(true);
+  };
 
-          <TableBody>
-            {filtrados.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={7} align="center">
-                  No hay registros
-                </TableCell>
-              </TableRow>
-            ) : (
-              filtrados.map((fila) => (
-                <TableRow key={fila.id}>
-                  <TableCell>{fila.proveedor}</TableCell>
-                  <TableCell>{fila.codigo_servicio}</TableCell>
-                  <TableCell>{fila.n_telefono_proveedor}</TableCell>
-                  <TableCell>{fila.n_telefono_asesor}</TableCell>
-                  <TableCell>{fila.campana?.nombre_campana}</TableCell>
-
-                  <TableCell>
-                    <Button
-                      onClick={() => onEstadoChange(fila.id, fila.estado)}
-                      variant="contained"
-                      sx={{
-                        backgroundColor:
-                          fila.estado.toLowerCase() === "habilitado" ||
-                          fila.estado.toLowerCase() === "activo"
-                            ? "#4caf50"
-                            : "#e53935",
-                        "&:hover": {
-                          backgroundColor:
-                            fila.estado.toLowerCase() === "habilitado" ||
-                            fila.estado.toLowerCase() === "activo"
-                              ? "#43a047"
-                              : "#c62828",
-                        },
-                        borderRadius: "20px",
-                        textTransform: "none",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      {fila.estado.toLowerCase() === "habilitado" ||
-                      fila.estado.toLowerCase() === "activo"
-                        ? "Activo"
-                        : "Inactivo"}
-                    </Button>
-                  </TableCell>
-
-                  <TableCell>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={() => onEditar(fila.id)}
-                      sx={{
-                        textTransform: "none",
-                        borderRadius: "10px",
-                        px: 2,
-                        py: 0.5,
-                        fontWeight: 600,
-                        backgroundColor: "#1565c0",
-                        "&:hover": {
-                          backgroundColor: "#0d47a1",
-                        },
-                      }}
-                    >
-                      Editar
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </Paper>
-    </Box>
-  );
-};
-
-// ===============================
-//   PÁGINA PRINCIPAL
-// ===============================
-const MatrizEscalamientoGlobalPage = () => {
-  const [registros, setRegistros] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [editando, setEditando] = useState(null);
-
-  const obtenerMatriz = async () => {
+  // 🔹 Cargar campañas
+useEffect(() => {
+  const fetchCampanas = async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:4000/matriz-global"
-      );
-      setRegistros(response.data);
-    } catch (error) {
-      console.error("Error al cargar matriz global:", error);
-    } finally {
-      setLoading(false);
+      const res = await axios.get("http://localhost:4000/campana");
+
+      if (res.data.success && Array.isArray(res.data.campanas)) {
+        
+        // 🔍 Filtrar campañas con estado HABILITADO
+        const campanasHabilitadas = res.data.campanas.filter((c) => {
+          const estado = c.estado?.toString().trim().toUpperCase();
+          return estado === "HABILITADO";
+        });
+
+        setCampanas(campanasHabilitadas);
+
+        showAlert("Campañas cargadas correctamente", "success");
+      } else {
+        showAlert(res.data.message || "Error al obtener campañas", "warning");
+        setCampanas([]);
+      }
+    } catch (err) {
+      showAlert("Error al cargar campañas: " + err.message, "error");
+      setCampanas([]);
     }
   };
 
-  const handleEstadoChange = async (id, currentEstado) => {
-    const estadoNormalizado = currentEstado.toLowerCase();
-    const nuevoEstado =
-      estadoNormalizado === "habilitado" || estadoNormalizado === "activo"
-        ? "DESHABILITADO"
-        : "HABILITADO";
+  fetchCampanas();
+}, []);
 
-    try {
-      await axios.put(
-        `http://localhost:4000/matriz-global/estado/${id}`,
-        { estado: nuevoEstado }
-      );
 
-      setRegistros((prev) =>
-        prev.map((c) =>
-          c.id === id ? { ...c, estado: nuevoEstado } : c
-        )
-      );
-    } catch (error) {
-      console.error("❌ Error al cambiar estado global:", error);
-    }
+  // 🔹 Manejar cambios
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
   };
 
-  useEffect(() => {
-    obtenerMatriz();
-  }, []);
+  // 🔹 Enviar datos
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const payload = {
+        proveedor: formData.proveedor,
+        codigo_servicio: formData.codigoServicio,
+        n_telefono_proveedor: formData.telefonoProveedor,
+        n_telefono_asesor: formData.telefonoAsesor,
+        campanaId: parseInt(formData.tipoCampana) || null,
+        estado: "HABILITADO",
+      };
+
+      const res = await axios.post("http://localhost:4000/matriz/global", payload, {
+        headers: { "Content-Type": "application/json" },
+      });
+
+      showAlert("Matriz creada correctamente", "success");
+
+      
+
+      onSave && onSave(res.data);
+
+      setFormData({
+        proveedor: "",
+        codigoServicio: "",
+        telefonoProveedor: "",
+        telefonoAsesor: "",
+        tipoCampana: "",
+      });
+
+    } catch (error) {
+      showAlert(
+        error.response?.data?.message ||
+          "Error al guardar la matriz. " + error.message,
+        "error"
+      );
+    }
+
+  };
 
   return (
-    <Box sx={{ p: 4 }}>
-      <Typography variant="h5" mb={3} fontWeight="bold">
-        Gestión de Matriz de Escalamiento Global
-      </Typography>
+    <>
+      <Paper elevation={6} sx={{ borderRadius: 3, p: 4, maxWidth: 450 }}>
+        <Typography variant="h6" mb={2} fontWeight="bold">
+          Crear Matriz de Escalamiento
+        </Typography>
 
-      {loading ? (
-        <Typography>Cargando datos...</Typography>
-      ) : (
-        <TablaMatrizGlobal
-          registros={registros}
-          onEstadoChange={handleEstadoChange}
-          onEditar={setEditando}
-        />
-      )}
-
-      {/* Modal editar */}
-      <Modal open={Boolean(editando)} onClose={() => setEditando(null)}>
-        <Box>
-          {editando && (
-            <FormularioEditarMatrizGlobal
-              open={Boolean(editando)}
-              idMatriz={editando}
-              onClose={() => setEditando(null)}
-              onUpdate={obtenerMatriz}
+        <form onSubmit={handleSubmit}>
+          <Stack spacing={2}>
+            <TextField
+              label="Proveedor"
+              name="proveedor"
+              value={formData.proveedor}
+              onChange={handleChange}
+              required
             />
-          )}
-        </Box>
-      </Modal>
-    </Box>
+
+            <TextField
+              label="Código del Servicio"
+              name="codigoServicio"
+              value={formData.codigoServicio}
+              onChange={handleChange}
+              required
+            />
+
+            <TextField
+              label="N° Teléfono Proveedor"
+              name="telefonoProveedor"
+              value={formData.telefonoProveedor}
+              onChange={handleChange}
+            />
+
+            <TextField
+              label="N° Teléfono Asesor"
+              name="telefonoAsesor"
+              value={formData.telefonoAsesor}
+              onChange={handleChange}
+            />
+
+            <FormControl fullWidth size="small" required>
+              <Select
+                displayEmpty
+                name="tipoCampana"
+                value={formData.tipoCampana}
+                onChange={handleChange}
+                sx={{
+                  borderRadius: 2,
+                  backgroundColor: "transparent",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#cfd8dc",
+                  },
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#90caf9",
+                  },
+                }}
+              >
+                <MenuItem value="" disabled>
+                  Seleccione Campaña
+                </MenuItem>
+
+                {campanas.map((campana) => (
+                  <MenuItem key={campana.id} value={campana.id}>
+                    {campana.nombre_campana}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <Button variant="contained" type="submit">
+              Guardar
+            </Button>
+          </Stack>
+        </form>
+      </Paper>
+
+      {/* 🔹 Snackbar arriba a la derecha */}
+      <Snackbar
+        open={alertOpen}
+        autoHideDuration={4000}
+        onClose={() => setAlertOpen(false)}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <MuiAlert
+          elevation={6}
+          variant="filled"
+          onClose={() => setAlertOpen(false)}
+          severity={alertSeverity}
+        >
+          {alertMessage}
+        </MuiAlert>
+      </Snackbar>
+    </>
   );
 };
 
-export default MatrizEscalamientoGlobalPage;
+export default FormularioMatriz;
