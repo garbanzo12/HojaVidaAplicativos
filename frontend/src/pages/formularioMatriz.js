@@ -9,6 +9,8 @@ import {
   FormControl,
   Select,
   MenuItem,
+  Snackbar,
+  Alert as MuiAlert,
 } from "@mui/material";
 import axios from "axios";
 
@@ -23,30 +25,42 @@ const FormularioMatriz = ({ onSave, onClose }) => {
 
   const [campanas, setCampanas] = useState([]);
 
-  // 🔹 Cargar campañas desde la base de datos al montar el componente
+  // 🔹 Estados del Snackbar
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertSeverity, setAlertSeverity] = useState("success");
+
+  const showAlert = (message, severity = "info") => {
+    setAlertMessage(message);
+    setAlertSeverity(severity);
+    setAlertOpen(true);
+  };
+
+  // 🔹 Cargar campañas
   useEffect(() => {
     const fetchCampanas = async () => {
       try {
         const res = await axios.get("http://localhost:4000/campana");
         if (res.data.success) {
           setCampanas(res.data.campanas);
+          showAlert("Campañas cargadas correctamente", "success");
         } else {
-          console.error("⚠️ Error al obtener campañas:", res.data.message);
+          showAlert(res.data.message || "Error al obtener campañas", "warning");
         }
       } catch (err) {
-        console.error("❌ Error al cargar campañas:", err.message);
+        showAlert("Error al cargar campañas: " + err.message, "error");
       }
     };
     fetchCampanas();
   }, []);
 
-  // 🔹 Manejar cambios en los inputs
+  // 🔹 Manejar cambios
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  // 🔹 Enviar datos al backend
+  // 🔹 Enviar datos
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -64,12 +78,11 @@ const FormularioMatriz = ({ onSave, onClose }) => {
         headers: { "Content-Type": "application/json" },
       });
 
-      console.log("✅ Matriz creada:", res.data);
-      alert("✅ Matriz creada correctamente");
+      showAlert("Matriz creada correctamente", "success");
+
       onClose();
       onSave && onSave(res.data);
 
-      // Limpiar formulario
       setFormData({
         proveedor: "",
         codigoServicio: "",
@@ -77,90 +90,108 @@ const FormularioMatriz = ({ onSave, onClose }) => {
         telefonoAsesor: "",
         tipoCampana: "",
       });
-} catch (error) {
-  console.error("❌ Error al guardar la matriz:", error.response?.data || error.message);
 
-  alert(
-    "Error al guardar la matriz. " +
-      error.response?.data?.message || error.message
-  );
-}
+    } catch (error) {
+      showAlert(
+        error.response?.data?.message ||
+          "Error al guardar la matriz. " + error.message,
+        "error"
+      );
+    }
   };
 
   return (
-    <Paper elevation={6} sx={{ borderRadius: 3, p: 4, maxWidth: 450 }}>
-      <Typography variant="h6" mb={2} fontWeight="bold">
-        Crear Matriz de Escalamiento
-      </Typography>
+    <>
+      <Paper elevation={6} sx={{ borderRadius: 3, p: 4, maxWidth: 450 }}>
+        <Typography variant="h6" mb={2} fontWeight="bold">
+          Crear Matriz de Escalamiento
+        </Typography>
 
-      <form onSubmit={handleSubmit}>
-        <Stack spacing={2}>
-          <TextField
-            label="Proveedor"
-            name="proveedor"
-            value={formData.proveedor}
-            onChange={handleChange}
-            required
-          />
-
-          <TextField
-            label="Código del Servicio"
-            name="codigoServicio"
-            value={formData.codigoServicio}
-            onChange={handleChange}
-            required
-          />
-
-          <TextField
-            label="N° Teléfono Proveedor"
-            name="telefonoProveedor"
-            value={formData.telefonoProveedor}
-            onChange={handleChange}
-          />
-
-          <TextField
-            label="N° Teléfono Asesor"
-            name="telefonoAsesor"
-            value={formData.telefonoAsesor}
-            onChange={handleChange}
-          />
-
-          {/* 🔹 Selector de Campaña */}
-          <FormControl fullWidth size="small" required>
-            <Select
-              displayEmpty
-              name="tipoCampana"
-              value={formData.tipoCampana}
+        <form onSubmit={handleSubmit}>
+          <Stack spacing={2}>
+            <TextField
+              label="Proveedor"
+              name="proveedor"
+              value={formData.proveedor}
               onChange={handleChange}
-              sx={{
-                borderRadius: 2,
-                backgroundColor: "transparent",
-                "& .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "#cfd8dc",
-                },
-                "&:hover .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "#90caf9",
-                },
-              }}
-            >
-              <MenuItem value="" disabled>
-                Seleccione Campaña
-              </MenuItem>
+              required
+            />
 
-              {campanas.map((campana) => (
-                <MenuItem key={campana.id} value={campana.id}>
-                  {campana.nombre_campana}
+            <TextField
+              label="Código del Servicio"
+              name="codigoServicio"
+              value={formData.codigoServicio}
+              onChange={handleChange}
+              required
+            />
+
+            <TextField
+              label="N° Teléfono Proveedor"
+              name="telefonoProveedor"
+              value={formData.telefonoProveedor}
+              onChange={handleChange}
+            />
+
+            <TextField
+              label="N° Teléfono Asesor"
+              name="telefonoAsesor"
+              value={formData.telefonoAsesor}
+              onChange={handleChange}
+            />
+
+            <FormControl fullWidth size="small" required>
+              <Select
+                displayEmpty
+                name="tipoCampana"
+                value={formData.tipoCampana}
+                onChange={handleChange}
+                sx={{
+                  borderRadius: 2,
+                  backgroundColor: "transparent",
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#cfd8dc",
+                  },
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#90caf9",
+                  },
+                }}
+              >
+                <MenuItem value="" disabled>
+                  Seleccione Campaña
                 </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
 
-          <Button variant="contained" type="submit">
-            Guardar
-          </Button>
-        </Stack>
-      </form>
-    </Paper>
+                {campanas.map((campana) => (
+                  <MenuItem key={campana.id} value={campana.id}>
+                    {campana.nombre_campana}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <Button variant="contained" type="submit">
+              Guardar
+            </Button>
+          </Stack>
+        </form>
+      </Paper>
+
+      {/* 🔹 Snackbar arriba a la derecha */}
+      <Snackbar
+        open={alertOpen}
+        autoHideDuration={4000}
+        onClose={() => setAlertOpen(false)}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <MuiAlert
+          elevation={6}
+          variant="filled"
+          onClose={() => setAlertOpen(false)}
+          severity={alertSeverity}
+        >
+          {alertMessage}
+        </MuiAlert>
+      </Snackbar>
+    </>
   );
 };
 
