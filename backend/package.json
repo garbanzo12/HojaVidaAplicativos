@@ -10,9 +10,9 @@
     "start": "node app.js"
   },
   "devDependencies": {
-    "@mermaid-js/mermaid-cli": "^11.12.0",
+    "@mermaid-js/mermaid-cli": "^11.4.0",
     "prisma": "^6.19.0",
-    "prisma-erd-generator": "^2.1.0"
+    "prisma-erd-generator": "^1.11.2"
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",
@@ -20,7 +20,7 @@
     "express": "^5.1.0",
     "multer": "^2.0.2",
     "react": "^19.2.0",
-    "require": "^2.4.20",
+    "require": "^0.4.4",
     "zod": "^4.1.12"
   }
 }

@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { TipoRed } from "@prisma/client";
+import pkg from "@prisma/client";
+const { TipoRed } = pkg;
 
 export const aplicativoSchema = z.object({
   nombre: z
