@@ -5,7 +5,25 @@ const prisma = new PrismaClient();
 export const createAplicativo = async (req, res) => {
   try {
     const data = req.validatedData; // viene del validador Zod
+   if (data.campanaId) {
+      const campana = await prisma.campana.findUnique({
+        where: { id: Number(data.campanaId) },
+      });
 
+      if (!campana) {
+        return res.status(400).json({
+          success: false,
+          message: "La campaña seleccionada no existe.",
+        });
+      }
+
+      if (campana.estado !== "HABILITADO") {
+        return res.status(400).json({
+          success: false,
+          message: `La campaña "${campana.nombre}" está inactiva y no puede ser asignada.`,
+        });
+      }
+    }
     const nuevoAplicativo = await prisma.aplicativo.create({
       data,
     });

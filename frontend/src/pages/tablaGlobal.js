@@ -7,17 +7,18 @@ import {
   TableHead,
   TableRow,
   Typography,
-  Switch,
   Box,
-  TextField,
   Button,
 } from "@mui/material";
 import axios from "axios";
 
+import FormularioEditarMatriz from "../pages/FormularioEditarMatrizGlobal"; 
+// ⬆ Cambia la ruta si tu archivo está en otro lado
+
 // ======================= //
 //   COMPONENTE TABLA
 // ======================= //
-const TablaMatriz = ({ registros = [], onEstadoChange }) => {
+const TablaMatriz = ({ registros = [], onEstadoChange, onEditar }) => {
   const [busqueda, setBusqueda] = useState("");
 
   const filtrados = registros.filter((fila) =>
@@ -32,7 +33,6 @@ const TablaMatriz = ({ registros = [], onEstadoChange }) => {
         MATRIZ DE ESCALAMIENTO GLOBAL
       </Typography>
 
-
       <Paper
         sx={{
           borderRadius: 3,
@@ -43,31 +43,20 @@ const TablaMatriz = ({ registros = [], onEstadoChange }) => {
         <Table>
           <TableHead>
             <TableRow sx={{ backgroundColor: "#002b5b" }}>
-              <TableCell sx={{ color: "white", fontWeight: "bold" }}>
-                Proveedor
-              </TableCell>
-              <TableCell sx={{ color: "white", fontWeight: "bold" }}>
-                Código Servicio
-              </TableCell>
-              <TableCell sx={{ color: "white", fontWeight: "bold" }}>
-                Teléfono Proveedor
-              </TableCell>
-              <TableCell sx={{ color: "white", fontWeight: "bold" }}>
-                Teléfono Asesor
-              </TableCell>
-              <TableCell sx={{ color: "white", fontWeight: "bold" }}>
-                Nombre Campaña
-              </TableCell>
-              <TableCell sx={{ color: "white", fontWeight: "bold" }}>
-                Estado
-              </TableCell>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Proveedor</TableCell>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Código Servicio</TableCell>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Teléfono Proveedor</TableCell>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Teléfono Asesor</TableCell>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Nombre Campaña</TableCell>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Estado</TableCell>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Editar</TableCell>
             </TableRow>
           </TableHead>
 
           <TableBody>
             {filtrados.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} align="center">
+                <TableCell colSpan={7} align="center">
                   No hay registros
                 </TableCell>
               </TableRow>
@@ -78,21 +67,22 @@ const TablaMatriz = ({ registros = [], onEstadoChange }) => {
                   <TableCell>{fila.codigo_servicio}</TableCell>
                   <TableCell>{fila.n_telefono_proveedor}</TableCell>
                   <TableCell>{fila.n_telefono_asesor}</TableCell>
-                  <TableCell>{fila.campana.nombre_campana}</TableCell>
+                  <TableCell>{fila.campana?.nombre_campana}</TableCell>
+
                   <TableCell>
                     <Button
                       onClick={() => onEstadoChange(fila.id, fila.estado)}
                       variant="contained"
                       sx={{
                         backgroundColor:
-                          fila.estado.toLowerCase() === "activo" ||
-                          fila.estado.toLowerCase() === "habilitado"
+                          fila.estado.toLowerCase() === "habilitado" ||
+                          fila.estado.toLowerCase() === "activo"
                             ? "#4caf50"
                             : "#e53935",
                         "&:hover": {
                           backgroundColor:
-                            fila.estado.toLowerCase() === "activo" ||
-                            fila.estado.toLowerCase() === "habilitado"
+                            fila.estado.toLowerCase() === "habilitado" ||
+                            fila.estado.toLowerCase() === "activo"
                               ? "#43a047"
                               : "#c62828",
                         },
@@ -101,12 +91,36 @@ const TablaMatriz = ({ registros = [], onEstadoChange }) => {
                         fontWeight: "bold",
                       }}
                     >
-                      {fila.estado.toLowerCase() === "habilitado"
-                        ? "Activo"
-                        : fila.estado.toLowerCase() === "activo"
-                        ? "Activo"
-                        : "Inactivo"}
-                  </Button>
+                      {fila.estado.toLowerCase() === "habilitado" ? "Activo" : "Inactivo"}
+                    </Button>
+                  </TableCell>
+
+                  {/* BOTÓN EDITAR */}
+                  <TableCell>
+                    <Button
+                      variant="contained"
+                        color="primary"
+                        size="small"
+                      onClick={() => onEditar(fila.id)}
+                      sx={{
+                          ml: 1,
+                          textTransform: "none",
+                          borderRadius: "10px",
+                          px: 2,
+                          py: 0.5,
+                          fontWeight: 600,
+                          backgroundColor: "#1565c0",
+                          boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+                          transition: "all 0.25s ease",
+                          "&:hover": {
+                            backgroundColor: "#0d47a1",
+                            transform: "scale(1.05)",
+                            boxShadow: "0 3px 8px rgba(0,0,0,0.25)",
+                          },
+                        }}
+                    >
+                      Editar
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))
@@ -125,11 +139,33 @@ const MatrizPage = () => {
   const [registros, setRegistros] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // ✅ Cargar datos desde la API
+  // Modal editar
+  const [openEditar, setOpenEditar] = useState(false);
+  const [idSeleccionado, setIdSeleccionado] = useState(null);
+
+  // 👉 Abrir modal
+  const manejarEditar = (id) => {
+    setIdSeleccionado(id);
+    setOpenEditar(true);
+  };
+
+  // 👉 Cerrar modal
+  const cerrarModal = () => {
+    setOpenEditar(false);
+    setIdSeleccionado(null);
+  };
+
+  // 👉 Recargar lista después de editar
+  const refrescarListado = () => {
+    obtenerMatriz();
+  };
+
+  // ====================== //
+  // Cargar datos
+  // ====================== //
   const obtenerMatriz = async () => {
     try {
       const response = await axios.get("http://localhost:4000/matriz/global");
-      console.log(response.data)
       setRegistros(response.data);
     } catch (error) {
       console.error("Error al cargar la matriz:", error);
@@ -138,32 +174,33 @@ const MatrizPage = () => {
     }
   };
 
-const handleEstadoChange = async (id, currentEstado) => {
-  const estadoNormalizado = currentEstado.toLowerCase();
+  // ====================== //
+  // Cambiar estado
+  // ====================== //
+  const handleEstadoChange = async (id, currentEstado) => {
+    const estadoNormalizado = currentEstado.toLowerCase();
 
-  const nuevoEstado =
-    estadoNormalizado === "habilitado" || estadoNormalizado === "activo"
-      ? "DESHABILITADO"
-      : "HABILITADO";
+    const nuevoEstado =
+      estadoNormalizado === "habilitado" || estadoNormalizado === "activo"
+        ? "DESHABILITADO"
+        : "HABILITADO";
 
-  const nuevoEstadoFront = nuevoEstado === "HABILITADO" ? "Activo" : "Inactivo";
+    try {
+      await axios.put(`http://localhost:4000/matriz/estado/${id}`, {
+        estado: nuevoEstado,
+      });
 
-  try {
-    await axios.put(`http://localhost:4000/matriz/estado/${id}`, {
-      estado: nuevoEstado,
-    });
-
-    // 🔁 Actualiza localmente sin recargar la página
-    setRegistros((prev) =>
-      prev.map((c) =>
-        c.id === id ? { ...c, estado: nuevoEstadoFront } : c
-      )
-    );
-  } catch (error) {
-    console.error("❌ Error al actualizar estado:", error);
-  }
-};
-
+      setRegistros((prev) =>
+        prev.map((c) =>
+          c.id === id
+            ? { ...c, estado: nuevoEstado === "HABILITADO" ? "Activo" : "Inactivo" }
+            : c
+        )
+      );
+    } catch (error) {
+      console.error("❌ Error al actualizar estado:", error);
+    }
+  };
 
   useEffect(() => {
     obtenerMatriz();
@@ -178,10 +215,20 @@ const handleEstadoChange = async (id, currentEstado) => {
       {loading ? (
         <Typography>Cargando datos...</Typography>
       ) : (
-        <TablaMatriz registros={registros} onEstadoChange={handleEstadoChange} />
+        <TablaMatriz
+          registros={registros}
+          onEstadoChange={handleEstadoChange}
+          onEditar={manejarEditar}
+        />
       )}
 
-
+      {/* MODAL EDITAR */}
+      <FormularioEditarMatriz
+        open={openEditar}
+        onClose={cerrarModal}
+        idMatriz={idSeleccionado}
+        onUpdate={refrescarListado}
+      />
     </Box>
   );
 };
