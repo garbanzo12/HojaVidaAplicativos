@@ -1,6 +1,5 @@
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
-
 // ✅ Crear matriz
 export const createMatrizEscalamiento = async (req, res) => {
   try {
@@ -12,6 +11,26 @@ export const createMatrizEscalamiento = async (req, res) => {
       campanaId,
     } = req.body;
 
+    // ✅ Validación de campaña activa
+    const campana = await prisma.campana.findUnique({
+      where: { id: Number(campanaId) },
+    });
+
+    if (!campana) {
+      return res.status(400).json({
+        success: false,
+        message: "La campaña seleccionada no existe.",
+      });
+    }
+
+    if (campana.estado !== "HABILITADO") {
+      return res.status(400).json({
+        success: false,
+        message: `La campaña "${campana.nombre_campana}" está inactiva y no puede ser asignada.`,
+      });
+    }
+
+    // ✅ Crear matriz si todo está bien
     const nuevaMatriz = await prisma.matrizEscalamiento.create({
       data: {
         proveedor,
@@ -28,6 +47,7 @@ export const createMatrizEscalamiento = async (req, res) => {
       message: "Matriz creada exitosamente.",
       data: nuevaMatriz,
     });
+
   } catch (error) {
     console.error("Error al crear matriz:", error);
     res.status(500).json({

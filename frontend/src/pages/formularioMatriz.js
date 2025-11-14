@@ -77,10 +77,14 @@ const FormularioMatriz = ({ onSave, onClose }) => {
         telefonoAsesor: "",
         tipoCampana: "",
       });
-    } catch (error) {
-      console.error("❌ Error al guardar la matriz:", error.response?.data || error.message);
-      alert("Error al guardar la matriz. Revisa la consola para más detalles.");
-    }
+} catch (error) {
+  console.error("❌ Error al guardar la matriz:", error.response?.data || error.message);
+
+  alert(
+    "Error al guardar la matriz. " +
+      error.response?.data?.message || error.message
+  );
+}
   };
 
   return (
