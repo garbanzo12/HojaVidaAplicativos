@@ -1,163 +1,220 @@
 import React, { useState, useEffect } from "react";
 import {
-  Box,
-  TextField,
-  Button,
-  Typography,
   Paper,
-  Stack,
-  FormControl,
-  Select,
-  MenuItem,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  Typography,
+  Box,
+  Button,
+  Modal,
 } from "@mui/material";
 import axios from "axios";
+import FormularioEditarMatrizGlobal from "./FormularioEditarMatrizGlobal";
 
-const FormularioMatrizGlobal = ({ onSave, onClose }) => {
-  const [formData, setFormData] = useState({
-    proveedor: "",
-    codigoServicio: "",
-    telefonoProveedor: "",
-    telefonoAsesor: "",
-    tipoCampana: "",
-  });
+// ===============================
+//   TABLA
+// ===============================
+const TablaMatrizGlobal = ({ registros = [], onEstadoChange, onEditar }) => {
+  const [busqueda, setBusqueda] = useState("");
 
-  const [campanas, setCampanas] = useState([]);
-
-  // 🔹 Cargar campañas desde la base de datos al montar el componente
-  useEffect(() => {
-    const fetchCampanas = async () => {
-      try {
-        const res = await axios.get("http://localhost:4000/campana");
-        if (res.data.success) {
-          setCampanas(res.data.campanas);
-        } else {
-          console.error("⚠️ Error al obtener campañas:", res.data.message);
-        }
-      } catch (err) {
-        console.error("❌ Error al cargar campañas:", err.message);
-      }
-    };
-    fetchCampanas();
-  }, []);
-
-  // 🔹 Manejar cambios en los inputs
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
-
-  // 🔹 Enviar datos al backend
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    try {
-      const payload = {
-        proveedor: formData.proveedor,
-        codigo_servicio: formData.codigoServicio,
-        n_telefono_proveedor: formData.telefonoProveedor,
-        n_telefono_asesor: formData.telefonoAsesor,
-        campanaId: parseInt(formData.tipoCampana) || null,
-        estado: "HABILITADO",
-      };
-
-      const res = await axios.post("http://localhost:4000/matriz/global", payload, {
-        headers: { "Content-Type": "application/json" },
-      });
-
-      console.log("✅ Matriz creada:", res.data);
-      alert("✅ Matriz creada correctamente");
-      onClose();
-      onSave && onSave(res.data);
-
-      // Limpiar formulario
-      setFormData({
-        proveedor: "",
-        codigoServicio: "",
-        telefonoProveedor: "",
-        telefonoAsesor: "",
-        tipoCampana: "",
-      });
-    } catch (error) {
-      console.error("❌ Error al guardar la matriz:", error.response?.data || error.message);
-      alert("Error al guardar la matriz. Revisa la consola para más detalles.");
-    }
-  };
+  const filtrados = registros.filter((fila) =>
+    Object.values(fila).some((v) =>
+      String(v).toLowerCase().includes(busqueda.toLowerCase())
+    )
+  );
 
   return (
-    <Paper elevation={6} sx={{ borderRadius: 3, p: 4, maxWidth: 450 }}>
-      <Typography variant="h6" mb={2} fontWeight="bold">|
-        Crear Matriz de Escalamiento Global
+    <Box sx={{ width: "90%", mx: "auto", mt: 4 }}>
+      <Typography variant="h6" fontWeight="bold" mb={2}>
+        MATRIZ DE ESCALAMIENTO GLOBAL
       </Typography>
 
-      <form onSubmit={handleSubmit}>
-        <Stack spacing={2}>
-          <TextField
-            label="Proveedor"
-            name="proveedor"
-            value={formData.proveedor}
-            onChange={handleChange}
-            required
-          />
-
-          <TextField
-            label="Código del Servicio"
-            name="codigoServicio"
-            value={formData.codigoServicio}
-            onChange={handleChange}
-            required
-          />
-
-          <TextField
-            label="N° Teléfono Proveedor"
-            name="telefonoProveedor"
-            value={formData.telefonoProveedor}
-            onChange={handleChange}
-          />
-
-          <TextField
-            label="N° Teléfono Asesor"
-            name="telefonoAsesor"
-            value={formData.telefonoAsesor}
-            onChange={handleChange}
-          />
-
-          {/* 🔹 Selector de Campaña */}
-          <FormControl fullWidth size="small" required>
-            <Select
-              displayEmpty
-              name="tipoCampana"
-              value={formData.tipoCampana}
-              onChange={handleChange}
-              sx={{
-                borderRadius: 2,
-                backgroundColor: "transparent",
-                "& .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "#cfd8dc",
-                },
-                "&:hover .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "#90caf9",
-                },
-              }}
-            >
-              <MenuItem value="" disabled>
-                Seleccione Campaña
-              </MenuItem>
-
-              {campanas.map((campana) => (
-                <MenuItem key={campana.id} value={campana.id}>
-                  {campana.nombre_campana}
-                </MenuItem>
+      <Paper
+        sx={{
+          borderRadius: 3,
+          overflow: "hidden",
+          boxShadow: "0px 4px 15px rgba(0,0,0,0.15)",
+        }}
+      >
+        <Table>
+          <TableHead>
+            <TableRow sx={{ backgroundColor: "#002b5b" }}>
+              {[
+                "Proveedor",
+                "Código Servicio",
+                "Teléfono Proveedor",
+                "Teléfono Asesor",
+                "Nombre campaña",
+                "Estado",
+                "Acciones",
+              ].map((title) => (
+                <TableCell
+                  key={title}
+                  sx={{ color: "white", fontWeight: "bold" }}
+                >
+                  {title}
+                </TableCell>
               ))}
-            </Select>
-          </FormControl>
+            </TableRow>
+          </TableHead>
 
-          <Button variant="contained" type="submit">
-            Guardar
-          </Button>
-        </Stack>
-      </form>
-    </Paper>
+          <TableBody>
+            {filtrados.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} align="center">
+                  No hay registros
+                </TableCell>
+              </TableRow>
+            ) : (
+              filtrados.map((fila) => (
+                <TableRow key={fila.id}>
+                  <TableCell>{fila.proveedor}</TableCell>
+                  <TableCell>{fila.codigo_servicio}</TableCell>
+                  <TableCell>{fila.n_telefono_proveedor}</TableCell>
+                  <TableCell>{fila.n_telefono_asesor}</TableCell>
+                  <TableCell>{fila.campana?.nombre_campana}</TableCell>
+
+                  <TableCell>
+                    <Button
+                      onClick={() => onEstadoChange(fila.id, fila.estado)}
+                      variant="contained"
+                      sx={{
+                        backgroundColor:
+                          fila.estado.toLowerCase() === "habilitado" ||
+                          fila.estado.toLowerCase() === "activo"
+                            ? "#4caf50"
+                            : "#e53935",
+                        "&:hover": {
+                          backgroundColor:
+                            fila.estado.toLowerCase() === "habilitado" ||
+                            fila.estado.toLowerCase() === "activo"
+                              ? "#43a047"
+                              : "#c62828",
+                        },
+                        borderRadius: "20px",
+                        textTransform: "none",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      {fila.estado.toLowerCase() === "habilitado" ||
+                      fila.estado.toLowerCase() === "activo"
+                        ? "Activo"
+                        : "Inactivo"}
+                    </Button>
+                  </TableCell>
+
+                  <TableCell>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={() => onEditar(fila.id)}
+                      sx={{
+                        textTransform: "none",
+                        borderRadius: "10px",
+                        px: 2,
+                        py: 0.5,
+                        fontWeight: 600,
+                        backgroundColor: "#1565c0",
+                        "&:hover": {
+                          backgroundColor: "#0d47a1",
+                        },
+                      }}
+                    >
+                      Editar
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </Paper>
+    </Box>
   );
 };
 
-export default FormularioMatrizGlobal;
+// ===============================
+//   PÁGINA PRINCIPAL
+// ===============================
+const MatrizEscalamientoGlobalPage = () => {
+  const [registros, setRegistros] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [editando, setEditando] = useState(null);
+
+  const obtenerMatriz = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:4000/matriz-global"
+      );
+      setRegistros(response.data);
+    } catch (error) {
+      console.error("Error al cargar matriz global:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEstadoChange = async (id, currentEstado) => {
+    const estadoNormalizado = currentEstado.toLowerCase();
+    const nuevoEstado =
+      estadoNormalizado === "habilitado" || estadoNormalizado === "activo"
+        ? "DESHABILITADO"
+        : "HABILITADO";
+
+    try {
+      await axios.put(
+        `http://localhost:4000/matriz-global/estado/${id}`,
+        { estado: nuevoEstado }
+      );
+
+      setRegistros((prev) =>
+        prev.map((c) =>
+          c.id === id ? { ...c, estado: nuevoEstado } : c
+        )
+      );
+    } catch (error) {
+      console.error("❌ Error al cambiar estado global:", error);
+    }
+  };
+
+  useEffect(() => {
+    obtenerMatriz();
+  }, []);
+
+  return (
+    <Box sx={{ p: 4 }}>
+      <Typography variant="h5" mb={3} fontWeight="bold">
+        Gestión de Matriz de Escalamiento Global
+      </Typography>
+
+      {loading ? (
+        <Typography>Cargando datos...</Typography>
+      ) : (
+        <TablaMatrizGlobal
+          registros={registros}
+          onEstadoChange={handleEstadoChange}
+          onEditar={setEditando}
+        />
+      )}
+
+      {/* Modal editar */}
+      <Modal open={Boolean(editando)} onClose={() => setEditando(null)}>
+        <Box>
+          {editando && (
+            <FormularioEditarMatrizGlobal
+              open={Boolean(editando)}
+              idMatriz={editando}
+              onClose={() => setEditando(null)}
+              onUpdate={obtenerMatriz}
+            />
+          )}
+        </Box>
+      </Modal>
+    </Box>
+  );
+};
+
+export default MatrizEscalamientoGlobalPage;

@@ -66,7 +66,24 @@ export const createMatrizEscalamientoGlobal = async (req, res) => {
       n_telefono_asesor,
       campanaId,
     } = req.body;
+    // ✅ Validación de campaña activa
+    const campana = await prisma.campana.findUnique({
+      where: { id: Number(campanaId) },
+    });
 
+    if (!campana) {
+      return res.status(400).json({
+        success: false,
+        message: "La campaña seleccionada no existe.",
+      });
+    }
+
+    if (campana.estado !== "HABILITADO") {
+      return res.status(400).json({
+        success: false,
+        message: `La campaña "${campana.nombre_campana}" está inactiva y no puede ser asignada.`,
+      });
+    }
     const nuevaMatrizGlobal = await prisma.matrizEscalamientoGlobal.create({
       data: {
         proveedor,
@@ -152,7 +169,24 @@ export const getMatrizById = async (req, res) => {
   }
 };
 
+// 📌 Obtener una matriz por ID
+export const getMatrizGlobalById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const matriz = await prisma.matrizEscalamientoGlobal.findUnique({
+      where: { id: Number(id) },
+    });
 
+    if (!matriz) {
+      return res.status(404).json({ message: 'Matriz no encontrada' });
+    }
+
+    res.json(matriz);
+  } catch (error) {
+    console.error('Error al obtener el aplicativo:', error);
+    res.status(500).json({ message: 'Error al obtener la Matriz' });
+  }
+};
 
 
 export const updateEstadomatriz= async (req, res) => {
@@ -244,13 +278,31 @@ export const updateEstadomatrizGlobal= async (req, res) => {
 
 
 
-
-
 // ✏️ Actualizar registro
 export const updateMatriz = async (req, res) => {
   try {
     const { id } = req.params;
     const data = req.validatedData;
+
+    if (data.campanaId) {
+      const campana = await prisma.campana.findUnique({
+        where: { id: Number(data.campanaId) },
+      });
+
+      if (!campana) {
+        return res.status(400).json({
+          success: false,
+          message: "La campaña seleccionada no existe.",
+        });
+      }
+
+      if (campana.estado !== "HABILITADO") {
+        return res.status(400).json({
+          success: false,
+          message: `La campaña "${campana.nombre_campana}" está inactiva y no puede ser asignada.`,
+        });
+      }
+    }
 
     const matrizActualizado = await prisma.matrizEscalamiento.update({
       where: { id: Number(id) },
@@ -259,14 +311,64 @@ export const updateMatriz = async (req, res) => {
 
     res.json({
       success: true,
-      message: "Matriz actualizado exitosamente.",
+      message: "Matriz actualizada exitosamente.",
       data: matrizActualizado,
     });
+
   } catch (error) {
     console.error("Error al actualizar Matriz:", error);
     res.status(500).json({
       success: false,
-      message: "Error al actualizar el Matriz.",
+      message: "Error al actualizar la matriz.",
+    });
+  }
+};
+
+
+
+
+// ✏️ Actualizar registro
+export const updateMatrizGlobal = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const data = req.validatedData;
+
+    if (data.campanaId) {
+      const campana = await prisma.campana.findUnique({
+        where: { id: Number(data.campanaId) },
+      });
+
+      if (!campana) {
+        return res.status(400).json({
+          success: false,
+          message: "La campaña seleccionada no existe.",
+        });
+      }
+
+      if (campana.estado !== "HABILITADO") {
+        return res.status(400).json({
+          success: false,
+          message: `La campaña "${campana.nombre_campana}" está inactiva y no puede ser asignada.`,
+        });
+      }
+    }
+
+    const matrizActualizado = await prisma.matrizEscalamientoGlobal.update({
+      where: { id: Number(id) },
+      data,
+    });
+
+    res.json({
+      success: true,
+      message: "Matriz actualizada exitosamente.",
+      data: matrizActualizado,
+    });
+
+  } catch (error) {
+    console.error("Error al actualizar Matriz:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error al actualizar la matriz.",
     });
   }
 };

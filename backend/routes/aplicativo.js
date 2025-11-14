@@ -16,6 +16,9 @@ router.post("/", validate(aplicativoSchema), createAplicativo);
 router.get("/", getAplicativos);
 router.get("/:id", getAplicativoById);
 router.put("/estado/:id", updateEstadoaplicativo);
+
 router.put("/:id", validate(aplicativoSchema), updateAplicativo);
+
+
 
 export default router;
