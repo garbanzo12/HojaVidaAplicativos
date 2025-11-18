@@ -67,8 +67,12 @@ const TablaMatriz = ({ registros = [], onEstadoChange, onEditar }) => {
                   <TableCell>{fila.codigo_servicio}</TableCell>
                   <TableCell>{fila.n_telefono_proveedor}</TableCell>
                   <TableCell>{fila.n_telefono_asesor}</TableCell>
-                  <TableCell>{fila.campana?.nombre_campana}</TableCell>
-
+                  <TableCell>
+                      {/* 🏆 CORRECCIÓN CLAVE: Mapear el array de campañas */}
+                      {fila.campanas && fila.campanas.length > 0
+                        ? fila.campanas.map(campana => campana.nombre_campana).join(', ')
+                        : 'Sin campañas'}
+                    </TableCell>
                   <TableCell>
                     <Button
                       onClick={() => onEstadoChange(fila.id, fila.estado)}
@@ -174,33 +178,32 @@ const MatrizPage = () => {
     }
   };
 
-  // ====================== //
-  // Cambiar estado
-  // ====================== //
-  const handleEstadoChange = async (id, currentEstado) => {
-    const estadoNormalizado = currentEstado.toLowerCase();
 
-    const nuevoEstado =
-      estadoNormalizado === "habilitado" || estadoNormalizado === "activo"
-        ? "DESHABILITADO"
-        : "HABILITADO";
+const handleEstadoChange = async (id, currentEstado) => {
+  const estadoNormalizado = currentEstado.toLowerCase();
 
-    try {
-      await axios.put(`http://localhost:4000/matriz/estado/${id}`, {
-        estado: nuevoEstado,
-      });
+  const nuevoEstado =
+    estadoNormalizado === "habilitado" || estadoNormalizado === "activo"
+      ? "DESHABILITADO"
+      : "HABILITADO";
 
-      setRegistros((prev) =>
-        prev.map((c) =>
-          c.id === id
-            ? { ...c, estado: nuevoEstado === "HABILITADO" ? "Activo" : "Inactivo" }
-            : c
-        )
-      );
-    } catch (error) {
-      console.error("❌ Error al actualizar estado:", error);
-    }
-  };
+  try {
+    await axios.put(`http://localhost:4000/matriz/estado-global/${id}`, {
+      estado: nuevoEstado,
+    });
+
+    // 🏆 CORRECCIÓN CLAVE: Almacenar "HABILITADO" o "DESHABILITADO" en el estado local
+    setRegistros((prev) =>
+      prev.map((c) =>
+        c.id === id
+          ? { ...c, estado: nuevoEstado } // <-- Usamos directamente el valor que enviamos al backend
+          : c
+      )
+    );
+  } catch (error) {
+    console.error("❌ Error al actualizar estado:", error);
+  }
+};
 
   useEffect(() => {
     obtenerMatriz();

@@ -12,89 +12,102 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model aplicativo {
+  id              Int                        @id @default(autoincrement())
+  nombre          String
+  direccion_ip    String
+  puerto          Int
+  url             String
+  tipo_red        String
+  escalamiento    String
+  campanaId       Int
+  estado          aplicativo_estado          @default(HABILITADO)
+  tipo_aplicativo aplicativo_tipo_aplicativo
+  campana         campana                    @relation(fields: [campanaId], references: [id], onDelete: Cascade, map: "Aplicativo_campanaId_fkey")
 
-enum TipoRed {
+  @@index([campanaId], map: "Aplicativo_campanaId_fkey")
+}
+
+model campana {
+  id                          Int                        @id @default(autoincrement())
+  nombre_campana              String
+  cliente                     String
+  director_operacion_abai     String
+  correo_director             String
+  segmento                    String?
+  nombre_gte_campana          String?
+  correo_gte_campana          String?
+  ubicacion_sedes             String
+  puestos_operacion           Int
+  puestos_estructura          Int
+  segmento_red                String
+  fecha_actualizacion         DateTime
+  nombre_contacto_cliente     String
+  correo_contacto_cliente     String
+  telefono_contacto_cliente   String
+  nombre_contacto_comercial   String
+  correo_contacto_comercial   String
+  telefono_contacto_comercial String
+  soporte_tecnico_abai        String
+  correo_soporte_abai         String
+  servicios_prestados         String?
+  imagen_cliente              String?
+  imagen_sede                 String?
+  estado                      campana_estado             @default(HABILITADO)
+  aplicativo                  aplicativo[]
+  matrizescalamiento          matrizescalamiento[]
+  matrizescalamientoglobal    matrizescalamientoglobal[]
+
+}
+
+model matrizescalamiento {
+  id                   Int                       @id @default(autoincrement())
+  proveedor            String
+  codigo_servicio      String
+  n_telefono_proveedor String
+  n_telefono_asesor    String
+  campanaId            Int?
+  estado               matrizescalamiento_estado @default(HABILITADO)
+  campana              campana?                  @relation(fields: [campanaId], references: [id], onDelete: Cascade, map: "MatrizEscalamiento_campanaId_fkey")
+
+  @@index([campanaId], map: "MatrizEscalamiento_campanaId_fkey")
+}
+
+model matrizescalamientoglobal {
+  id                   Int                             @id @default(autoincrement())
+  proveedor            String
+  codigo_servicio      String
+  n_telefono_proveedor String
+  n_telefono_asesor    String
+  estado               matrizescalamientoglobal_estado @default(HABILITADO)
+
+  // Relación Many-to-Many correcta
+  campanas             campana[]
+}
+
+
+enum matrizescalamiento_estado {
+  HABILITADO
+  DESHABILITADO
+}
+
+enum matrizescalamientoglobal_estado {
+  HABILITADO
+  DESHABILITADO
+}
+
+enum aplicativo_estado {
+  HABILITADO
+  DESHABILITADO
+}
+
+enum aplicativo_tipo_aplicativo {
   internet
   abai
   proveedor
 }
 
-enum Estado {
+enum campana_estado {
   HABILITADO
   DESHABILITADO
-}
-
-model Campana {
-  id                        Int       @id @default(autoincrement())
-  nombre_campana            String
-  cliente                   String
-  director_operacion_abai   String
-  correo_director           String
-  segmento                  String?
-  nombre_gte_campana        String?
-  correo_gte_campana        String?
-  ubicacion_sedes           String
-  puestos_operacion         Int
-  puestos_estructura        Int
-  segmento_red              String
-  fecha_actualizacion       DateTime
-  nombre_contacto_cliente   String
-  correo_contacto_cliente   String
-  telefono_contacto_cliente String
-  nombre_contacto_comercial String
-  correo_contacto_comercial String
-  telefono_contacto_comercial String
-  soporte_tecnico_abai      String
-  correo_soporte_abai       String
-  servicios_prestados       String?
-  imagen_cliente            String?
-  imagen_sede               String?
-
-  aplicativos               Aplicativo[]
-  matrizEscalamientos       MatrizEscalamiento[]
-  matrizEscalamientoGlobal  MatrizEscalamientoGlobal[]
-
-  estado                    Estado   @default(HABILITADO)
-}
-
-model Aplicativo {
-  id             Int      @id @default(autoincrement())
-  nombre         String
-  direccion_ip   String
-  puerto         Int
-  url            String
-  tipo_aplicativo       TipoRed
-  tipo_red       String
-  escalamiento   String
-
-  campanaId      Int
-  campana        Campana   @relation(fields: [campanaId], references: [id], onDelete: Cascade)
-
-  estado         Estado   @default(HABILITADO)
-}
-
-model MatrizEscalamiento {
-  id                   Int      @id @default(autoincrement())
-  proveedor            String
-  codigo_servicio      String
-  n_telefono_proveedor String
-  n_telefono_asesor    String
-
-  campanaId            Int
-  campana              Campana   @relation(fields: [campanaId], references: [id], onDelete: Cascade)
-
-  estado               Estado   @default(HABILITADO)
-}
-
-model MatrizEscalamientoGlobal {
-  id                   Int      @id @default(autoincrement())
-  proveedor            String
-  codigo_servicio      String
-  n_telefono_proveedor String
-  n_telefono_asesor    String
-
-  campanaId            Int
-  campana              Campana   @relation(fields: [campanaId], references: [id], onDelete: Cascade)
-
-  estado               Estado   @default(HABILITADO)
 }
