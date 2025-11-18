@@ -20,10 +20,8 @@ const FormularioMatriz = ({ onSave, onClose }) => {
     codigoServicio: "",
     telefonoProveedor: "",
     telefonoAsesor: "",
-    tipoCampana: "",
   });
 
-  const [campanas, setCampanas] = useState([]);
 
   // 🔹 Estados del Snackbar
   const [alertOpen, setAlertOpen] = useState(false);
@@ -36,35 +34,7 @@ const FormularioMatriz = ({ onSave, onClose }) => {
     setAlertOpen(true);
   };
 
-  // 🔹 Cargar campañas
-useEffect(() => {
-  const fetchCampanas = async () => {
-    try {
-      const res = await axios.get("http://localhost:4000/campana");
 
-      if (res.data.success && Array.isArray(res.data.campanas)) {
-        
-        // 🔍 Filtrar campañas con estado HABILITADO
-        const campanasHabilitadas = res.data.campanas.filter((c) => {
-          const estado = c.estado?.toString().trim().toUpperCase();
-          return estado === "HABILITADO";
-        });
-
-        setCampanas(campanasHabilitadas);
-
-        showAlert("Campañas cargadas correctamente", "success");
-      } else {
-        showAlert(res.data.message || "Error al obtener campañas", "warning");
-        setCampanas([]);
-      }
-    } catch (err) {
-      showAlert("Error al cargar campañas: " + err.message, "error");
-      setCampanas([]);
-    }
-  };
-
-  fetchCampanas();
-}, []);
 
   // 🔹 Manejar cambios
   const handleChange = (e) => {
@@ -82,7 +52,6 @@ useEffect(() => {
         codigo_servicio: formData.codigoServicio,
         n_telefono_proveedor: formData.telefonoProveedor,
         n_telefono_asesor: formData.telefonoAsesor,
-        campanaId: parseInt(formData.tipoCampana) || null,
         estado: "HABILITADO",
       };
 
@@ -99,7 +68,6 @@ useEffect(() => {
         codigoServicio: "",
         telefonoProveedor: "",
         telefonoAsesor: "",
-        tipoCampana: "",
       });
 
     } catch (error) {
@@ -150,34 +118,6 @@ useEffect(() => {
               onChange={handleChange}
             />
 
-            <FormControl fullWidth size="small" required>
-              <Select
-                displayEmpty
-                name="tipoCampana"
-                value={formData.tipoCampana}
-                onChange={handleChange}
-                sx={{
-                  borderRadius: 2,
-                  backgroundColor: "transparent",
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#cfd8dc",
-                  },
-                  "&:hover .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#90caf9",
-                  },
-                }}
-              >
-                <MenuItem value="" disabled>
-                  Seleccione Campaña
-                </MenuItem>
-
-                {campanas.map((campana) => (
-                  <MenuItem key={campana.id} value={campana.id}>
-                    {campana.nombre_campana}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
 
             <Button variant="contained" type="submit">
               Guardar

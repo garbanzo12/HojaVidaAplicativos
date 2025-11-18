@@ -48,11 +48,6 @@ export const aplicativoSchema = z.object({
     })
     .min(1, "El escalamiento no puede estar vacío."),
 
-  campanaId: z
-    .number({
-      required_error: "El ID de la campaña es obligatorio.",
-      invalid_type_error: "El ID de la campaña debe ser numérico.",
-    }),
 
   estado: z.enum(["HABILITADO", "DESHABILITADO"]).default("HABILITADO"),
 });

@@ -8,36 +8,16 @@ export const createMatrizEscalamiento = async (req, res) => {
       codigo_servicio,
       n_telefono_proveedor,
       n_telefono_asesor,
-      campanaId,
     } = req.body;
 
-    // ✅ Validación de campaña activa
-    const campana = await prisma.campana.findUnique({
-      where: { id: Number(campanaId) },
-    });
-
-    if (!campana) {
-      return res.status(400).json({
-        success: false,
-        message: "La campaña seleccionada no existe.",
-      });
-    }
-
-    if (campana.estado !== "HABILITADO") {
-      return res.status(400).json({
-        success: false,
-        message: `La campaña "${campana.nombre_campana}" está inactiva y no puede ser asignada.`,
-      });
-    }
 
     // ✅ Crear matriz si todo está bien
-    const nuevaMatriz = await prisma.matrizEscalamiento.create({
+    const nuevaMatriz = await prisma.matrizescalamiento.create({
       data: {
         proveedor,
         codigo_servicio,
         n_telefono_proveedor,
         n_telefono_asesor,
-        campanaId: Number(campanaId),
         estado: "HABILITADO",
       },
     });
@@ -62,16 +42,7 @@ export const createMatrizEscalamiento = async (req, res) => {
 // 📌 Obtener todas las matrices
 export const getMatriz = async (req, res) => {
   try {
-    const matrices = await prisma.matrizEscalamiento.findMany({
-      include: {
-        campana: {
-          select: {
-            id: true,
-            nombre_campana: true,
-          },
-        },
-      },
-    });
+    const matrices = await prisma.matrizescalamiento.findMany({});
     res.json(matrices);
   } catch (error) {
     console.error('Error al obtener las matrices:', error);
@@ -85,7 +56,7 @@ export const getMatriz = async (req, res) => {
 export const getMatrizById = async (req, res) => {
   try {
     const { id } = req.params;
-    const matriz = await prisma.matrizEscalamiento.findUnique({
+    const matriz = await prisma.matrizescalamiento.findUnique({
       where: { id: Number(id) },
     });
 
@@ -106,7 +77,7 @@ export const updateEstadomatriz= async (req, res) => {
 
   try {
     // 1️⃣ Buscar la campaña por ID
-    const matriz = await prisma.matrizEscalamiento.findUnique({
+    const matriz = await prisma.matrizescalamiento.findUnique({
       where: { id: Number(id) },
     });
 
@@ -123,7 +94,7 @@ export const updateEstadomatriz= async (req, res) => {
       matriz.estado === "HABILITADO" ? "DESHABILITADO" : "HABILITADO";
 
     // 4️⃣ Actualizar en base de datos
-    const matrizActualizada = await prisma.matrizEscalamiento.update({
+    const matrizActualizada = await prisma.matrizescalamiento.update({
       where: { id: Number(id) },
       data: { estado: nuevoEstado },
     });

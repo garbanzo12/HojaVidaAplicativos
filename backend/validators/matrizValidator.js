@@ -30,16 +30,7 @@ export const matrizSchema = z.object({
     })
     .regex(/^[0-9+\-()\s]{7,20}$/, "Debe ser un número de teléfono válido."),
 
-  campanaId: z.preprocess(
-    (val) => (val ? Number(val) : null),
-    z
-      .number({
-        required_error: "El ID de la campaña es obligatorio.",
-        invalid_type_error: "El ID de la campaña debe ser numérico.",
-      })
-      .int()
-      .positive()
-  ),
+
 
   estado: z
     .enum(["HABILITADO", "DESHABILITADO"], {

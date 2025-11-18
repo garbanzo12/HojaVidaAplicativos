@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -8,9 +8,17 @@ import {
   Grid,
   IconButton,
   Divider,
+  FormControl,
+  Select,
+  MenuItem,
+  InputLabel,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import axios from "axios";
+
+// ----------------------------------------------------
+// 🛑 DEFINICIONES DE ESTILOS FALTANTES 🛑
+// ----------------------------------------------------
 
 const modalStyle = {
   position: "absolute",
@@ -39,6 +47,10 @@ const sectionTitle = {
   letterSpacing: 0.5,
 };
 
+// ----------------------------------------------------
+// 🚀 COMPONENTE PRINCIPAL
+// ----------------------------------------------------
+
 const FormularioModal = ({ open, onClose }) => {
   const [formData, setFormData] = useState({
     nombre_campana: "",
@@ -63,64 +75,105 @@ const FormularioModal = ({ open, onClose }) => {
     correo_soporte_abai: "",
     servicios_prestados: "",
     estado: "HABILITADO",
+    // Nuevos IDs
+    aplicativoId: "", 
+    matrizId: "", 
   });
 
+  const [aplicativos, setAplicativos] = useState([]);
+  const [matrices, setMatrices] = useState([]);
   const [imagenSede, setImagenSede] = useState(null);
   const [imagenCliente, setImagenCliente] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  // 🔹 Función de carga de datos (useEffect)
+  useEffect(() => {
+    if (open) {
+      // 1. Cargar Aplicativos
+      axios.get("http://localhost:4000/aplicativo") 
+        .then(res => {
+          // Asume que la lista de aplicativos está en res.data.aplicativos
+          
+          setAplicativos(res.data || []); 
+        })
+        .catch(err => console.error("Error cargando Aplicativos:", err));
+
+      // 2. Cargar Matrices
+      axios.get("http://localhost:4000/matriz") 
+        .then(res => {
+          // Asume que la lista de matrices está en res.data.registros
+          setMatrices(res.data || []); 
+        })
+        .catch(err => console.error("Error cargando Matrices:", err));
+    }
+  }, [open]);
+
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    
+    // Si el valor es de un select, lo parseamos a Number o null
+    const isIdField = name === 'aplicativoId' || name === 'matrizId';
+    
+    let parsedValue = value;
+
+    if (isIdField) {
+        // Si el valor es "", lo convertimos a null (para Prisma SetNull), sino a Number
+        parsedValue = value === "" ? null : Number(value);
+    } else if (e.target.type === 'number') {
+        // Para TextFields de tipo number
+        parsedValue = value ? Number(value) : (value === 0 ? 0 : "");
+    }
+        
+    setFormData((prev) => ({ ...prev, [name]: parsedValue }));
   };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      // Crear el FormData para enviar texto + archivos
       const formDataToSend = new FormData();
 
-      // Agregar los campos de texto
-      Object.keys(formData).forEach((key) => {
-        formDataToSend.append(key, formData[key]);
+      // Preparar los datos antes de añadirlos al FormData
+      const dataToSubmit = {
+          ...formData,
+          // Asegurar que las IDs sean null o número
+          aplicativoId: formData.aplicativoId || null,
+          matrizId: formData.matrizId || null,
+          // Los campos numéricos ya deben ser números o strings vacíos gracias a handleChange
+          puestos_operacion: formData.puestos_operacion || null,
+          puestos_estructura: formData.puestos_estructura || null,
+      };
+
+      // Agregar los campos de texto al FormData
+      Object.keys(dataToSubmit).forEach((key) => {
+        // Excluir claves con valor null si no queremos que se envíen como string "null"
+        if (dataToSubmit[key] !== null && dataToSubmit[key] !== undefined) {
+            formDataToSend.append(key, dataToSubmit[key]);
+        }
       });
+      
 
       // Agregar las imágenes
       if (imagenSede) formDataToSend.append("imagen_sede", imagenSede);
       if (imagenCliente) formDataToSend.append("imagen_cliente", imagenCliente);
-      for (let pair of formDataToSend.entries()) {
-          console.log(pair[0], pair[1]);
-        }
-
-      // Verificación de contenido
-      console.log("📦 Datos enviados a backend:");
-      for (const pair of formDataToSend.entries()) {
-        console.log(pair[0], ":", pair[1]);
-      }
-
-      // Enviar con headers de multipart
-
-try {
-  const response = await axios.post("http://localhost:4000/campana", formDataToSend, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
-
-  console.log("✅ Campaña creada:", response.data);
-} catch (error) {
-  console.error("❌ Error al crear la campaña:", error);
-}
 
 
+      // Enviar la solicitud POST
+      const response = await axios.post("http://localhost:4000/campana", formDataToSend, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      console.log("✅ Campaña creada:", response.data);
       alert("✅ Campaña creada correctamente");
-      
-      onClose();
+      onClose(); // Cerrar el modal y refrescar la lista si es necesario
     } catch (error) {
-      console.error("❌ Error al crear campaña:", error);
-      alert("❌ Error al crear la campaña");
+      console.error("❌ Error al crear campaña:", error.response?.data || error.message);
+      alert("❌ Error al crear la campaña: " + (error.response?.data?.message || error.message));
     } finally {
       setLoading(false);
     }
@@ -129,7 +182,7 @@ try {
   return (
     <Modal open={open} onClose={() => null} disableEscapeKeyDown>
       <Box component="form" onSubmit={handleSubmit} sx={modalStyle}>
-        {/* Botón cerrar */}
+        
         <IconButton
           onClick={onClose}
           sx={{
@@ -143,17 +196,8 @@ try {
           <CloseIcon />
         </IconButton>
 
-        <Typography
-          variant="h5"
-          textAlign="center"
-          sx={{
-            mb: 1,
-            color: "#0d47a1",
-            letterSpacing: 0.8,
-            fontWeight: "bold",
-          }}
-        >
-          CREAR FORMULARIO
+        <Typography variant="h5" textAlign="center" sx={{ mb: 1, color: "#0d47a1", letterSpacing: 0.8, fontWeight: "bold" }}>
+          CREAR CAMPAÑA
         </Typography>
 
         <Divider sx={{ mb: 3 }} />
@@ -177,14 +221,90 @@ try {
                 fullWidth
                 size="small"
                 required
-                value={formData[field.name]}
+                value={formData[field.name] || ""}
                 onChange={handleChange}
               />
             </Grid>
           ))}
         </Grid>
 
-        {/* GERENTES  DE CAMPAÑA */}
+        {/* RELACIONES Y DATOS GENERALES */}
+        <Typography variant="subtitle1" sx={sectionTitle}>
+          VINCULACIÓN & DATOS GENERALES
+        </Typography>
+        <Grid container spacing={2} justifyContent="center">
+          
+          {/* SELECT Aplicativo */}
+          <Grid item xs={12} sm={5}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Aplicativo</InputLabel>
+              <Select
+                name="aplicativoId"
+                value={formData.aplicativoId || ""} 
+                onChange={handleChange}
+                label="Aplicativo"
+                required 
+              >
+                <MenuItem value="">
+                  <em>Ninguno</em>
+                </MenuItem>
+                {aplicativos.map((app) => (
+                  <MenuItem key={app.id} value={app.id}>
+                    {app.nombre}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+          
+          {/* SELECT MatrizEscalamiento */}
+          <Grid item xs={12} sm={5}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Matriz Escalamiento</InputLabel>
+              <Select
+                name="matrizId"
+                value={formData.matrizId || ""} 
+                onChange={handleChange}
+                label="Matriz Escalamiento"
+                required 
+              >
+                <MenuItem value="">
+                  <em>Ninguna</em>
+                </MenuItem>
+                {matrices.map((matriz) => (
+                  <MenuItem key={matriz.id} value={matriz.id}>
+                    {matriz.proveedor}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+          
+          {/* Otros TextFields de DATOS GENERALES */}
+          {[
+             { name: "ubicacion_sedes", label: "Ubicación Sede" },
+             { name: "puestos_operacion", label: "N° Puestos de Operación", type: "number" },
+             { name: "puestos_estructura", label: "N° Puestos de Estructura", type: "number" },
+             { name: "segmento_red", label: "Segmento de Red" },
+             { name: "fecha_actualizacion", label: "Fecha Actualización", type: "date" },
+          ].map((field) => (
+             <Grid item xs={12} sm={5} key={field.name}> 
+               <TextField
+                 label={field.label}
+                 name={field.name}
+                 type={field.type || "text"}
+                 fullWidth
+                 size="small"
+                 required
+                 InputLabelProps={field.type === "date" ? { shrink: true } : undefined}
+                 value={formData[field.name] || ""}
+                 onChange={handleChange}
+               />
+             </Grid>
+          ))}
+        </Grid>
+        
+        {/* GERENTES DE CAMPAÑA */}
         <Typography variant="subtitle1" sx={sectionTitle}>
           GERENTES DE CAMPAÑA
         </Typography>
@@ -202,35 +322,7 @@ try {
                 fullWidth
                 size="small"
                 required
-                value={formData[field.name]}
-                onChange={handleChange}
-              />
-            </Grid>
-          ))}
-        </Grid>
-
-        <Typography variant="subtitle1" sx={sectionTitle}>
-          DATOS GENERALES 
-        </Typography>
-        <Grid container spacing={2} justifyContent="center">
-          {[
-            { name: "ubicacion_sedes", label: "Ubicación Sede" },
-            { name: "puestos_operacion", label: "N° Puestos de Operación", type: "number" },
-            { name: "puestos_estructura", label: "N° Puestos de Estructura", type: "number" },
-            { name: "segmento_red", label: "Segmento de Red" },
-            { name: "fecha_actualizacion", label: "Fecha Actualización", type: "date" },
-
-          ].map((field) => (
-            <Grid item xs={12} sm={10} key={field.name}>
-              <TextField
-                label={field.label}
-                name={field.name}
-                type={field.type || "text"}
-                fullWidth
-                size="small"
-                required
-                InputLabelProps={field.type === "date" ? { shrink: true } : undefined}
-                value={formData[field.name]}
+                value={formData[field.name] || ""}
                 onChange={handleChange}
               />
             </Grid>
@@ -258,7 +350,7 @@ try {
                 fullWidth
                 size="small"
                 required
-                value={formData[field.name]}
+                value={formData[field.name] || ""}
                 onChange={handleChange}
               />
             </Grid>
@@ -283,12 +375,13 @@ try {
                 fullWidth
                 size="small"
                 required
-                value={formData[field.name]}
+                value={formData[field.name] || ""}
                 onChange={handleChange}
               />
             </Grid>
           ))}
         </Grid>
+
 
         {/* IMÁGENES */}
         <Typography variant="subtitle1" sx={sectionTitle}>
@@ -369,10 +462,7 @@ try {
               fontSize: "1rem",
               textTransform: "none",
               boxShadow: "0 4px 12px rgba(21,101,192,0.3)",
-              "&:hover": {
-                backgroundColor: "#0d47a1",
-                boxShadow: "0 5px 15px rgba(13,71,161,0.4)",
-              },
+              "&:hover": { backgroundColor: "#0d47a1", boxShadow: "0 5px 15px rgba(13,71,161,0.4)" },
             }}
           >
             {loading ? "Creando..." : "CREAR"}

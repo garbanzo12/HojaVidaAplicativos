@@ -27,25 +27,8 @@ const FormularioAplicativo = ({ onClose = () => {} }) => {
     tipoCampana: "",
   });
 
-  const [campanas, setCampanas] = useState([]); // ← aquí se guardan las campañas desde la BD
 
-  // 🔹 Cargar campañas al montar el componente
-  useEffect(() => {
-    const fetchCampanas = async () => {
-      try {
-        const res = await axios.get("http://localhost:4000/campana");
-        if (res.data.success) {
-          setCampanas(res.data.campanas);
-        } else {
-          console.log(res.data.campanas)
-          console.error("Error al obtener campañas:", res.data.message);
-        }
-      } catch (err) {
-        console.error("❌ Error al cargar campañas:", err.message);
-      }
-    };
-    fetchCampanas();
-  }, []);
+ 
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -61,7 +44,6 @@ const FormularioAplicativo = ({ onClose = () => {} }) => {
         url: formData.url,
         tipo_red: formData.tipoRed,
         escalamiento: formData.escalamiento,
-        campanaId: parseInt(formData.tipoCampana) || null,
         estado: "HABILITADO",
         tipo_aplicativo:
           formData.tipoAplicativo === "Aplicativo ABAI"
@@ -204,33 +186,7 @@ const FormularioAplicativo = ({ onClose = () => {} }) => {
         {/* Selector de campaña */}
         <Grid item xs={12} md={4}>
           <FormControl fullWidth size="small" required>
-            <Select
-              displayEmpty
-              name="tipoCampana"
-              value={formData.tipoCampana}
-              onChange={handleChange}
-              sx={{
-                borderRadius: 2,
-                backgroundColor: "transparent",
-                "& .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "#cfd8dc",
-                },
-                "&:hover .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "#90caf9",
-                },
-              }}
-            >
-              <MenuItem value="" disabled>
-                Seleccione Campaña
-              </MenuItem>
-
-              {/* 🔹 Campañas dinámicas desde la BD */}
-              {campanas.map((campana) => (
-                <MenuItem key={campana.id} value={campana.id}>
-                  {campana.nombre_campana}
-                </MenuItem>
-              ))}
-            </Select>
+      
           </FormControl>
         </Grid>
       </Grid>

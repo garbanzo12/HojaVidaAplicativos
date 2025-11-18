@@ -20,12 +20,9 @@ model aplicativo {
   url             String
   tipo_red        String
   escalamiento    String
-  campanaId       Int
   estado          aplicativo_estado          @default(HABILITADO)
   tipo_aplicativo aplicativo_tipo_aplicativo
-  campana         campana                    @relation(fields: [campanaId], references: [id], onDelete: Cascade, map: "Aplicativo_campanaId_fkey")
-
-  @@index([campanaId], map: "Aplicativo_campanaId_fkey")
+  campanas        campana[]
 }
 
 model campana {
@@ -54,10 +51,13 @@ model campana {
   imagen_cliente              String?
   imagen_sede                 String?
   estado                      campana_estado             @default(HABILITADO)
-  aplicativo                  aplicativo[]
-  matrizescalamiento          matrizescalamiento[]
-  matrizescalamientoglobal    matrizescalamientoglobal[]
-
+  aplicativoId                Int?
+  matrizId                    Int?
+  aplicativo                  aplicativo?                @relation(fields: [aplicativoId], references: [id])
+  matrizescalamiento          matrizescalamiento?        @relation(fields: [matrizId], references: [id])
+  matrizescalamientoglobal matrizescalamientoglobal[] @relation("CampanaMatrizGlobal") 
+  @@index([aplicativoId])
+  @@index([matrizId])
 }
 
 model matrizescalamiento {
@@ -66,11 +66,8 @@ model matrizescalamiento {
   codigo_servicio      String
   n_telefono_proveedor String
   n_telefono_asesor    String
-  campanaId            Int?
   estado               matrizescalamiento_estado @default(HABILITADO)
-  campana              campana?                  @relation(fields: [campanaId], references: [id], onDelete: Cascade, map: "MatrizEscalamiento_campanaId_fkey")
-
-  @@index([campanaId], map: "MatrizEscalamiento_campanaId_fkey")
+  campanas campana[]
 }
 
 model matrizescalamientoglobal {
@@ -80,11 +77,8 @@ model matrizescalamientoglobal {
   n_telefono_proveedor String
   n_telefono_asesor    String
   estado               matrizescalamientoglobal_estado @default(HABILITADO)
-
-  // Relación Many-to-Many correcta
-  campanas             campana[]
+  campana campana[] @relation("CampanaMatrizGlobal") // 👈 Nombre cambiado
 }
-
 
 enum matrizescalamiento_estado {
   HABILITADO
