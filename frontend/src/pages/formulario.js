@@ -76,10 +76,12 @@ const FormularioModal = ({ open, onClose }) => {
     servicios_prestados: "",
     estado: "HABILITADO",
     // Nuevos IDs
-    aplicativoId: "", 
-    matrizId: "", 
-  });
+    aplicativoId: [], 
+    matrizId: [], 
+    matrizGlobalId: [],
 
+  });
+  const [matricesGlobal, setMatricesGlobal] = useState([]);
   const [aplicativos, setAplicativos] = useState([]);
   const [matrices, setMatrices] = useState([]);
   const [imagenSede, setImagenSede] = useState(null);
@@ -106,13 +108,19 @@ const FormularioModal = ({ open, onClose }) => {
         })
         .catch(err => console.error("Error cargando Matrices:", err));
     }
+    // 3. Cargar Matriz Escalamiento Global
+        axios.get("http://localhost:4000/matriz/global")
+          .then(res => {
+            setMatricesGlobal(res.data || []);
+          })
+          .catch(err => console.error("Error cargando Matriz Global:", err));
+
   }, [open]);
 
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     
-    // Si el valor es de un select, lo parseamos a Number o null
     const isIdField = name === 'aplicativoId' || name === 'matrizId';
     
     let parsedValue = value;
@@ -128,7 +136,7 @@ const FormularioModal = ({ open, onClose }) => {
     setFormData((prev) => ({ ...prev, [name]: parsedValue }));
   };
 
-
+      
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -136,17 +144,33 @@ const FormularioModal = ({ open, onClose }) => {
     try {
       const formDataToSend = new FormData();
 
+      if (Array.isArray(formData.aplicativoId)) {
+              formData.aplicativoId.forEach((id) => {
+                formDataToSend.append("aplicativoId[]", id);
+              });
+            }
+      if (Array.isArray(formData.matrizId)) {
+        formData.matrizId.forEach((id) => {
+        formDataToSend.append("matrizId[]", id);
+        });
+      }
+      if (Array.isArray(formData.matrizGlobalId)) {
+        formData.matrizGlobalId.forEach((id) => {
+        formDataToSend.append("matrizGlobalId[]", id);
+        });
+      }
       // Preparar los datos antes de añadirlos al FormData
       const dataToSubmit = {
           ...formData,
           // Asegurar que las IDs sean null o número
-          aplicativoId: formData.aplicativoId || null,
-          matrizId: formData.matrizId || null,
+          
           // Los campos numéricos ya deben ser números o strings vacíos gracias a handleChange
           puestos_operacion: formData.puestos_operacion || null,
           puestos_estructura: formData.puestos_estructura || null,
       };
-
+        delete dataToSubmit.matrizGlobalId;
+        delete dataToSubmit.aplicativoId;
+        delete dataToSubmit.matrizId;
       // Agregar los campos de texto al FormData
       Object.keys(dataToSubmit).forEach((key) => {
         // Excluir claves con valor null si no queremos que se envíen como string "null"
@@ -160,7 +184,10 @@ const FormularioModal = ({ open, onClose }) => {
       if (imagenSede) formDataToSend.append("imagen_sede", imagenSede);
       if (imagenCliente) formDataToSend.append("imagen_cliente", imagenCliente);
 
-
+        console.log("🧪 Revisando FormData antes de enviar:");
+        for (let [key, value] of formDataToSend.entries()) {
+          console.log(key, value);
+        }
       // Enviar la solicitud POST
       const response = await axios.post("http://localhost:4000/campana", formDataToSend, {
         headers: {
@@ -239,13 +266,18 @@ const FormularioModal = ({ open, onClose }) => {
             <FormControl fullWidth size="small">
               <InputLabel>Aplicativo</InputLabel>
               <Select
+                multiple
                 name="aplicativoId"
-                value={formData.aplicativoId || ""} 
-                onChange={handleChange}
-                label="Aplicativo"
-                required 
-              >
-                <MenuItem value="">
+                value={formData.aplicativoId}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    aplicativoId: e.target.value
+                  }))
+                }
+                label="Aplicativos"
+              > 
+                <MenuItem value={null}>
                   <em>Ninguno</em>
                 </MenuItem>
                 {aplicativos.map((app) => (
@@ -262,15 +294,21 @@ const FormularioModal = ({ open, onClose }) => {
             <FormControl fullWidth size="small">
               <InputLabel>Matriz Escalamiento</InputLabel>
               <Select
+                multiple
                 name="matrizId"
-                value={formData.matrizId || ""} 
-                onChange={handleChange}
+                value={formData.matrizId}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    matrizId: e.target.value
+                  }))
+                }
                 label="Matriz Escalamiento"
-                required 
               >
-                <MenuItem value="">
+                <MenuItem value={null}>
                   <em>Ninguna</em>
                 </MenuItem>
+
                 {matrices.map((matriz) => (
                   <MenuItem key={matriz.id} value={matriz.id}>
                     {matriz.proveedor}
@@ -279,7 +317,34 @@ const FormularioModal = ({ open, onClose }) => {
               </Select>
             </FormControl>
           </Grid>
-          
+          {/* SELECT Matriz Escalamiento GLOBAL */}
+          <Grid item xs={12} sm={4}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Matriz Global</InputLabel>
+              <Select
+                multiple
+                name="matrizGlobalId"
+                value={formData.matrizGlobalId}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    matrizGlobalId: e.target.value
+                  }))
+                }
+                label="Matriz Global"
+              >
+                <MenuItem value={null}>
+                  <em>Ninguna</em>
+                </MenuItem>
+
+                {matricesGlobal.map((matriz) => (
+                  <MenuItem key={matriz.id} value={matriz.id}>
+                    {matriz.proveedor}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
           {/* Otros TextFields de DATOS GENERALES */}
           {[
              { name: "ubicacion_sedes", label: "Ubicación Sede" },

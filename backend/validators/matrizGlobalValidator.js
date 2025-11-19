@@ -30,12 +30,7 @@ export const matrizGlobalSchema = z.object({
     })
     .regex(/^[0-9+\-()\s]{7,20}$/, "Debe ser un número de teléfono válido."),
 
-  campanas: z
-    .array(
-      z.number().int("Los IDs de campaña deben ser números enteros."),
-      { invalid_type_error: "Las campañas deben ser un array de IDs." }
-    )
-    .optional(), 
+
   estado: z
     .enum(["HABILITADO", "DESHABILITADO"], {
       required_error: "El estado es obligatorio.",

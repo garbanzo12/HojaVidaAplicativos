@@ -9,7 +9,9 @@ CREATE TABLE `aplicativo` (
     `escalamiento` VARCHAR(191) NOT NULL,
     `estado` ENUM('HABILITADO', 'DESHABILITADO') NOT NULL DEFAULT 'HABILITADO',
     `tipo_aplicativo` ENUM('internet', 'abai', 'proveedor') NOT NULL,
+    `campanaId` INTEGER NULL,
 
+    INDEX `aplicativo_campanaId_fkey`(`campanaId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -40,16 +42,12 @@ CREATE TABLE `campana` (
     `imagen_cliente` VARCHAR(191) NULL,
     `imagen_sede` VARCHAR(191) NULL,
     `estado` ENUM('HABILITADO', 'DESHABILITADO') NOT NULL DEFAULT 'HABILITADO',
-    `aplicativoId` INTEGER NULL,
-    `matrizId` INTEGER NULL,
 
-    INDEX `campana_aplicativoId_idx`(`aplicativoId`),
-    INDEX `campana_matrizId_idx`(`matrizId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `matrizescalamiento` (
+CREATE TABLE `matriz_escalamiento` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `proveedor` VARCHAR(191) NOT NULL,
     `codigo_servicio` VARCHAR(191) NOT NULL,
@@ -61,7 +59,7 @@ CREATE TABLE `matrizescalamiento` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `matrizescalamientoglobal` (
+CREATE TABLE `matriz_escalamiento_global` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `proveedor` VARCHAR(191) NOT NULL,
     `codigo_servicio` VARCHAR(191) NOT NULL,
@@ -73,22 +71,34 @@ CREATE TABLE `matrizescalamientoglobal` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `_CampanaMatrizGlobal` (
+CREATE TABLE `_campanatomatriz_escalamiento` (
     `A` INTEGER NOT NULL,
     `B` INTEGER NOT NULL,
 
-    UNIQUE INDEX `_CampanaMatrizGlobal_AB_unique`(`A`, `B`),
-    INDEX `_CampanaMatrizGlobal_B_index`(`B`)
+    UNIQUE INDEX `_campanatomatriz_escalamiento_AB_unique`(`A`, `B`),
+    INDEX `_campanatomatriz_escalamiento_B_index`(`B`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `_campanatomatriz_escalamiento_global` (
+    `A` INTEGER NOT NULL,
+    `B` INTEGER NOT NULL,
+
+    UNIQUE INDEX `_campanatomatriz_escalamiento_global_AB_unique`(`A`, `B`),
+    INDEX `_campanatomatriz_escalamiento_global_B_index`(`B`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- AddForeignKey
-ALTER TABLE `campana` ADD CONSTRAINT `campana_aplicativoId_fkey` FOREIGN KEY (`aplicativoId`) REFERENCES `aplicativo`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE `aplicativo` ADD CONSTRAINT `aplicativo_campanaId_fkey` FOREIGN KEY (`campanaId`) REFERENCES `campana`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `campana` ADD CONSTRAINT `campana_matrizId_fkey` FOREIGN KEY (`matrizId`) REFERENCES `matrizescalamiento`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE `_campanatomatriz_escalamiento` ADD CONSTRAINT `_campanatomatriz_escalamiento_A_fkey` FOREIGN KEY (`A`) REFERENCES `campana`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `_CampanaMatrizGlobal` ADD CONSTRAINT `_CampanaMatrizGlobal_A_fkey` FOREIGN KEY (`A`) REFERENCES `campana`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `_campanatomatriz_escalamiento` ADD CONSTRAINT `_campanatomatriz_escalamiento_B_fkey` FOREIGN KEY (`B`) REFERENCES `matriz_escalamiento`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `_CampanaMatrizGlobal` ADD CONSTRAINT `_CampanaMatrizGlobal_B_fkey` FOREIGN KEY (`B`) REFERENCES `matrizescalamientoglobal`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `_campanatomatriz_escalamiento_global` ADD CONSTRAINT `_campanatomatriz_escalamiento_global_A_fkey` FOREIGN KEY (`A`) REFERENCES `campana`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `_campanatomatriz_escalamiento_global` ADD CONSTRAINT `_campanatomatriz_escalamiento_global_B_fkey` FOREIGN KEY (`B`) REFERENCES `matriz_escalamiento_global`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;

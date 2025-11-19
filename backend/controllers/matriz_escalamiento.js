@@ -12,7 +12,7 @@ export const createMatrizEscalamiento = async (req, res) => {
 
 
     // ✅ Crear matriz si todo está bien
-    const nuevaMatriz = await prisma.matrizescalamiento.create({
+    const nuevaMatriz = await prisma.matriz_escalamiento.create({
       data: {
         proveedor,
         codigo_servicio,
@@ -42,7 +42,7 @@ export const createMatrizEscalamiento = async (req, res) => {
 // 📌 Obtener todas las matrices
 export const getMatriz = async (req, res) => {
   try {
-    const matrices = await prisma.matrizescalamiento.findMany({});
+    const matrices = await prisma.matriz_escalamiento.findMany({});
     res.json(matrices);
   } catch (error) {
     console.error('Error al obtener las matrices:', error);
@@ -56,7 +56,7 @@ export const getMatriz = async (req, res) => {
 export const getMatrizById = async (req, res) => {
   try {
     const { id } = req.params;
-    const matriz = await prisma.matrizescalamiento.findUnique({
+    const matriz = await prisma.matriz_escalamiento.findUnique({
       where: { id: Number(id) },
     });
 
@@ -77,7 +77,7 @@ export const updateEstadomatriz= async (req, res) => {
 
   try {
     // 1️⃣ Buscar la campaña por ID
-    const matriz = await prisma.matrizescalamiento.findUnique({
+    const matriz = await prisma.matriz_escalamiento.findUnique({
       where: { id: Number(id) },
     });
 
@@ -94,7 +94,7 @@ export const updateEstadomatriz= async (req, res) => {
       matriz.estado === "HABILITADO" ? "DESHABILITADO" : "HABILITADO";
 
     // 4️⃣ Actualizar en base de datos
-    const matrizActualizada = await prisma.matrizescalamiento.update({
+    const matrizActualizada = await prisma.matriz_escalamiento.update({
       where: { id: Number(id) },
       data: { estado: nuevoEstado },
     });
@@ -145,7 +145,7 @@ export const updateMatriz = async (req, res) => {
       }
     }
 
-    const matrizActualizado = await prisma.matrizEscalamiento.update({
+    const matrizActualizado = await prisma.matriz_escalamiento.update({
       where: { id: Number(id) },
       data,
     });

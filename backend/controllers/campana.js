@@ -19,14 +19,14 @@ export const getCampanas = async (req, res) => {
     res.status(500).json({ success: false, message: "Error al obtener campañas" });
   }
 };
-// ✅ Obtener todas las campañas con sus relaciones
+
 export const getCampanasDetalles = async (req, res) => {
   try {
     const campanas = await prisma.campana.findMany({
       include: {
         aplicativos: true,
-        matrizEscalamientos: true,
-        matrizEscalamientoGlobal: true,
+        matricesEscalamiento: true,
+        matricesEscalamientoGlobal: true,
       },
     });
 
@@ -40,6 +40,7 @@ export const getCampanasDetalles = async (req, res) => {
   }
 };
 
+
 // ✅ Obtener campaña por ID
 export const getCampanaById = async (req, res) => {
   const { id } = req.params;
@@ -49,8 +50,8 @@ export const getCampanaById = async (req, res) => {
       where: { id: Number(id) },
       include: {
         aplicativos: true,
-        matrizEscalamientos: true,
-        matrizEscalamientoGlobal: true,
+        matricesEscalamiento: true,
+        matricesEscalamientoGlobal: true,
       },
     });
 
@@ -65,9 +66,9 @@ export const getCampanaById = async (req, res) => {
   }
 };
 
+
 // ✅ Crear nueva campaña
 export const createCampana = async (req, res) => {
- 
   try {
     const {
       nombre_campana,
@@ -94,7 +95,34 @@ export const createCampana = async (req, res) => {
       estado,
     } = req.body;
 
-    // 📸 Guardar nombres de archivo si existen
+    console.log("📥 BODY COMPLETO:", req.body);
+
+    // ----------------------------
+    // 1. NORMALIZAR ARRAYS
+    // ----------------------------
+
+    // Aplicativos
+    let aplicativoIds = req.body["aplicativoId[]"] || req.body.aplicativoId || [];
+    if (!Array.isArray(aplicativoIds)) aplicativoIds = [aplicativoIds];
+    aplicativoIds = aplicativoIds.map(Number).filter(Boolean);
+
+    // Matriz Escalamiento Normal
+    let matrizIds = req.body["matrizId[]"] || req.body.matrizId || [];
+    if (!Array.isArray(matrizIds)) matrizIds = [matrizIds];
+    matrizIds = matrizIds.map(Number).filter(Boolean);
+
+    // Matriz Escalamiento GLOBAL
+    let matrizGlobalIds = req.body["matrizGlobalId[]"] || req.body.matrizGlobalId || [];
+    if (!Array.isArray(matrizGlobalIds)) matrizGlobalIds = [matrizGlobalIds];
+    matrizGlobalIds = matrizGlobalIds.map(Number).filter(Boolean);
+
+    console.log("📌 APLICATIVOS IDs:", aplicativoIds);
+    console.log("📌 MATRIZ NORMAL IDs:", matrizIds);
+    console.log("📌 MATRIZ GLOBAL IDs:", matrizGlobalIds);
+
+    // ----------------------------
+    // 2. ARCHIVOS
+    // ----------------------------
     const imagen_cliente = req.files?.imagen_cliente
       ? req.files.imagen_cliente[0].filename
       : null;
@@ -102,6 +130,10 @@ export const createCampana = async (req, res) => {
     const imagen_sede = req.files?.imagen_sede
       ? req.files.imagen_sede[0].filename
       : null;
+
+    // ----------------------------
+    // 3. CREAR CAMPANA + RELACIONES
+    // ----------------------------
 
     const nuevaCampana = await prisma.campana.create({
       data: {
@@ -126,23 +158,42 @@ export const createCampana = async (req, res) => {
         soporte_tecnico_abai,
         correo_soporte_abai,
         servicios_prestados,
+        estado,
+
+        // Relaciones
+        aplicativos: {
+          connect: aplicativoIds.map(id => ({ id }))
+        },
+
+        matriz_escalamiento: {
+          connect: matrizIds.map(id => ({ id }))
+        },
+
+        matriz_escalamiento_global: {
+          connect: matrizGlobalIds.map(id => ({ id }))
+        },
+
         imagen_cliente,
         imagen_sede,
-        estado,
       },
     });
-     console.log("🧾 BODY:", req.body);
-    console.log("🖼️ FILES:", req.files);
+
+    console.log("✅ APLICATIVOS GUARDADOS:", aplicativoIds);
+    console.log("✅ MATRIZ NORMAL GUARDADOS:", matrizIds);
+    console.log("✅ MATRIZ GLOBAL GUARDADOS:", matrizGlobalIds);
+
     res.status(201).json({
       success: true,
       message: "Campaña creada correctamente",
       nuevaCampana,
     });
+
   } catch (error) {
     console.error("❌ Error al crear la campaña:", error);
     res.status(500).json({ error: "Error al crear la campaña" });
   }
 };
+
 
 
 // ✅ Actualizar campaña

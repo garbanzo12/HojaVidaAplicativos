@@ -22,11 +22,14 @@ model aplicativo {
   escalamiento    String
   estado          aplicativo_estado          @default(HABILITADO)
   tipo_aplicativo aplicativo_tipo_aplicativo
-  campanas        campana[]
+  campanaId       Int?
+  campana         campana?                   @relation(fields: [campanaId], references: [id])
+
+  @@index([campanaId], map: "aplicativo_campanaId_fkey")
 }
 
 model campana {
-  id                          Int                        @id @default(autoincrement())
+  id                          Int                          @id @default(autoincrement())
   nombre_campana              String
   cliente                     String
   director_operacion_abai     String
@@ -50,42 +53,33 @@ model campana {
   servicios_prestados         String?
   imagen_cliente              String?
   imagen_sede                 String?
-  estado                      campana_estado             @default(HABILITADO)
-  aplicativoId                Int?
-  matrizId                    Int?
-  aplicativo                  aplicativo?                @relation(fields: [aplicativoId], references: [id])
-  matrizescalamiento          matrizescalamiento?        @relation(fields: [matrizId], references: [id])
-  matrizescalamientoglobal matrizescalamientoglobal[] @relation("CampanaMatrizGlobal") 
-  @@index([aplicativoId])
-  @@index([matrizId])
+  estado                      campana_estado               @default(HABILITADO)
+  aplicativos                 aplicativo[]
+  matriz_escalamiento         matriz_escalamiento[]        @relation("campanatomatriz_escalamiento")
+  matriz_escalamiento_global  matriz_escalamiento_global[] @relation("campanatomatriz_escalamiento_global")
 }
 
-model matrizescalamiento {
-  id                   Int                       @id @default(autoincrement())
+model matriz_escalamiento {
+  id                   Int           @id @default(autoincrement())
   proveedor            String
   codigo_servicio      String
   n_telefono_proveedor String
   n_telefono_asesor    String
-  estado               matrizescalamiento_estado @default(HABILITADO)
-  campanas campana[]
+  estado               matriz_estado @default(HABILITADO)
+  campana              campana[]     @relation("campanatomatriz_escalamiento")
 }
 
-model matrizescalamientoglobal {
-  id                   Int                             @id @default(autoincrement())
+model matriz_escalamiento_global {
+  id                   Int           @id @default(autoincrement())
   proveedor            String
   codigo_servicio      String
   n_telefono_proveedor String
   n_telefono_asesor    String
-  estado               matrizescalamientoglobal_estado @default(HABILITADO)
-  campana campana[] @relation("CampanaMatrizGlobal") // 👈 Nombre cambiado
+  estado               matriz_estado @default(HABILITADO)
+  campana              campana[]     @relation("campanatomatriz_escalamiento_global")
 }
 
-enum matrizescalamiento_estado {
-  HABILITADO
-  DESHABILITADO
-}
-
-enum matrizescalamientoglobal_estado {
+enum matriz_estado {
   HABILITADO
   DESHABILITADO
 }

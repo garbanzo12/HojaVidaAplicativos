@@ -9,66 +9,17 @@ export const createMatrizEscalamientoGlobal = async (req, res) => {
       codigo_servicio,
       n_telefono_proveedor,
       n_telefono_asesor,
-      campanas, // 👈 Se espera un array de IDs (Int[])
     } = req.body;
 
-    // --- 🛑 VALIDACIÓN DE CAMPAÑAS ---
-    // 1. Verificar que se haya proporcionado al menos una campaña
-    if (!campanas || campanas.length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Debe asignar al menos una campaña (campanas).",
-      });
-    }
 
-    // 2. Validar que todas las campañas existan y estén HABILITADAS
-    const campanaIDs = campanas.map(id => Number(id)); // Asegurar que sean números
-    
-    // Consulta optimizada: busca todas las campañas con los IDs proporcionados
-    const campanasEncontradas = await prisma.campana.findMany({
-      where: {
-        id: { in: campanaIDs },
-      },
-      select: { id: true, nombre_campana: true, estado: true } // Seleccionar solo campos necesarios
-    });
-
-    // Validar si faltan campañas o si están DESHABILITADAS
-    if (campanasEncontradas.length !== campanaIDs.length) {
-      return res.status(400).json({
-        success: false,
-        message: "Una o más campañas seleccionadas no existen.",
-      });
-    }
-
-    const campanaInactiva = campanasEncontradas.find(c => c.estado !== "HABILITADO");
-    if (campanaInactiva) {
-      return res.status(400).json({
-        success: false,
-        message: `La campaña "${campanaInactiva.nombre_campana}" está inactiva y no puede ser asignada.`,
-      });
-    }
-    // ---------------------------------
-
-    // --- ✅ CREACIÓN DE LA MATRIZ GLOBAL ---
-    // Mapear los IDs de campaña para el comando 'connect' de Prisma
-    const campanasToConnect = campanaIDs.map(id => ({ id }));
-
-    const nuevaMatrizGlobal = await prisma.matrizescalamientoglobal.create({
+    const nuevaMatrizGlobal = await prisma.matriz_escalamiento_global.create({
       data: {
         proveedor,
         codigo_servicio,
         n_telefono_proveedor,
         n_telefono_asesor,
         estado: "HABILITADO",
-        // 👈 USO DE 'connect' para relacionar la lista de campañas
-        campanas: { // Usando el nombre de campo que sugerí: 'campanas'
-          connect: campanasToConnect,
-        },
       },
-      // Opcional: Incluir las campañas conectadas en la respuesta
-      include: {
-        campanas: { select: { id: true, nombre_campana: true } }
-      }
     });
 
     res.json({
@@ -129,7 +80,7 @@ export const updateMatrizGlobal = async (req, res) => {
     } 
     // ---------------------------------
 
-    const matrizActualizada = await prisma.matrizescalamientoglobal.update({
+    const matrizActualizada = await prisma.matriz_escalamiento_global.update({
       where: { id: Number(id) },
       data: updateData, 
       include: {
@@ -154,15 +105,8 @@ export const updateMatrizGlobal = async (req, res) => {
 // 📌 Obtener todas las matrices
 export const getMatrizGlobal = async (req, res) => {
   try {
-    const matrices = await prisma.matrizescalamientoglobal.findMany({
-      include: {
-        campanas: {
-          select: {
-            id: true,
-            nombre_campana: true,
-          },
-        },
-      },
+    const matrices = await prisma.matriz_escalamiento_global.findMany({
+  
     });
     res.json(matrices);
   } catch (error) {
