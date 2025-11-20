@@ -40,6 +40,22 @@ export const getAplicativos = async (req, res) => {
   }
 };
 
+export const getAplicativosDetalles = async (req, res) => {
+  try {
+    const aplicativo = await prisma.aplicativo.findMany({
+
+    });
+
+    res.json(aplicativo);
+  } catch (error) {
+    console.error("Error al obtener aplicativos:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error al obtener aplicativos.",
+    });
+  }
+};
+
 // ✅ Obtener un aplicativo por ID
 export const getAplicativoById = async (req, res) => {
   try {

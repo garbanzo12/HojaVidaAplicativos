@@ -24,7 +24,7 @@ const ListarAplicativo = () => {
   const fetchAplicativos = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("http://localhost:4000/aplicativo");
+      const res = await axios.get("http://localhost:4000/aplicativo/detalles");
       const data = res.data.map((a) => ({
         id: a.id,
         nombre: a.nombre,
@@ -33,7 +33,6 @@ const ListarAplicativo = () => {
         tipoAplicativo: a.tipo_aplicativo,
         tipo_red: a.tipo_red,
         escalamiento: a.escalamiento,
-        nombreCampana: a.campana.nombre_campana,
         estado: a.estado,
       }));
       setRows(data);
@@ -134,7 +133,6 @@ const ListarAplicativo = () => {
                 "Tipo Aplicativo",
                 "Tipo de Red",
                 "Escalamiento",
-                "Campaña",
                 "Estado",
                 "Acciones",
               ].map((head, i) => (
@@ -171,7 +169,6 @@ const ListarAplicativo = () => {
                 <TableCell align="center">{row.tipoAplicativo}</TableCell>
                 <TableCell align="center">{row.tipo_red}</TableCell>
                 <TableCell align="center">{row.escalamiento}</TableCell>
-                <TableCell align="center">{row.nombreCampana}</TableCell>
 
                 <TableCell align="center">
                   <Button

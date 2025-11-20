@@ -57,28 +57,9 @@ const FormularioEditarAplicativo = ({ open, onClose, idAplicativo, onUpdate }) =
   });
 
 
-  const [campanas, setCampanas] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // 📌 Cargar campañas
-const cargarCampanas = async () => {
-  try {
-    const { data } = await axios.get("http://localhost:4000/campana");
-    console.log(data)
-    if (Array.isArray(data.campanas)) {
-      const campanasHabilitadas = data.campanas.filter(
-        (campana) => campana.estado?.toUpperCase() === "HABILITADO"
-      );
 
-      setCampanas(campanasHabilitadas);
-    } else {
-      setCampanas([]);
-      console.warn("⚠️ El formato de respuesta no es un array:", data);
-    }
-  } catch (error) {
-    console.error("❌ Error al cargar campañas:", error);
-  }
-};
 
 
   // 📌 Cargar datos del aplicativo
@@ -111,7 +92,6 @@ const cargarCampanas = async () => {
   // 🔁 Efecto al abrir modal
   useEffect(() => {
     if (open) {
-      cargarCampanas();
       cargarAplicativo();
     }
   }, [open, idAplicativo]);
@@ -200,29 +180,7 @@ const cargarCampanas = async () => {
             </Grid>
           ))}
 
-          {/* SELECTOR DE CAMPAÑA */}
-          <Grid item xs={12} sm={10}>
-            <FormControl fullWidth size="small" required>
-              <InputLabel id="campana-label">Campaña</InputLabel>
-              <Select
-                labelId="campana-label"
-                name="campanaId"
-                value={formData.campanaId || ""}
-                onChange={handleChange}
-                label="Campaña"
-              >
-                {campanas.length === 0 ? (
-                  <MenuItem value="">No hay campañas</MenuItem>
-                ) : (
-                  campanas.map((campana) => (
-                    <MenuItem key={campana.id} value={campana.id}>
-                      {campana.nombre_campana}
-                    </MenuItem>
-                  ))
-                )}
-              </Select>
-            </FormControl>
-          </Grid>
+
                   {/* SELECT: Tipo de aplicativo */}
         <Grid item xs={12} sm={10}>
           <FormControl fullWidth size="small" required>
