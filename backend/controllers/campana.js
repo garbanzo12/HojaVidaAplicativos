@@ -23,11 +23,7 @@ export const getCampanas = async (req, res) => {
 export const getCampanasDetalles = async (req, res) => {
   try {
     const campanas = await prisma.campana.findMany({
-      include: {
-        aplicativos: true,
-        matricesEscalamiento: true,
-        matricesEscalamientoGlobal: true,
-      },
+
     });
 
     res.json(campanas);
@@ -48,10 +44,10 @@ export const getCampanaById = async (req, res) => {
   try {
     const campana = await prisma.campana.findUnique({
       where: { id: Number(id) },
-      include: {
-        aplicativos: true,
-        matricesEscalamiento: true,
-        matricesEscalamientoGlobal: true,
+        include: {
+          aplicativos: true,
+          matriz_escalamiento: true,
+          matriz_escalamiento_global: true,
       },
     });
 
@@ -195,7 +191,6 @@ export const createCampana = async (req, res) => {
 };
 
 
-
 // ✅ Actualizar campaña
 export const updateCampana = async (req, res) => {
   const { id } = req.params;
@@ -206,30 +201,23 @@ export const updateCampana = async (req, res) => {
   }
 
   try {
-    // 1) Buscar existencia
-    const existing = await prisma.campana.findUnique({ where: { id: campanaId } });
+    // 1. Verificar existencia
+    const existing = await prisma.campana.findUnique({
+      where: { id: campanaId }
+    });
+
     if (!existing) {
       return res.status(404).json({ success: false, message: "Campaña no encontrada." });
     }
 
-    // 2) Clonar y limpiar body
-    // NOTE: req.body viene de multer (multipart/form-data) como strings
-    const raw = { ...req.body }; // texto crudo
-    // Elimina id si existe
+    // 2. Body RAW (viene como strings)
+    const raw = { ...req.body };
     delete raw.id;
 
-    // 3) Construir dataToUpdate sólo con campos válidos (evitar enviar "" o undefined)
     const dataToUpdate = {};
 
-    // Helper para setear campo si tiene valor no vacío
-    const setIfNotEmpty = (key, transform = (v) => v) => {
-      if (raw[key] !== undefined && raw[key] !== null && String(raw[key]).trim() !== "") {
-        dataToUpdate[key] = transform(raw[key]);
-      }
-    };
-
-    // Campos string simples
-    [
+    // --------- STRINGS ---------
+    const camposString = [
       "nombre_campana",
       "cliente",
       "director_operacion_abai",
@@ -248,129 +236,100 @@ export const updateCampana = async (req, res) => {
       "soporte_tecnico_abai",
       "correo_soporte_abai",
       "servicios_prestados",
-      "imagen_cliente",
-      "imagen_sede",
-      "estado",
-    ].forEach((k) => setIfNotEmpty(k, (v) => String(v)));
+      "estado"
+    ];
 
-    // Campos numéricos
-    setIfNotEmpty("puestos_operacion", (v) => {
-      const n = Number(v);
-      return Number.isNaN(n) ? undefined : n;
-    });
-    setIfNotEmpty("puestos_estructura", (v) => {
-      const n = Number(v);
-      return Number.isNaN(n) ? undefined : n;
+    camposString.forEach(campo => {
+      if (raw[campo] && raw[campo].trim() !== "") {
+        dataToUpdate[campo] = raw[campo];
+      }
     });
 
-    // Fecha: intentar convertir a Date válido
-    if (raw.fecha_actualizacion !== undefined && String(raw.fecha_actualizacion).trim() !== "") {
-      let fechaRaw = String(raw.fecha_actualizacion).trim();
-
-      // Si viene sólo YYYY-MM-DD, añade tiempo UTC para formar ISO
-      if (/^\d{4}-\d{2}-\d{2}$/.test(fechaRaw)) {
-        fechaRaw = fechaRaw + "T00:00:00.000Z";
-      }
-
-      const d = new Date(fechaRaw);
-      if (!Number.isNaN(d.getTime())) {
-        dataToUpdate.fecha_actualizacion = d; // Date object, Prisma acepta Date
-      } else {
-        // Si la fecha no es válida, elimina para no romper Prisma (o retorna error)
-        console.warn("Fecha inválida recibida:", raw.fecha_actualizacion);
-        // opcional: return res.status(400).json({ success:false, message:"Fecha inválida" });
-      }
+    // --------- NÚMEROS ---------
+    if (raw.puestos_operacion !== undefined) {
+      const n = Number(raw.puestos_operacion);
+      if (!Number.isNaN(n)) dataToUpdate.puestos_operacion = n;
     }
 
-    // 4) Archivos (multer)
-    // Dependiendo de cómo uses multer: upload.single("imagen_cliente") -> req.file
-    // o upload.fields([{name:'imagen_cliente'},{name:'imagen_sede'}]) -> req.files
-    if (req.file) {
-      // ejemplo: filename si usas diskStorage
-      dataToUpdate.imagen_cliente = req.file.filename || req.file.originalname;
-    }
-    if (req.files) {
-      // si usas upload.fields(...)
-      // req.files['imagen_cliente'] -> array
-      if (req.files.imagen_cliente && req.files.imagen_cliente[0]) {
-        dataToUpdate.imagen_cliente = req.files.imagen_cliente[0].filename || req.files.imagen_cliente[0].originalname;
-      }
-      if (req.files.imagen_sede && req.files.imagen_sede[0]) {
-        dataToUpdate.imagen_sede = req.files.imagen_sede[0].filename || req.files.imagen_sede[0].originalname;
-      }
+    if (raw.puestos_estructura !== undefined) {
+      const n = Number(raw.puestos_estructura);
+      if (!Number.isNaN(n)) dataToUpdate.puestos_estructura = n;
     }
 
-    // 5) Manejo de campos JSON/arrays que vienen como string en FormData
-    // p.ej. aplicativos podría venir como JSON string; evita enviar "[object Object]"
-    if (raw.aplicativos !== undefined && raw.aplicativos !== "") {
-      // intenta parsear JSON, si falla, ignora (o maneja aparte)
-      try {
-        const parsed = typeof raw.aplicativos === "string" ? JSON.parse(raw.aplicativos) : raw.aplicativos;
-        // no lo pongas directamente en dataToUpdate si es relación; manejar relaciones por separado
-        // por ahora, guarda como texto si quieres:
-        // dataToUpdate.aplicativos = JSON.stringify(parsed);
-        // o marca para procesar luego:
-        req._parsed_aplicativos = parsed;
-      } catch (err) {
-        console.warn("No se pudo parsear aplicativos:", err);
-      }
+    // --------- FECHA ---------
+    if (raw.fecha_actualizacion) {
+      const d = new Date(raw.fecha_actualizacion);
+      if (!isNaN(d.getTime())) dataToUpdate.fecha_actualizacion = d;
     }
 
-    // 6) DEBUG: mostrar qué se enviará a Prisma
-    console.log("Data que se enviará a prisma.campana.update:", dataToUpdate);
+    console.log("📌 Campos normales:", dataToUpdate);
 
-    // Si no hay nada que actualizar:
-    if (Object.keys(dataToUpdate).length === 0) {
-      return res.status(400).json({ success: false, message: "No hay datos válidos para actualizar." });
-    }
+    // ============================================================
+    // 🔥 RELACIONES (CONVERSION REAL)
+    // ============================================================
 
-    // 7) Realizar la actualización (y manejar relaciones en transacción si necesitas)
+    // UTIL para convertir string o array → array de números
+    const parseIds = (input) => {
+      if (!input) return [];
+      if (Array.isArray(input)) return input.map(v => Number(v));
+      return [Number(input)];
+    };
+
+    // Recibir lo que manda el frontend
+    const aplicativosIds = parseIds(raw.aplicativoId);
+    const matrizIds = parseIds(raw.matrizId);
+    const matrizGlobalIds = parseIds(raw.matrizGlobalId);
+
+    console.log("📌 aplicativosIds =>", aplicativosIds);
+    console.log("📌 matrizIds =>", matrizIds);
+    console.log("📌 matrizGlobalIds =>", matrizGlobalIds);
+
+    // ============================================================
+    // 🔥 UPDATE EN PRISMA
+    // ============================================================
+
     const updated = await prisma.campana.update({
       where: { id: campanaId },
-      data: dataToUpdate,
+      data: {
+        ...dataToUpdate,
+
+        // 1:N aplicativos
+        ...(aplicativosIds.length > 0 && {
+          aplicativos: {
+            set: aplicativosIds.map(id => ({ id }))
+          }
+        }),
+
+        // M:N matriz_escalamiento
+        ...(matrizIds.length > 0 && {
+          matriz_escalamiento: {
+            set: matrizIds.map(id => ({ id }))
+          }
+        }),
+
+        // M:N matriz_escalamiento_global
+        ...(matrizGlobalIds.length > 0 && {
+          matriz_escalamiento_global: {
+            set: matrizGlobalIds.map(id => ({ id }))
+          }
+        })
+      }
     });
 
-    // 8) Si había aplicaciones/relaciones en req._parsed_aplicativos, las procesas en un tx (opcional)
-    if (req._parsed_aplicativos && Array.isArray(req._parsed_aplicativos)) {
-      // Ejemplo simple: eliminar existentes y crear nuevas (ten cuidado con esta lógica en producción)
-      await prisma.$transaction(async (tx) => {
-        await tx.aplicativo.deleteMany({ where: { campanaId: campanaId } });
-        for (const app of req._parsed_aplicativos) {
-          // mapear campos según tu modelo Aplicativo
-          await tx.aplicativo.create({
-            data: {
-              nombre: app.nombre,
-              direccion_ip: app.direccion_ip,
-              puerto: Number(app.puerto) || 0,
-              url: app.url,
-              tipo_aplicativo: app.tipo_aplicativo,
-              escalamiento: app.escalamiento,
-              campanaId: campanaId,
-              estado: app.estado || "HABILITADO",
-            },
-          });
-        }
-      });
-    }
+    return res.status(200).json({
+      success: true,
+      message: "Campaña actualizada correctamente",
+      data: updated
+    });
 
-    return res.status(200).json({ success: true, message: "Campaña actualizada", data: updated });
   } catch (error) {
-    console.error("❌ Error en updateCampana:", error);
-    // devolver detalle mínimo para debugging
-    return res.status(400).json({ success: false, message: "Error al actualizar campaña", error: error.message });
+    console.error("❌ ERROR UPDATE:", error);
+    return res.status(500).json({ success: false, message: "Error al actualizar", error });
   }
 };
-// ✅ Eliminar campaña
-export const deleteCampana = async (req, res) => {
-  try {
-    const id = parseInt(req.params.id);
-    await prisma.campana.delete({ where: { id } });
-    res.json({ message: "Campaña eliminada correctamente" });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Error al eliminar la campaña" });
-  }
-};
+
+
+
 
 
 

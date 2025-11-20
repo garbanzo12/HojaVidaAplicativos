@@ -8,10 +8,15 @@ import {
   Grid,
   IconButton,
   Divider,
+  FormControl,
+  Select,
+  MenuItem,
+  InputLabel,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import axios from "axios";
 
+// ----------------------------------------------------
 const modalStyle = {
   position: "absolute",
   top: "50%",
@@ -39,8 +44,11 @@ const sectionTitle = {
   letterSpacing: 0.5,
 };
 
+// ----------------------------------------------------
+// EDITAR CAMPAÑA
+// ----------------------------------------------------
 
-const FormularioEditar = ({ open, onClose, idCampana, onUpdate }) => {
+const FormularioEditarCampana = ({ open, onClose, idCampana, onUpdate }) => {
   const [formData, setFormData] = useState({
     nombre_campana: "",
     cliente: "",
@@ -64,31 +72,95 @@ const FormularioEditar = ({ open, onClose, idCampana, onUpdate }) => {
     correo_soporte_abai: "",
     servicios_prestados: "",
     estado: "HABILITADO",
+
+    // Relaciones
+    aplicativoId: [],
+    matrizId: [],
+    matrizGlobalId: [],
   });
+
+  const [aplicativos, setAplicativos] = useState([]);
+  const [matrices, setMatrices] = useState([]);
+  const [matricesGlobal, setMatricesGlobal] = useState([]);
 
   const [imagenSede, setImagenSede] = useState(null);
   const [imagenCliente, setImagenCliente] = useState(null);
+
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (open && idCampana) {
-      const fetchData = async () => {
-        try {
-          const { data } = await axios.get(`http://localhost:4000/campana/${idCampana}`);
-          setFormData(data);
-        } catch (error) {
-          console.error("❌ Error al cargar datos de la campaña:", error);
-          alert("Error al cargar los datos de la campaña");
-        }
-      };
-      fetchData();
+  // ----------------------------------------------------
+  // 🔹 Cargar listas (Aplicativos, Matriz, Matriz Global)
+  // ----------------------------------------------------
+
+  const cargarListas = async () => {
+    try {
+      const apps = await axios.get("http://localhost:4000/aplicativo");
+      const mats = await axios.get("http://localhost:4000/matriz");
+      const matsG = await axios.get("http://localhost:4000/matriz/global");
+
+      setAplicativos(apps.data || []);
+      setMatrices(mats.data || []);
+      setMatricesGlobal(matsG.data || []);
+    } catch (err) {
+      console.error("Error cargando listas:", err);
     }
-  }, [open, idCampana]);
+  };
+
+  // ----------------------------------------------------
+  // 🔹 Cargar datos de la campaña
+  // ----------------------------------------------------
+
+  const cargarCampana = async () => {
+    if (!idCampana) return;
+
+    try {
+      const { data } = await axios.get(
+        `http://localhost:4000/campana/${idCampana}`
+
+      );
+      console.log(data)
+
+      setFormData({
+        ...data,
+
+        // Relaciones: asegurar arrays
+        aplicativoId: data.aplicativos?.map((a) => a.id) || [],
+        matrizId: data.matriz_escalamiento?.map((m) => m.id) || [],
+        matrizGlobalId: data.matriz_escalamiento_global?.map((m) => m.id) || [],
+      });
+    } catch (err) {
+      console.error("Error al cargar campaña:", err);
+    }
+  };
+        
+
+  // ----------------------------------------------------
+  // useEffect principal
+  // ----------------------------------------------------
+
+  useEffect(() => {
+    if (open) {
+      cargarListas();
+      cargarCampana();
+    }
+  }, [open]);
+
+  // ----------------------------------------------------
+  // 🔹 handleChange
+  // ----------------------------------------------------
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
+
+  // ----------------------------------------------------
+  // 🔹 handleSubmit (PUT)
+  // ----------------------------------------------------
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -97,42 +169,52 @@ const FormularioEditar = ({ open, onClose, idCampana, onUpdate }) => {
     try {
       const formDataToSend = new FormData();
 
+      // Arrays
+      formData.aplicativoId.forEach((id) =>
+        formDataToSend.append("aplicativoId[]", id)
+      );
+      formData.matrizId.forEach((id) =>
+        formDataToSend.append("matrizId[]", id)
+      );
+      formData.matrizGlobalId.forEach((id) =>
+        formDataToSend.append("matrizGlobalId[]", id)
+      );
+
+      // Datos de texto
       Object.keys(formData).forEach((key) => {
-        formDataToSend.append(key, formData[key]);
+        if (key !== "aplicativoId" && key !== "matrizId" && key !== "matrizGlobalId") {
+          formDataToSend.append(key, formData[key]);
+        }
       });
 
+      // Imágenes (opcional)
       if (imagenSede) formDataToSend.append("imagen_sede", imagenSede);
       if (imagenCliente) formDataToSend.append("imagen_cliente", imagenCliente);
 
-      console.log("📦 Datos enviados a backend:");
-      for (const pair of formDataToSend.entries()) {
-        console.log(pair[0], ":", pair[1]);
-      }
-
-      const response = await axios.put(
+      const res = await axios.put(
         `http://localhost:4000/campana/${idCampana}`,
         formDataToSend,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
 
-      console.log("✅ Campaña actualizada:", response.data);
-      alert("✅ Campaña actualizada correctamente");
-
-      if (onUpdate) onUpdate();
-
+      alert("✅ Campaña actualizada");
+      onUpdate?.();
       onClose();
-    } catch (error) {
-      console.error("❌ Error al actualizar campaña:", error);
-      alert("❌ Error al actualizar la campaña");
-    } finally {
-      setLoading(false);
+    } catch (err) {
+      console.error("Error actualizando campaña:", err);
+      alert("❌ Error al actualizar");
     }
+
+    setLoading(false);
   };
+
+  // ----------------------------------------------------
+  // RENDER
+  // ----------------------------------------------------
 
   return (
     <Modal open={open} onClose={() => null} disableEscapeKeyDown>
       <Box component="form" onSubmit={handleSubmit} sx={modalStyle}>
-        {/* Botón cerrar */}
         <IconButton
           onClick={onClose}
           sx={{
@@ -149,35 +231,33 @@ const FormularioEditar = ({ open, onClose, idCampana, onUpdate }) => {
         <Typography
           variant="h5"
           textAlign="center"
-          sx={{
-            mb: 1,
-            color: "#0d47a1",
-            letterSpacing: 0.8,
-            fontWeight: "bold",
-          }}
+          sx={{ mb: 1, color: "#0d47a1", fontWeight: "bold" }}
         >
           EDITAR CAMPAÑA
         </Typography>
 
         <Divider sx={{ mb: 3 }} />
 
+        {/* ==========
+            CAMPOS
+           ========== */}
+
         {/* INFORMACIÓN PRINCIPAL */}
         <Typography variant="subtitle1" sx={sectionTitle}>
           INFORMACIÓN PRINCIPAL
         </Typography>
+
         <Grid container spacing={2} justifyContent="center">
           {[
             { name: "nombre_campana", label: "Nombre de Campaña" },
             { name: "cliente", label: "Cliente" },
             { name: "director_operacion_abai", label: "Director Operación ABAI" },
             { name: "correo_director", label: "Correo Director", type: "email" },
-            { name: "segmento", label: "Segmento" },
           ].map((field) => (
             <Grid item xs={12} sm={10} key={field.name}>
               <TextField
                 label={field.label}
                 name={field.name}
-                type={field.type || "text"}
                 fullWidth
                 size="small"
                 required
@@ -188,29 +268,127 @@ const FormularioEditar = ({ open, onClose, idCampana, onUpdate }) => {
           ))}
         </Grid>
 
-        {/* GESTIÓN DE CAMPAÑA */}
+        {/* VÍNCULOS Y DATOS GENERALES */}
         <Typography variant="subtitle1" sx={sectionTitle}>
-          GESTIÓN DE CAMPAÑA
+          VINCULACIÓN & DATOS GENERALES
         </Typography>
+
+        <Grid container spacing={2} justifyContent="center">
+          {/* SELECT Aplicativo */}
+          <Grid item xs={12} sm={5}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Aplicativos</InputLabel>
+              <Select
+                multiple
+                name="aplicativoId"
+                value={formData.aplicativoId}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    aplicativoId: e.target.value,
+                  }))
+                }
+              >
+                {aplicativos.map((app) => (
+                  <MenuItem key={app.id} value={app.id}>
+                    {app.nombre}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+
+          {/* SELECT Matriz */}
+          <Grid item xs={12} sm={5}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Matriz Escalamiento</InputLabel>
+              <Select
+                multiple
+                name="matrizId"
+                value={formData.matrizId}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    matrizId: e.target.value,
+                  }))
+                }
+              >
+                {matrices.map((m) => (
+                  <MenuItem key={m.id} value={m.id}>
+                    {m.proveedor}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+
+          {/* SELECT Matriz Global */}
+          <Grid item xs={12} sm={4}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Matriz Global</InputLabel>
+              <Select
+                multiple
+                name="matrizGlobalId"
+                value={formData.matrizGlobalId}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    matrizGlobalId: e.target.value,
+                  }))
+                }
+              >
+                {matricesGlobal.map((m) => (
+                  <MenuItem key={m.id} value={m.id}>
+                    {m.proveedor}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+
+          {/* Otros campos */}
+          {[
+            { name: "ubicacion_sedes", label: "Ubicación Sede" },
+            { name: "puestos_operacion", label: "N° Puestos Operación", type: "number" },
+            { name: "puestos_estructura", label: "N° Puestos Estructura", type: "number" },
+            { name: "segmento_red", label: "Segmento Red" },
+            { name: "fecha_actualizacion", label: "Fecha Actualización", type: "date" },
+          ].map((field) => (
+            <Grid item xs={12} sm={5} key={field.name}>
+              <TextField
+                label={field.label}
+                name={field.name}
+                type={field.type}
+                fullWidth
+                size="small"
+                value={formData[field.name] || ""}
+                InputLabelProps={
+                  field.type === "date" ? { shrink: true } : undefined
+                }
+                onChange={handleChange}
+              />
+            </Grid>
+          ))}
+        </Grid>
+
+        {/* GERENTES */}
+        <Typography variant="subtitle1" sx={sectionTitle}>
+          GERENTES DE CAMPAÑA
+        </Typography>
+
         <Grid container spacing={2} justifyContent="center">
           {[
+            { name: "segmento", label: "Segmento" },
             { name: "nombre_gte_campana", label: "Nombre Gerente de Campaña" },
-            { name: "correo_gte_campana", label: "Correo Gerente de Campaña", type: "email" },
-            { name: "ubicacion_sedes", label: "Ubicación Sede" },
-            { name: "puestos_operacion", label: "N° Puestos de Operación", type: "number" },
-            { name: "puestos_estructura", label: "N° Puestos de Estructura", type: "number" },
-            { name: "segmento_red", label: "Segmento de Red" },
-            { name: "fecha_actualizacion", label: "Fecha Actualización", type: "date" },
+            { name: "correo_gte_campana", label: "Correo Gerente", type: "email" },
           ].map((field) => (
             <Grid item xs={12} sm={10} key={field.name}>
               <TextField
                 label={field.label}
                 name={field.name}
-                type={field.type || "text"}
+                type={field.type}
                 fullWidth
                 size="small"
-                required
-                InputLabelProps={field.type === "date" ? { shrink: true } : undefined}
                 value={formData[field.name] || ""}
                 onChange={handleChange}
               />
@@ -222,6 +400,7 @@ const FormularioEditar = ({ open, onClose, idCampana, onUpdate }) => {
         <Typography variant="subtitle1" sx={sectionTitle}>
           CONTACTOS
         </Typography>
+
         <Grid container spacing={2} justifyContent="center">
           {[
             { name: "nombre_contacto_cliente", label: "Nombre Contacto Cliente" },
@@ -235,10 +414,9 @@ const FormularioEditar = ({ open, onClose, idCampana, onUpdate }) => {
               <TextField
                 label={field.label}
                 name={field.name}
-                type={field.type || "text"}
+                type={field.type}
                 fullWidth
                 size="small"
-                required
                 value={formData[field.name] || ""}
                 onChange={handleChange}
               />
@@ -246,24 +424,23 @@ const FormularioEditar = ({ open, onClose, idCampana, onUpdate }) => {
           ))}
         </Grid>
 
-        {/* SOPORTE Y SERVICIOS */}
+        {/* SERVICIOS */}
         <Typography variant="subtitle1" sx={sectionTitle}>
           SOPORTE Y SERVICIOS
         </Typography>
+
         <Grid container spacing={2} justifyContent="center">
           {[
             { name: "soporte_tecnico_abai", label: "Soporte Técnico ABAI" },
-            { name: "correo_soporte_abai", label: "Correo Soporte ABAI", type: "email" },
+            { name: "correo_soporte_abai", label: "Correo Soporte", type: "email" },
             { name: "servicios_prestados", label: "Servicios Prestados" },
           ].map((field) => (
             <Grid item xs={12} sm={10} key={field.name}>
               <TextField
                 label={field.label}
                 name={field.name}
-                type={field.type || "text"}
                 fullWidth
                 size="small"
-                required
                 value={formData[field.name] || ""}
                 onChange={handleChange}
               />
@@ -275,86 +452,29 @@ const FormularioEditar = ({ open, onClose, idCampana, onUpdate }) => {
         <Typography variant="subtitle1" sx={sectionTitle}>
           IMÁGENES
         </Typography>
+
         <Grid container spacing={2} justifyContent="center">
           <Grid item xs={12} sm={5}>
-            <Button
-              variant="outlined"
-              component="label"
-              fullWidth
-              sx={{
-                py: 1.2,
-                borderRadius: "10px",
-                borderColor: "#1565c0",
-                color: "#1565c0",
-                fontWeight: 600,
-                "&:hover": { backgroundColor: "#1565c0", color: "#fff" },
-              }}
-            >
-              Cambiar Imagen Sede
-              <input
-                type="file"
-                hidden
-                accept="image/*"
-                onChange={(e) => setImagenSede(e.target.files[0])}
-              />
+            <Button variant="outlined" component="label" fullWidth>
+              Subir Imagen Sede
+              <input type="file" hidden onChange={(e) => setImagenSede(e.target.files[0])} />
             </Button>
-            {imagenSede && (
-              <Typography variant="body2" mt={1} textAlign="center">
-                📁 {imagenSede.name}
-              </Typography>
-            )}
           </Grid>
-
           <Grid item xs={12} sm={5}>
-            <Button
-              variant="outlined"
-              component="label"
-              fullWidth
-              sx={{
-                py: 1.2,
-                borderRadius: "10px",
-                borderColor: "#1565c0",
-                color: "#1565c0",
-                fontWeight: 600,
-                "&:hover": { backgroundColor: "#1565c0", color: "#fff" },
-              }}
-            >
-              Cambiar Imagen Cliente
-              <input
-                type="file"
-                hidden
-                accept="image/*"
-                onChange={(e) => setImagenCliente(e.target.files[0])}
-              />
+            <Button variant="outlined" component="label" fullWidth>
+              Subir Imagen Cliente
+              <input type="file" hidden onChange={(e) => setImagenCliente(e.target.files[0])} />
             </Button>
-            {imagenCliente && (
-              <Typography variant="body2" mt={1} textAlign="center">
-                📁 {imagenCliente.name}
-              </Typography>
-            )}
           </Grid>
         </Grid>
 
-        {/* BOTÓN ACTUALIZAR */}
+        {/* BOTÓN */}
         <Box textAlign="center" mt={5}>
           <Button
             variant="contained"
-            color="primary"
             type="submit"
             disabled={loading}
-            sx={{
-              width: "60%",
-              py: 1.4,
-              borderRadius: "12px",
-              fontWeight: "bold",
-              fontSize: "1rem",
-              textTransform: "none",
-              boxShadow: "0 4px 12px rgba(21,101,192,0.3)",
-              "&:hover": {
-                backgroundColor: "#0d47a1",
-                boxShadow: "0 5px 15px rgba(13,71,161,0.4)",
-              },
-            }}
+            sx={{ width: "60%", py: 1.4 }}
           >
             {loading ? "Actualizando..." : "ACTUALIZAR"}
           </Button>
@@ -364,4 +484,4 @@ const FormularioEditar = ({ open, onClose, idCampana, onUpdate }) => {
   );
 };
 
-export default FormularioEditar;
+export default FormularioEditarCampana;

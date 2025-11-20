@@ -3,7 +3,6 @@ import {
   getCampanas,
   getCampanaById,
   createCampana,
-  deleteCampana,
   updateCampana,
   getCampanasDetalles,
   updateEstadoCampana,
@@ -35,6 +34,5 @@ router.put("/:id",upload.fields([
     { name: "imagen_cliente", maxCount: 1 },
     { name: "imagen_sede", maxCount: 1 },
   ]), validate(campanaSchema), updateCampana);
-router.delete("/:id", deleteCampana);
 
 export default router;
