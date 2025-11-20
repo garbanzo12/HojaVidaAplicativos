@@ -50,30 +50,10 @@ const FormularioEditarMatriz = ({ open, onClose, idMatriz, onUpdate }) => {
     n_telefono_proveedor: "",
     n_telefono_asesor: "",
     estado: "HABILITADO",
-    campanaId: "",
   });
 
-const [campanas, setCampanas] = useState([]);
 const [loading, setLoading] = useState(false);
 
-const cargarCampanas = async () => {
-  try {
-    const { data } = await axios.get("http://localhost:4000/campana");
-    console.log(data)
-    if (Array.isArray(data.campanas)) {
-      const campanasHabilitadas = data.campanas.filter(
-        (campana) => campana.estado?.toUpperCase() === "HABILITADO"
-      );
-
-      setCampanas(campanasHabilitadas);
-    } else {
-      setCampanas([]);
-      console.warn("⚠️ El formato de respuesta no es un array:", data);
-    }
-  } catch (error) {
-    console.error("❌ Error al cargar campañas:", error);
-  }
-};
 
 
 
@@ -88,7 +68,6 @@ const cargarCampanas = async () => {
         n_telefono_proveedor: data.n_telefono_proveedor || "",
         n_telefono_asesor: data.n_telefono_asesor || "",
         estado: data.estado || "HABILITADO",
-        campanaId: data.campanaId || "",
       });
     } catch (error) {
       console.error("❌ Error al cargar la matriz:", error);
@@ -99,7 +78,6 @@ const cargarCampanas = async () => {
   // 🔁 Efectos
   useEffect(() => {
     if (open) {
-      cargarCampanas();
       cargarMatriz();
     }
   }, [open, idMatriz]);
@@ -184,29 +162,7 @@ const cargarCampanas = async () => {
             </Grid>
           ))}
 
-        {/* Selector de Campaña */}
-            <Grid item xs={12} sm={10}>
-              <FormControl fullWidth size="small" required>
-                <InputLabel id="campana-label">Campaña</InputLabel>
-                <Select
-                  labelId="campana-label"
-                  name="campanaId"
-                  value={formData.campanaId || ""}
-                  onChange={handleChange}
-                  label="Campaña"
-                >
-                  {campanas.length === 0 ? (
-                    <MenuItem value="">No hay campañas</MenuItem>
-                  ) : (
-                    campanas.map((campana) => (
-                      <MenuItem key={campana.id} value={campana.id}>
-                        {campana.nombre_campana}
-                      </MenuItem>
-                    ))
-                  )}
-                </Select>
-              </FormControl>
-            </Grid>
+
 
         </Grid>
 

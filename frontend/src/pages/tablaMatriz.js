@@ -47,7 +47,6 @@ const TablaMatriz = ({ registros = [], onEstadoChange, onEditar }) => {
                 "Código Servicio",
                 "Teléfono Proveedor",
                 "Teléfono Asesor",
-                "Nombre campaña",
                 "Estado",
                 "Acciones",
               ].map((title) => (
@@ -75,7 +74,6 @@ const TablaMatriz = ({ registros = [], onEstadoChange, onEditar }) => {
                   <TableCell>{fila.codigo_servicio}</TableCell>
                   <TableCell>{fila.n_telefono_proveedor}</TableCell>
                   <TableCell>{fila.n_telefono_asesor}</TableCell>
-                  <TableCell>{fila.campana.nombre_campana}</TableCell>
                   <TableCell>
                     <Button
                       onClick={() => onEstadoChange(fila.id, fila.estado)}

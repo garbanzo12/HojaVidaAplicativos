@@ -47,7 +47,6 @@ const TablaMatriz = ({ registros = [], onEstadoChange, onEditar }) => {
               <TableCell sx={{ color: "white", fontWeight: "bold" }}>Código Servicio</TableCell>
               <TableCell sx={{ color: "white", fontWeight: "bold" }}>Teléfono Proveedor</TableCell>
               <TableCell sx={{ color: "white", fontWeight: "bold" }}>Teléfono Asesor</TableCell>
-              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Nombre Campaña</TableCell>
               <TableCell sx={{ color: "white", fontWeight: "bold" }}>Estado</TableCell>
               <TableCell sx={{ color: "white", fontWeight: "bold" }}>Editar</TableCell>
             </TableRow>
@@ -67,12 +66,7 @@ const TablaMatriz = ({ registros = [], onEstadoChange, onEditar }) => {
                   <TableCell>{fila.codigo_servicio}</TableCell>
                   <TableCell>{fila.n_telefono_proveedor}</TableCell>
                   <TableCell>{fila.n_telefono_asesor}</TableCell>
-                  <TableCell>
-                      {/* 🏆 CORRECCIÓN CLAVE: Mapear el array de campañas */}
-                      {fila.campanas && fila.campanas.length > 0
-                        ? fila.campanas.map(campana => campana.nombre_campana).join(', ')
-                        : 'Sin campañas'}
-                    </TableCell>
+
                   <TableCell>
                     <Button
                       onClick={() => onEstadoChange(fila.id, fila.estado)}

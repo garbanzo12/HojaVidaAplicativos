@@ -40,29 +40,12 @@ const FormularioEditarMatrizGlobal = ({
     n_telefono_proveedor: "",
     n_telefono_asesor: "",
     estado: "HABILITADO",
-    // 🏆 CORRECCIÓN 1: Inicializar como array vacío para selección múltiple
-    campanas: [], 
+    
   });
 
-  const [campanas, setCampanas] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const cargarCampanas = async () => {
-    try {
-      const { data } = await axios.get("http://localhost:4000/campana");
-      if (Array.isArray(data.campanas)) {
-        const campanasHabilitadas = data.campanas.filter(
-          (campana) => campana.estado?.toUpperCase() === "HABILITADO"
-        );
-        setCampanas(campanasHabilitadas);
-      } else {
-        setCampanas([]);
-        console.warn("⚠️ El formato de respuesta de campañas no es un array:", data);
-      }
-    } catch (error) {
-      console.error("❌ Error al cargar campañas:", error);
-    }
-  };
+
 
   const cargarMatriz = async () => {
     try {
@@ -76,8 +59,6 @@ const FormularioEditarMatrizGlobal = ({
           n_telefono_proveedor: data.n_telefono_proveedor,
           n_telefono_asesor: data.n_telefono_asesor,
           estado: data.estado,
-          // 🏆 CORRECCIÓN 2: Mapear a un array de IDs para la selección múltiple
-          campanas: data.campanas ? data.campanas.map(c => c.id) : [], 
         });
     } catch (error) {
         console.error("❌ Error al cargar matriz para edición:", error);
@@ -86,7 +67,6 @@ const FormularioEditarMatrizGlobal = ({
 
   useEffect(() => {
     if (open && idMatriz) { // Aseguramos que tenemos un ID para cargar
-      cargarCampanas();
       cargarMatriz();
     }
   }, [open, idMatriz]);
@@ -147,27 +127,7 @@ const FormularioEditarMatrizGlobal = ({
             </Grid>
           ))}
 
-          {/* Campaña (Selección Múltiple) */}
-        <Grid item xs={12}>
-          <FormControl fullWidth size="small">
-            <InputLabel>Campaña</InputLabel>
-            <Select
-              name="campanas"
-              value={formData.campanas}
-              onChange={handleChange}
-              multiple 
-              renderValue={(selected) => selected.map(id => 
-                  campanas.find(c => c.id === id)?.nombre_campana
-              ).join(', ')}
-            >
-              {campanas.map((c) => (
-                <MenuItem key={c.id} value={c.id}>
-                  {c.nombre_campana}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Grid>
+
         </Grid>
 
         <Box mt={4} textAlign="center">

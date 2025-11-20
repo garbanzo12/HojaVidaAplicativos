@@ -44,48 +44,9 @@ export const updateMatrizGlobal = async (req, res) => {
     const data = req.validatedData;
     let updateData = { ...data };
 
-
-    if (Object.prototype.hasOwnProperty.call(data, 'campanas')) {
-      
-      const campanaIDs = (data.campanas || []).map(id => Number(id)); 
-
-      if (campanaIDs.length > 0) {
-        const campanasEncontradas = await prisma.campana.findMany({
-          where: { id: { in: campanaIDs } },
-          select: { id: true, nombre_campana: true, estado: true }
-        });
-
-        if (campanasEncontradas.length !== campanaIDs.length) {
-          return res.status(400).json({
-            success: false,
-            message: "Una o más campañas seleccionadas no existen.",
-          });
-        }
-
-        const campanaInactiva = campanasEncontradas.find(c => c.estado !== "HABILITADO");
-        if (campanaInactiva) {
-          return res.status(400).json({
-            success: false,
-            message: `La campaña "${campanaInactiva.nombre_campana}" está inactiva y no puede ser asignada.`,
-          });
-        }
-      }
-      
-
-      updateData.campanas = {
-        set: campanaIDs.map(id => ({ id })),
-      };
-
-      
-    } 
-    // ---------------------------------
-
     const matrizActualizada = await prisma.matriz_escalamiento_global.update({
       where: { id: Number(id) },
       data: updateData, 
-      include: {
-        campanas: { select: { id: true, nombre_campana: true } }
-      }
     });
 
     res.json({
@@ -119,13 +80,8 @@ export const getMatrizGlobal = async (req, res) => {
 export const getMatrizGlobalById = async (req, res) => {
   try {
     const { id } = req.params;
-    const matriz = await prisma.matrizescalamientoglobal.findUnique({
+    const matriz = await prisma.matriz_escalamiento_global.findUnique({
       where: { id: Number(id) },
-      include: {
-        campanas: { // 👈 Asegúrate de incluir la lista de campañas
-          select: { id: true, nombre_campana: true, cliente: true } 
-        }
-      }
     });
 
     if (!matriz) {
@@ -145,7 +101,7 @@ export const updateEstadomatrizGlobal= async (req, res) => {
 
   try {
     // 1️⃣ Buscar la campaña por ID
-    const matriz = await prisma.matrizescalamientoglobal.findUnique({
+    const matriz = await prisma.matriz_escalamiento_global.findUnique({
       where: { id: Number(id) },
     });
 
@@ -162,7 +118,7 @@ export const updateEstadomatrizGlobal= async (req, res) => {
       matriz.estado === "HABILITADO" ? "DESHABILITADO" : "HABILITADO";
 
     // 4️⃣ Actualizar en base de datos
-    const matrizActualizada = await prisma.matrizescalamientoglobal.update({
+    const matrizActualizada = await prisma.matriz_escalamiento_global.update({
       where: { id: Number(id) },
       data: { estado: nuevoEstado },
     });
