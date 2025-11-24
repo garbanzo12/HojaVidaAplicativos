@@ -139,6 +139,41 @@ const FormularioModal = ({ open, onClose }) => {
       .catch((err) => console.log(err));
   }, [open]);
 
+// 🔹 Función de carga de datos (useEffect)
+useEffect(() => {
+  if (open) {
+
+    // 1. Cargar Aplicativos
+    axios.get("http://localhost:4000/aplicativo")
+      .then(res => {
+        // Filtrar solo HABILITADOS
+        const filtrados = (res.data || []).filter(a => a.estado === "HABILITADO");
+        setAplicativos(filtrados);
+      })
+      .catch(err => console.error("Error cargando Aplicativos:", err));
+
+    // 2. Cargar Matrices
+    axios.get("http://localhost:4000/matriz")
+      .then(res => {
+        // Filtrar solo HABILITADOS
+        const filtrados = (res.data || []).filter(m => m.estado === "HABILITADO");
+        setMatrices(filtrados);
+      })
+      .catch(err => console.error("Error cargando Matrices:", err));
+  }
+
+  // 3. Cargar Matriz Escalamiento Global
+  axios.get("http://localhost:4000/matriz/global")
+    .then(res => {
+      // Filtrar solo HABILITADOS
+      const filtrados = (res.data || []).filter(mg => mg.estado === "HABILITADO");
+      setMatricesGlobal(filtrados);
+    })
+    .catch(err => console.error("Error cargando Matriz Global:", err));
+
+}, [open]);
+
+
   // 📝 Manejo de inputs
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -261,6 +296,163 @@ const FormularioModal = ({ open, onClose }) => {
         {/* VINCULACIÓN & DATOS GENERALES */}
         <Typography variant="subtitle1" sx={sectionTitle}>
           VINCULACIÓN & DATOS GENERALES
+        </Typography>
+
+        <Grid container spacing={2} justifyContent="center">
+          
+            {/* SELECT Aplicativo */}
+            <Grid item xs={12} sm={5}>
+              <FormControl
+                fullWidth
+                size="small"
+                disabled={formData.aplicativoId?.includes(null)}
+              >
+                <InputLabel>Aplicativo</InputLabel>
+                <Select
+                  multiple
+                  name="aplicativoId"
+                  value={formData.aplicativoId}
+                  onChange={(e) => {
+                    const value = e.target.value;
+
+                    // Si selecciona "Ninguno"
+                    if (value.includes(null)) {
+                      setFormData((prev) => ({
+                        ...prev,
+                        aplicativoId: [null]
+                      }));
+                    } else {
+                      setFormData((prev) => ({
+                        ...prev,
+                        aplicativoId: value
+                      }));
+                    }
+                  }}
+                  label="Aplicativos"
+                >
+                  <MenuItem value={null}>
+                    <em>Ninguno</em>
+                  </MenuItem>
+
+                  {aplicativos.map((app) => (
+                    <MenuItem key={app.id} value={app.id}>
+                      {app.nombre}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
+          
+          {/* SELECT MatrizEscalamiento */}
+          <Grid item xs={12} sm={5}>
+            <FormControl fullWidth size="small" disabled={formData.matrizId?.includes(null)}>
+              <InputLabel>Matriz Escalamiento</InputLabel>
+              <Select
+                multiple
+                name="matrizId"
+                value={formData.matrizId}
+                onChange={(e) => {
+                  const value = e.target.value;
+
+                  // Si selecciona "Ninguna" (null), forzar a que solo quede "null"
+                  if (value.includes(null)) {
+                    setFormData((prev) => ({
+                      ...prev,
+                      matrizId: [null]
+                    }));
+                  } else {
+                    setFormData((prev) => ({
+                      ...prev,
+                      matrizId: value
+                    }));
+                  }
+                }}
+                label="Matriz Escalamiento"
+              >
+                <MenuItem value={null}>
+                  <em>Ninguna</em>
+                </MenuItem>
+
+                {matrices.map((matriz) => (
+                  <MenuItem key={matriz.id} value={matriz.id}>
+                    {matriz.proveedor}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+
+          {/* SELECT Matriz Escalamiento GLOBAL */}
+          <Grid item xs={12} sm={4}>
+            <FormControl
+              fullWidth
+              size="small"
+              disabled={formData.matrizGlobalId?.includes(null)}
+            >
+              <InputLabel>Matriz Global</InputLabel>
+              <Select
+                multiple
+                name="matrizGlobalId"
+                value={formData.matrizGlobalId}
+                onChange={(e) => {
+                  const value = e.target.value;
+
+                  // Si selecciona "Ninguna"
+                  if (value.includes(null)) {
+                    setFormData((prev) => ({
+                      ...prev,
+                      matrizGlobalId: [null]
+                    }));
+                  } else {
+                    setFormData((prev) => ({
+                      ...prev,
+                      matrizGlobalId: value
+                    }));
+                  }
+                }}
+                label="Matriz Global"
+              >
+                <MenuItem value={null}>
+                  <em>Ninguna</em>
+                </MenuItem>
+
+                {matricesGlobal.map((matriz) => (
+                  <MenuItem key={matriz.id} value={matriz.id}>
+                    {matriz.proveedor}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+
+          {/* Otros TextFields de DATOS GENERALES */}
+          {[
+             { name: "ubicacion_sedes", label: "Ubicación Sede" },
+             { name: "puestos_operacion", label: "N° Puestos de Operación", type: "number" },
+             { name: "puestos_estructura", label: "N° Puestos de Estructura", type: "number" },
+             { name: "segmento_red", label: "Segmento de Red" },
+             { name: "fecha_actualizacion", label: "Fecha Actualización", type: "date" },
+          ].map((field) => (
+             <Grid item xs={12} sm={5} key={field.name}> 
+               <TextField
+                 label={field.label}
+                 name={field.name}
+                 type={field.type || "text"}
+                 fullWidth
+                 size="small"
+                 required
+                 InputLabelProps={field.type === "date" ? { shrink: true } : undefined}
+                 value={formData[field.name] || ""}
+                 onChange={handleChange}
+               />
+             </Grid>
+          ))}
+        </Grid>
+        
+        {/* GERENTES DE CAMPAÑA */}
+        <Typography variant="subtitle1" sx={sectionTitle}>
+          GERENTES DE CAMPAÑA
         </Typography>
 
         <Grid container spacing={2} justifyContent="center">
