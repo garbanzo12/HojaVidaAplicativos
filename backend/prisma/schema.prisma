@@ -23,9 +23,8 @@ model aplicativo {
   estado          aplicativo_estado          @default(HABILITADO)
   tipo_aplicativo aplicativo_tipo_aplicativo
   campanaId       Int?
-  campana         campana?                   @relation(fields: [campanaId], references: [id])
+  campana         campana[]             @relation("AplicativosCampanas")
 
-  @@index([campanaId], map: "aplicativo_campanaId_fkey")
 }
 
 model usuario {
@@ -37,12 +36,9 @@ model usuario {
   sede             usuario_sede
   rol              usuario_rol
   estado           usuario_estado        @default(HABILITADO)
+  campana         campana[]             @relation("UsuariosCampanas")
 
-  // Relación con campaña
-  campanaId        Int?
-  campana          campana?              @relation(fields: [campanaId], references: [id])
 
-  @@index([campanaId], map: "usuario_campanaId_fkey")
 }
 
 
@@ -73,10 +69,10 @@ model campana {
   imagen_cliente              String?
   imagen_sede                 String?
   estado                      campana_estado               @default(HABILITADO)
-  aplicativos                 aplicativo[]
+  aplicativos  aplicativo[] @relation("AplicativosCampanas")
   matriz_escalamiento         matriz_escalamiento[]        @relation("campanatomatriz_escalamiento")
   matriz_escalamiento_global  matriz_escalamiento_global[] @relation("campanatomatriz_escalamiento_global")
-  usuarios                    usuario[]
+  usuarios  usuario[] @relation("UsuariosCampanas")
 
 }
 
