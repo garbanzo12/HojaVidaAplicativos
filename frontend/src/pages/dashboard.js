@@ -26,9 +26,10 @@ import FormularioAplicativo from "./FormularioAplicativo";
 import TablaCampana from "./tablaCampana";
 import TablaAplicativos from "./tablaAplicativos";
 import FormularioMatriz from "./formularioMatriz";
-import FormularioMatrizGlobal from "./formularioMatrizGlobal";
 import TablaMatriz from "./tablaMatriz";
 import TablaGlobal from "./tablaGlobal";
+import FormularioUsuario from "./formularioUsuario";
+import TablaUsuarios from "./tablaUsuarios";
 
 const drawerWidth = 260;
 
@@ -37,7 +38,8 @@ const Dashboard = () => {
   const [abrirFormulario, setAbrirFormulario] = React.useState(false);
   const [abrirAplicativo, setAbrirAplicativo] = React.useState(false);
   const [abrirMatriz, setAbrirMatriz] = React.useState(false);
-  const [abrirMatrizGlobal, setAbrirMatrizGlobal] = React.useState(false);
+  const [abrirUsuarios, setAbrirUsuarios] = React.useState(false);
+  
   const [seccionActual, setSeccionActual] = React.useState("inicio");
 
   const handleMenuClick = (event, menuName) => {
@@ -58,6 +60,7 @@ const Dashboard = () => {
 
   const sidebarItems = [
     { label: "Formularios", type: "dropdown" },
+   { label: "Usuarios", route: "Usuario" },
     { label: "Campaña", route: "campana" },
     { label: "Aplicativos", route: "abai" },
     { label: "Matrizes ", type: "dropdownMatriz" },
@@ -168,10 +171,18 @@ const Dashboard = () => {
                     <MenuItem
                       onClick={() => {
                         handleMenuClose(item.label);
+                        setAbrirUsuarios(true);
+                      }}
+                    >
+                      Crear Usuario
+                    </MenuItem>
+                    <MenuItem
+                      onClick={() => {
+                        handleMenuClose(item.label);
                         setAbrirFormulario(true);
                       }}
                     >
-                      Crear campaña
+                      Crear Campaña
                     </MenuItem>
                     <MenuItem
                       onClick={() => {
@@ -179,7 +190,7 @@ const Dashboard = () => {
                         setAbrirAplicativo(true);
                       }}
                     >
-                      Crear aplicativos
+                      Crear Aplicativos
                     </MenuItem>
                     <MenuItem
                       onClick={() => {
@@ -187,15 +198,7 @@ const Dashboard = () => {
                         setAbrirMatriz(true);
                       }}
                     >
-                      Crear matriz E.
-                    </MenuItem>
-                    <MenuItem
-                      onClick={() => {
-                        handleMenuClose(item.label);
-                        setAbrirMatrizGlobal(true);
-                      }}
-                    >
-                      Crear matriz EG.
+                      Crear Matriz
                     </MenuItem>
                   </Menu>
                 </>
@@ -379,6 +382,8 @@ const Dashboard = () => {
         {seccionActual === "abai" && <TablaAplicativos />}
         {seccionActual === "matriz" && <TablaMatriz />}
         {seccionActual === "global" && <TablaGlobal />}
+        {seccionActual === "Usuario" && <TablaUsuarios />}
+
       </Box>
 
       {/* === MODALES === */}
@@ -416,6 +421,33 @@ const Dashboard = () => {
         </Modal>
       )}
 
+      {abrirUsuarios && (
+        <Modal open={abrirUsuarios} onClose={() => setAbrirUsuarios(false)}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              minHeight: "100vh",
+              p: 2,
+            }}
+          >
+            <Paper
+              elevation={6}
+              sx={{
+                width: "90%",
+                maxWidth: 800,
+                borderRadius: 3,
+                p: 3,
+                backgroundColor: "#f9f9f9",
+              }}
+            >
+              <FormularioUsuario onClose={() => setAbrirUsuarios(false)} />
+            </Paper>
+          </Box>
+        </Modal>
+      )}
+
       {abrirMatriz && (
         <Modal open={abrirMatriz} onClose={() => setAbrirMatriz(false)}>
           <Box
@@ -428,21 +460,6 @@ const Dashboard = () => {
             }}
           >
             <FormularioMatriz onClose={() => setAbrirMatriz(false)} />
-          </Box>
-        </Modal>
-      )}
-      {abrirMatrizGlobal && (
-        <Modal open={abrirMatrizGlobal} onClose={() => setAbrirMatrizGlobal(false)}>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              minHeight: "100vh",
-              p: 2,
-            }}
-          >
-            <FormularioMatrizGlobal onClose={() => setAbrirMatrizGlobal(false)} />
           </Box>
         </Modal>
       )}

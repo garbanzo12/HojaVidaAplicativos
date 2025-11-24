@@ -8,16 +8,15 @@ import {
   Grid,
   IconButton,
   Divider,
-  FormControl,
-  Select,
-  MenuItem,
-  InputLabel,
+  // ELIMINADAS: FormControl, InputLabel, Checkbox, ListItemText
+  Select, 
+  MenuItem, 
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import axios from "axios";
 
 // ----------------------------------------------------
-// 🛑 DEFINICIONES DE ESTILOS FALTANTES 🛑
+// 🌟 ESTILOS ESTÉTICAMENTE CORREGIDOS
 // ----------------------------------------------------
 
 const modalStyle = {
@@ -38,6 +37,18 @@ const modalStyle = {
   "&::-webkit-scrollbar": { display: "none" },
 };
 
+// 📌 ESTILO SIMPLIFICADO Y CORRECTO
+// Solo forzamos la altura y el radio de borde.
+// Esto permite que Material-UI alinee el texto y la etiqueta correctamente.
+const inputStyle = {
+  "& .MuiInputBase-root": {
+    height: "50px", // Altura uniforme (HP)
+    borderRadius: "12px", // Borde redondeado
+    fontSize: "0.95rem",
+  },
+  // Reglas de padding y label eliminadas para evitar conflictos de alineación
+};
+
 const sectionTitle = {
   fontWeight: 700,
   textAlign: "center",
@@ -45,6 +56,17 @@ const sectionTitle = {
   mb: 2,
   color: "#1565c0",
   letterSpacing: 0.5,
+};
+
+const gridCentered = {
+  display: "flex",
+  justifyContent: "center",
+};
+
+const gridWidth = {
+  xs: 12,
+  md: 10,
+  lg: 8,
 };
 
 // ----------------------------------------------------
@@ -75,12 +97,12 @@ const FormularioModal = ({ open, onClose }) => {
     correo_soporte_abai: "",
     servicios_prestados: "",
     estado: "HABILITADO",
-    // Nuevos IDs
-    aplicativoId: [], 
-    matrizId: [], 
-    matrizGlobalId: [],
-
+    // CORREGIDO: De arrays a string para selección simple
+    aplicativoId: "",
+    matrizId: "",
+    matrizGlobalId: "",
   });
+
   const [matricesGlobal, setMatricesGlobal] = useState([]);
   const [aplicativos, setAplicativos] = useState([]);
   const [matrices, setMatrices] = useState([]);
@@ -88,128 +110,104 @@ const FormularioModal = ({ open, onClose }) => {
   const [imagenCliente, setImagenCliente] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // 🔹 Función de carga de datos (useEffect)
+  // ⌨️ Cerrar con ESC
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleEsc);
+    return () => window.removeEventListener("keydown", handleEsc);
+  }, [onClose]);
+
+  // 🔹 Carga de datos
   useEffect(() => {
     if (open) {
-      // 1. Cargar Aplicativos
-      axios.get("http://localhost:4000/aplicativo") 
-        .then(res => {
-          // Asume que la lista de aplicativos está en res.data.aplicativos
-          
-          setAplicativos(res.data || []); 
-        })
-        .catch(err => console.error("Error cargando Aplicativos:", err));
+      axios
+        .get("http://localhost:4000/aplicativo")
+        .then((res) => setAplicativos(res.data || []))
+        .catch((err) => console.log(err));
 
-      // 2. Cargar Matrices
-      axios.get("http://localhost:4000/matriz") 
-        .then(res => {
-          // Asume que la lista de matrices está en res.data.registros
-          setMatrices(res.data || []); 
-        })
-        .catch(err => console.error("Error cargando Matrices:", err));
+      axios
+        .get("http://localhost:4000/matriz")
+        .then((res) => setMatrices(res.data || []))
+        .catch((err) => console.log(err));
     }
-    // 3. Cargar Matriz Escalamiento Global
-        axios.get("http://localhost:4000/matriz/global")
-          .then(res => {
-            setMatricesGlobal(res.data || []);
-          })
-          .catch(err => console.error("Error cargando Matriz Global:", err));
 
+    axios
+      .get("http://localhost:4000/matriz/global")
+      .then((res) => setMatricesGlobal(res.data || []))
+      .catch((err) => console.log(err));
   }, [open]);
 
-
+  // 📝 Manejo de inputs
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
-    const isIdField = name === 'aplicativoId' || name === 'matrizId';
-    
     let parsedValue = value;
 
-    if (isIdField) {
-        // Si el valor es "", lo convertimos a null (para Prisma SetNull), sino a Number
-        parsedValue = value === "" ? null : Number(value);
-    } else if (e.target.type === 'number') {
-        // Para TextFields de tipo number
-        parsedValue = value ? Number(value) : (value === 0 ? 0 : "");
+    if (e.target.type === "number") {
+      parsedValue = value ? Number(value) : "";
     }
-        
+
     setFormData((prev) => ({ ...prev, [name]: parsedValue }));
   };
 
-      
+  // 🚀 Enviar formulario
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-
     try {
       const formDataToSend = new FormData();
-
-      if (Array.isArray(formData.aplicativoId)) {
-              formData.aplicativoId.forEach((id) => {
-                formDataToSend.append("aplicativoId[]", id);
-              });
-            }
-      if (Array.isArray(formData.matrizId)) {
-        formData.matrizId.forEach((id) => {
-        formDataToSend.append("matrizId[]", id);
-        });
-      }
-      if (Array.isArray(formData.matrizGlobalId)) {
-        formData.matrizGlobalId.forEach((id) => {
-        formDataToSend.append("matrizGlobalId[]", id);
-        });
-      }
-      // Preparar los datos antes de añadirlos al FormData
+      
       const dataToSubmit = {
-          ...formData,
-          // Asegurar que las IDs sean null o número
-          
-          // Los campos numéricos ya deben ser números o strings vacíos gracias a handleChange
-          puestos_operacion: formData.puestos_operacion || null,
-          puestos_estructura: formData.puestos_estructura || null,
+        ...formData,
+        puestos_operacion: formData.puestos_operacion || null,
+        puestos_estructura: formData.puestos_estructura || null,
       };
-        delete dataToSubmit.matrizGlobalId;
-        delete dataToSubmit.aplicativoId;
-        delete dataToSubmit.matrizId;
-      // Agregar los campos de texto al FormData
+
+      // Excluir los IDs antes de iterar
+      delete dataToSubmit.aplicativoId;
+      delete dataToSubmit.matrizId;
+      delete dataToSubmit.matrizGlobalId;
+      
       Object.keys(dataToSubmit).forEach((key) => {
-        // Excluir claves con valor null si no queremos que se envíen como string "null"
-        if (dataToSubmit[key] !== null && dataToSubmit[key] !== undefined) {
-            formDataToSend.append(key, dataToSubmit[key]);
-        }
+        if (dataToSubmit[key] !== null)
+          formDataToSend.append(key, dataToSubmit[key]);
       });
       
+      // Enviar IDs de selección simple
+      if (formData.aplicativoId) formDataToSend.append("aplicativoId", formData.aplicativoId);
+      if (formData.matrizId) formDataToSend.append("matrizId", formData.matrizId);
+      if (formData.matrizGlobalId) formDataToSend.append("matrizGlobalId", formData.matrizGlobalId);
 
-      // Agregar las imágenes
+
       if (imagenSede) formDataToSend.append("imagen_sede", imagenSede);
-      if (imagenCliente) formDataToSend.append("imagen_cliente", imagenCliente);
+      if (imagenCliente)
+        formDataToSend.append("imagen_cliente", imagenCliente);
 
-        console.log("🧪 Revisando FormData antes de enviar:");
-        for (let [key, value] of formDataToSend.entries()) {
-          console.log(key, value);
-        }
-      // Enviar la solicitud POST
-      const response = await axios.post("http://localhost:4000/campana", formDataToSend, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      await axios.post(
+        "http://localhost:4000/campana",
+        formDataToSend,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
 
-      console.log("✅ Campaña creada:", response.data);
-      alert("✅ Campaña creada correctamente");
-      onClose(); // Cerrar el modal y refrescar la lista si es necesario
+      alert("Campaña creada correctamente");
+      onClose();
     } catch (error) {
-      console.error("❌ Error al crear campaña:", error.response?.data || error.message);
-      alert("❌ Error al crear la campaña: " + (error.response?.data?.message || error.message));
+      console.log(error);
+      alert("Error al crear la campaña");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Modal open={open} onClose={() => null} disableEscapeKeyDown>
+    <Modal
+      open={open}
+      onClose={(_, reason) => {
+        if (reason !== "backdropClick") onClose();
+      }}
+    >
       <Box component="form" onSubmit={handleSubmit} sx={modalStyle}>
-        
         <IconButton
           onClick={onClose}
           sx={{
@@ -223,7 +221,11 @@ const FormularioModal = ({ open, onClose }) => {
           <CloseIcon />
         </IconButton>
 
-        <Typography variant="h5" textAlign="center" sx={{ mb: 1, color: "#0d47a1", letterSpacing: 0.8, fontWeight: "bold" }}>
+        <Typography
+          variant="h5"
+          textAlign="center"
+          sx={{ mb: 1, color: "#0d47a1", letterSpacing: 0.8, fontWeight: "bold" }}
+        >
           CREAR CAMPAÑA
         </Typography>
 
@@ -233,6 +235,7 @@ const FormularioModal = ({ open, onClose }) => {
         <Typography variant="subtitle1" sx={sectionTitle}>
           INFORMACIÓN PRINCIPAL
         </Typography>
+
         <Grid container spacing={2} justifyContent="center">
           {[
             { name: "nombre_campana", label: "Nombre de Campaña" },
@@ -240,13 +243,13 @@ const FormularioModal = ({ open, onClose }) => {
             { name: "director_operacion_abai", label: "Director Operación ABAI" },
             { name: "correo_director", label: "Correo Director", type: "email" },
           ].map((field) => (
-            <Grid item xs={12} sm={10} key={field.name}>
+            <Grid item {...gridWidth} sx={gridCentered} key={field.name}>
               <TextField
+                sx={inputStyle}
                 label={field.label}
                 name={field.name}
                 type={field.type || "text"}
                 fullWidth
-                size="small"
                 required
                 value={formData[field.name] || ""}
                 onChange={handleChange}
@@ -255,165 +258,177 @@ const FormularioModal = ({ open, onClose }) => {
           ))}
         </Grid>
 
-        {/* RELACIONES Y DATOS GENERALES */}
+        {/* VINCULACIÓN & DATOS GENERALES */}
         <Typography variant="subtitle1" sx={sectionTitle}>
           VINCULACIÓN & DATOS GENERALES
         </Typography>
-        <Grid container spacing={2} justifyContent="center">
-          
-          {/* SELECT Aplicativo */}
-          <Grid item xs={12} sm={5}>
-            <FormControl fullWidth size="small">
-              <InputLabel>Aplicativo</InputLabel>
-              <Select
-                multiple
-                name="aplicativoId"
-                value={formData.aplicativoId}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    aplicativoId: e.target.value
-                  }))
-                }
-                label="Aplicativos"
-              > 
-                <MenuItem value={null}>
-                  <em>Ninguno</em>
-                </MenuItem>
-                {aplicativos.map((app) => (
-                  <MenuItem key={app.id} value={app.id}>
-                    {app.nombre}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          
-          {/* SELECT MatrizEscalamiento */}
-          <Grid item xs={12} sm={5}>
-            <FormControl fullWidth size="small">
-              <InputLabel>Matriz Escalamiento</InputLabel>
-              <Select
-                multiple
-                name="matrizId"
-                value={formData.matrizId}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    matrizId: e.target.value
-                  }))
-                }
-                label="Matriz Escalamiento"
-              >
-                <MenuItem value={null}>
-                  <em>Ninguna</em>
-                </MenuItem>
 
-                {matrices.map((matriz) => (
-                  <MenuItem key={matriz.id} value={matriz.id}>
-                    {matriz.proveedor}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          {/* SELECT Matriz Escalamiento GLOBAL */}
-          <Grid item xs={12} sm={4}>
-            <FormControl fullWidth size="small">
-              <InputLabel>Matriz Global</InputLabel>
-              <Select
-                multiple
-                name="matrizGlobalId"
-                value={formData.matrizGlobalId}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    matrizGlobalId: e.target.value
-                  }))
-                }
-                label="Matriz Global"
-              >
-                <MenuItem value={null}>
-                  <em>Ninguna</em>
-                </MenuItem>
-
-                {matricesGlobal.map((matriz) => (
-                  <MenuItem key={matriz.id} value={matriz.id}>
-                    {matriz.proveedor}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          {/* Otros TextFields de DATOS GENERALES */}
-          {[
-             { name: "ubicacion_sedes", label: "Ubicación Sede" },
-             { name: "puestos_operacion", label: "N° Puestos de Operación", type: "number" },
-             { name: "puestos_estructura", label: "N° Puestos de Estructura", type: "number" },
-             { name: "segmento_red", label: "Segmento de Red" },
-             { name: "fecha_actualizacion", label: "Fecha Actualización", type: "date" },
-          ].map((field) => (
-             <Grid item xs={12} sm={5} key={field.name}> 
-               <TextField
-                 label={field.label}
-                 name={field.name}
-                 type={field.type || "text"}
-                 fullWidth
-                 size="small"
-                 required
-                 InputLabelProps={field.type === "date" ? { shrink: true } : undefined}
-                 value={formData[field.name] || ""}
-                 onChange={handleChange}
-               />
-             </Grid>
-          ))}
-        </Grid>
-        
-        {/* GERENTES DE CAMPAÑA */}
-        <Typography variant="subtitle1" sx={sectionTitle}>
-          GERENTES DE CAMPAÑA
-        </Typography>
         <Grid container spacing={2} justifyContent="center">
-          {[
-            { name: "segmento", label: "Segmento" },
-            { name: "nombre_gte_campana", label: "Nombre Gerente de Campaña" },
-            { name: "correo_gte_campana", label: "Correo Gerente de Campaña", type: "email" },
-          ].map((field) => (
-            <Grid item xs={12} sm={10} key={field.name}>
-              <TextField
-                label={field.label}
-                name={field.name}
-                type={field.type || "text"}
-                fullWidth
-                size="small"
-                required
-                value={formData[field.name] || ""}
-                onChange={handleChange}
-              />
+          <Grid item xs={12} md={10} lg={8}>
+            
+            {/* 🔵 FILA 1 – SELECTS CORRECTOS Y ALINEADOS */}
+            <Grid container spacing={2}>
+              {/* SELECT APLICATIVO */}
+              <Grid item xs={12} md={4}>
+                {/* 🔑 CLAVE: Usar TextField con la prop 'select' */}
+                <TextField
+                  select
+                  fullWidth
+                  sx={inputStyle}
+                  label="Aplicativo"
+                  name="aplicativoId"
+                  value={formData.aplicativoId}
+                  onChange={handleChange}
+                >
+                  <MenuItem value="">
+                    <em>Ninguno</em>
+                  </MenuItem>
+                  {aplicativos.map((app) => (
+                    <MenuItem key={app.id} value={app.id}>
+                      {app.nombre}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+
+              {/* SELECT MATRIZ ESCALAMIENTO */}
+              <Grid item xs={12} md={4}>
+                <TextField
+                  select
+                  fullWidth
+                  sx={inputStyle}
+                  label="Matriz Escalamiento"
+                  name="matrizId"
+                  value={formData.matrizId}
+                  onChange={handleChange}
+                >
+                  <MenuItem value="">
+                    <em>Ninguno</em>
+                  </MenuItem>
+                  {matrices.map((m) => (
+                    <MenuItem key={m.id} value={m.id}>
+                      {m.proveedor}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+
+              {/* SELECT MATRIZ GLOBAL */}
+              <Grid item xs={12} md={4}>
+                <TextField
+                  select
+                  fullWidth
+                  sx={inputStyle}
+                  label="Matriz Global"
+                  name="matrizGlobalId"
+                  value={formData.matrizGlobalId}
+                  onChange={handleChange}
+                >
+                  <MenuItem value="">
+                    <em>Ninguno</em>
+                  </MenuItem>
+                  {matricesGlobal.map((m) => (
+                    <MenuItem key={m.id} value={m.id}>
+                      {m.proveedor}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
             </Grid>
-          ))}
+
+            {/* 🔵 FILA 2 – CAMPOS ALINEADOS EXACTOS */}
+            <Grid container spacing={2} mt={2}>
+              <Grid item xs={12} md={4}>
+                <TextField
+                  fullWidth
+                  sx={inputStyle}
+                  label="Ubicación Sede"
+                  name="ubicacion_sedes"
+                  value={formData.ubicacion_sedes}
+                  onChange={handleChange}
+                />
+              </Grid>
+
+              <Grid item xs={12} md={4}>
+                <TextField
+                  fullWidth
+                  sx={inputStyle}
+                  type="number"
+                  label="N° Puestos de Operación"
+                  name="puestos_operacion"
+                  value={formData.puestos_operacion}
+                  onChange={handleChange}
+                />
+              </Grid>
+
+              <Grid item xs={12} md={4}>
+                <TextField
+                  fullWidth
+                  sx={inputStyle}
+                  type="number"
+                  label="N° Puestos de Estructura"
+                  name="puestos_estructura"
+                  value={formData.puestos_estructura}
+                  onChange={handleChange}
+                />
+              </Grid>
+            </Grid>
+
+            {/* 🔵 FILA 3 – CAMPOS ALINEADOS EXACTOS */}
+            <Grid container spacing={2} mt={2}>
+              <Grid item xs={12} md={4}>
+                <TextField
+                  fullWidth
+                  sx={inputStyle}
+                  label="Segmento de Red"
+                  name="segmento_red"
+                  value={formData.segmento_red}
+                  onChange={handleChange}
+                />
+              </Grid>
+
+              <Grid item xs={12} md={4}>
+                <TextField
+                  fullWidth
+                  sx={inputStyle}
+                  type="date"
+                  label="Fecha Actualización"
+                  name="fecha_actualizacion"
+                  // InputLabelProps ya no necesita el estilo manual, el inputStyle corregido es suficiente,
+                  // pero lo mantenemos para que la etiqueta quede arriba en el campo de fecha.
+                  InputLabelProps={{ shrink: true }} 
+                  value={formData.fecha_actualizacion}
+                  onChange={handleChange}
+                />
+              </Grid>
+
+              <Grid item xs={12} md={4} />
+            </Grid>
+          </Grid>
         </Grid>
+
 
         {/* CONTACTOS */}
         <Typography variant="subtitle1" sx={sectionTitle}>
           CONTACTOS
         </Typography>
+
         <Grid container spacing={2} justifyContent="center">
           {[
             { name: "nombre_contacto_cliente", label: "Nombre Contacto Cliente" },
             { name: "correo_contacto_cliente", label: "Correo Cliente", type: "email" },
-            { name: "telefono_contacto_cliente", label: "Teléfono Cliente", type: "tel" },
+            { name: "telefono_contacto_cliente", label: "Teléfono Cliente" },
             { name: "nombre_contacto_comercial", label: "Nombre Contacto Comercial" },
             { name: "correo_contacto_comercial", label: "Correo Comercial", type: "email" },
-            { name: "telefono_contacto_comercial", label: "Teléfono Comercial", type: "tel" },
+            { name: "telefono_contacto_comercial", label: "Teléfono Comercial" },
           ].map((field) => (
-            <Grid item xs={12} sm={10} key={field.name}>
+            <Grid item {...gridWidth} sx={gridCentered} key={field.name}>
               <TextField
+                sx={inputStyle}
                 label={field.label}
                 name={field.name}
                 type={field.type || "text"}
                 fullWidth
-                size="small"
                 required
                 value={formData[field.name] || ""}
                 onChange={handleChange}
@@ -422,23 +437,24 @@ const FormularioModal = ({ open, onClose }) => {
           ))}
         </Grid>
 
-        {/* SOPORTE Y SERVICIOS */}
+        {/* SOPORTE */}
         <Typography variant="subtitle1" sx={sectionTitle}>
           SOPORTE Y SERVICIOS
         </Typography>
+
         <Grid container spacing={2} justifyContent="center">
           {[
             { name: "soporte_tecnico_abai", label: "Soporte Técnico ABAI" },
             { name: "correo_soporte_abai", label: "Correo Soporte ABAI", type: "email" },
             { name: "servicios_prestados", label: "Servicios Prestados" },
           ].map((field) => (
-            <Grid item xs={12} sm={10} key={field.name}>
+            <Grid item {...gridWidth} sx={gridCentered} key={field.name}>
               <TextField
+                sx={inputStyle}
                 label={field.label}
                 name={field.name}
                 type={field.type || "text"}
                 fullWidth
-                size="small"
                 required
                 value={formData[field.name] || ""}
                 onChange={handleChange}
@@ -447,20 +463,20 @@ const FormularioModal = ({ open, onClose }) => {
           ))}
         </Grid>
 
-
         {/* IMÁGENES */}
         <Typography variant="subtitle1" sx={sectionTitle}>
           IMÁGENES
         </Typography>
+
         <Grid container spacing={2} justifyContent="center">
-          <Grid item xs={12} sm={5}>
+          <Grid item {...gridWidth} sx={gridCentered}>
             <Button
               variant="outlined"
               component="label"
               fullWidth
               sx={{
-                py: 1.2,
-                borderRadius: "10px",
+                py: 1.5,
+                borderRadius: "12px",
                 borderColor: "#1565c0",
                 color: "#1565c0",
                 fontWeight: 600,
@@ -468,28 +484,18 @@ const FormularioModal = ({ open, onClose }) => {
               }}
             >
               Subir Imagen Sede
-              <input
-                type="file"
-                hidden
-                accept="image/*"
-                onChange={(e) => setImagenSede(e.target.files[0])}
-              />
+              <input type="file" hidden accept="image/*" onChange={(e) => setImagenSede(e.target.files[0])} />
             </Button>
-            {imagenSede && (
-              <Typography variant="body2" mt={1} textAlign="center">
-                📁 {imagenSede.name}
-              </Typography>
-            )}
           </Grid>
 
-          <Grid item xs={12} sm={5}>
+          <Grid item {...gridWidth} sx={gridCentered}>
             <Button
               variant="outlined"
               component="label"
               fullWidth
               sx={{
-                py: 1.2,
-                borderRadius: "10px",
+                py: 1.5,
+                borderRadius: "12px",
                 borderColor: "#1565c0",
                 color: "#1565c0",
                 fontWeight: 600,
@@ -497,23 +503,13 @@ const FormularioModal = ({ open, onClose }) => {
               }}
             >
               Subir Imagen Cliente
-              <input
-                type="file"
-                hidden
-                accept="image/*"
-                onChange={(e) => setImagenCliente(e.target.files[0])}
-              />
+              <input type="file" hidden accept="image/*" onChange={(e) => setImagenCliente(e.target.files[0])} />
             </Button>
-            {imagenCliente && (
-              <Typography variant="body2" mt={1} textAlign="center">
-                📁 {imagenCliente.name}
-              </Typography>
-            )}
           </Grid>
         </Grid>
 
         {/* BOTÓN CREAR */}
-        <Box textAlign="center" mt={5}>
+        <Box textAlign="center" mt={4}>
           <Button
             variant="contained"
             color="primary"
@@ -527,7 +523,10 @@ const FormularioModal = ({ open, onClose }) => {
               fontSize: "1rem",
               textTransform: "none",
               boxShadow: "0 4px 12px rgba(21,101,192,0.3)",
-              "&:hover": { backgroundColor: "#0d47a1", boxShadow: "0 5px 15px rgba(13,71,161,0.4)" },
+              "&:hover": {
+                backgroundColor: "#0d47a1",
+                boxShadow: "0 5px 15px rgba(13,71,161,0.4)",
+              },
             }}
           >
             {loading ? "Creando..." : "CREAR"}
