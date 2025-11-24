@@ -24,6 +24,7 @@ const FormularioUsuario = ({ onClose = () => {} }) => {
     numero_documento: "",
     sede: "",
     rol: "",
+    contrasena: "",
   });
 
   const handleChange = (e) => {
@@ -40,6 +41,7 @@ const FormularioUsuario = ({ onClose = () => {} }) => {
         numero_documento: formData.numero_documento,
         sede: formData.sede,
         rol: formData.rol,
+        contrasena: formData.contrasena, 
         estado: "HABILITADO",
       };
 
@@ -199,7 +201,19 @@ const FormularioUsuario = ({ onClose = () => {} }) => {
             </Select>
           </FormControl>
         </Grid>
-
+        {/* Contraseña */}
+        <Grid item xs={12} md={6}>
+          <TextField
+            label="Contraseña"
+            name="contrasena"
+            type="password"
+            value={formData.contrasena}
+            onChange={handleChange}
+            fullWidth
+            size="small"
+            placeholder="Ingresa una contraseña segura"
+          />
+        </Grid>
       </Grid>
 
       <Box sx={{ display: "flex", justifyContent: "center", mt: 5 }}>

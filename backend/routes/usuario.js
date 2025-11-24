@@ -8,6 +8,7 @@ import {
   updateEstadoUsuario,
 } from "../controllers/usuario.js";
 
+
 const router = express.Router();
 
 // Obtener todos los usuarios
@@ -25,5 +26,8 @@ router.delete("/:id", eliminarUsuario);
 
 // Obtener usuarios de una campaña específica
 router.get("/campana/:campanaId", getUsuariosPorCampana);
+
+
+
 
 export default router;

@@ -30,13 +30,14 @@ model aplicativo {
 model usuario {
   id               Int                   @id @default(autoincrement())
   nombre_completo  String
-  correo           String
+  correo           String @unique
   tipo_documento   usuario_tipo_documento
   numero_documento String
   sede             usuario_sede
   rol              usuario_rol
   estado           usuario_estado        @default(HABILITADO)
   campana         campana[]             @relation("UsuariosCampanas")
+  contrasena       String
 
 
 }
