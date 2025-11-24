@@ -15,19 +15,37 @@ import {
 import { Visibility, VisibilityOff, } from "@mui/icons-material";
 import logo from "../img/abai-logo.png";
 import Fondo from "../img/abai-galeria8.jpg";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({ email: "", password: "" });
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Login enviado", form);
-  };
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  try {
+    const res = await axios.post("http://localhost:4000/auth/login", {
+      correo: form.email,
+      contrasena: form.password,
+    });
+
+    localStorage.setItem("token", res.data.token);
+
+    alert("Login exitoso");
+    navigate("/dashboard"); 
+
+  } catch (error) {
+    alert(error.response?.data?.error || "Error al iniciar sesión");
+  }
+};
+
 
   return (
     <Box

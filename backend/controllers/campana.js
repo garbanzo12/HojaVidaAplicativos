@@ -48,6 +48,7 @@ export const getCampanaById = async (req, res) => {
           aplicativos: true,
           matriz_escalamiento: true,
           matriz_escalamiento_global: true,
+          usuarios : true,
       },
     });
 
@@ -97,6 +98,10 @@ export const createCampana = async (req, res) => {
     // 1. NORMALIZAR ARRAYS
     // ----------------------------
 
+    // Usuarios
+    let usuarioIds = req.body["usuarioId[]"] || req.body.usuarioId || [];
+    if (!Array.isArray(usuarioIds)) usuarioIds = [usuarioIds];
+    usuarioIds = usuarioIds.map(Number).filter(Boolean);
     // Aplicativos
     let aplicativoIds = req.body["aplicativoId[]"] || req.body.aplicativoId || [];
     if (!Array.isArray(aplicativoIds)) aplicativoIds = [aplicativoIds];
@@ -112,6 +117,7 @@ export const createCampana = async (req, res) => {
     if (!Array.isArray(matrizGlobalIds)) matrizGlobalIds = [matrizGlobalIds];
     matrizGlobalIds = matrizGlobalIds.map(Number).filter(Boolean);
 
+    console.log("📌 Usuarios IDs:", usuarioIds);
     console.log("📌 APLICATIVOS IDs:", aplicativoIds);
     console.log("📌 MATRIZ NORMAL IDs:", matrizIds);
     console.log("📌 MATRIZ GLOBAL IDs:", matrizGlobalIds);
@@ -157,6 +163,10 @@ export const createCampana = async (req, res) => {
         estado,
 
         // Relaciones
+        usuarios: {
+          connect: usuarioIds.map(id => ({ id }))
+        },
+
         aplicativos: {
           connect: aplicativoIds.map(id => ({ id }))
         },
@@ -276,10 +286,12 @@ export const updateCampana = async (req, res) => {
     };
 
     // Recibir lo que manda el frontend
+    const usuarioIds = parseIds(raw.usuarioId);
     const aplicativosIds = parseIds(raw.aplicativoId);
     const matrizIds = parseIds(raw.matrizId);
     const matrizGlobalIds = parseIds(raw.matrizGlobalId);
 
+    console.log("📌 usuarioIds =>", usuarioIds);
     console.log("📌 aplicativosIds =>", aplicativosIds);
     console.log("📌 matrizIds =>", matrizIds);
     console.log("📌 matrizGlobalIds =>", matrizGlobalIds);
@@ -293,6 +305,12 @@ export const updateCampana = async (req, res) => {
       data: {
         ...dataToUpdate,
 
+        // 1:N usuarios
+        ...(usuarioIds.length > 0 && {
+          usuarios: {
+            set: usuarioIds.map(id => ({ id }))
+          }
+        }),
         // 1:N aplicativos
         ...(aplicativosIds.length > 0 && {
           aplicativos: {

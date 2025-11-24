@@ -23,10 +23,26 @@ model aplicativo {
   estado          aplicativo_estado          @default(HABILITADO)
   tipo_aplicativo aplicativo_tipo_aplicativo
   campanaId       Int?
-  campana         campana?                   @relation(fields: [campanaId], references: [id])
+  campana         campana[]             @relation("AplicativosCampanas")
 
-  @@index([campanaId], map: "aplicativo_campanaId_fkey")
 }
+
+model usuario {
+  id               Int                   @id @default(autoincrement())
+  nombre_completo  String
+  correo           String @unique
+  tipo_documento   usuario_tipo_documento
+  numero_documento String
+  sede             usuario_sede
+  rol              usuario_rol
+  estado           usuario_estado        @default(HABILITADO)
+  campana         campana[]             @relation("UsuariosCampanas")
+  contrasena       String
+
+
+}
+
+
 
 model campana {
   id                          Int                          @id @default(autoincrement())
@@ -54,9 +70,11 @@ model campana {
   imagen_cliente              String?
   imagen_sede                 String?
   estado                      campana_estado               @default(HABILITADO)
-  aplicativos                 aplicativo[]
+  aplicativos  aplicativo[] @relation("AplicativosCampanas")
   matriz_escalamiento         matriz_escalamiento[]        @relation("campanatomatriz_escalamiento")
   matriz_escalamiento_global  matriz_escalamiento_global[] @relation("campanatomatriz_escalamiento_global")
+  usuarios  usuario[] @relation("UsuariosCampanas")
+
 }
 
 model matriz_escalamiento {
@@ -96,6 +114,29 @@ enum aplicativo_tipo_aplicativo {
 }
 
 enum campana_estado {
+  HABILITADO
+  DESHABILITADO
+}
+
+
+enum usuario_tipo_documento {
+  DIE
+  PEP
+  CC
+}
+
+enum usuario_sede {
+  pereira
+  manizales
+  bogota
+}
+
+enum usuario_rol {
+  proveedor
+  administrador
+}
+
+enum usuario_estado {
   HABILITADO
   DESHABILITADO
 }

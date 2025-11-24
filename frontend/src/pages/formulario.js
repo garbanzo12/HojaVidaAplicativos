@@ -75,13 +75,14 @@ const FormularioModal = ({ open, onClose }) => {
     correo_soporte_abai: "",
     servicios_prestados: "",
     estado: "HABILITADO",
-    // Nuevos IDs
+    usuarioId: [],
     aplicativoId: [], 
     matrizId: [], 
     matrizGlobalId: [],
 
   });
   const [matricesGlobal, setMatricesGlobal] = useState([]);
+  const [usuarios, setUsuarios] = useState([]);
   const [aplicativos, setAplicativos] = useState([]);
   const [matrices, setMatrices] = useState([]);
   const [imagenSede, setImagenSede] = useState(null);
@@ -119,6 +120,14 @@ useEffect(() => {
       setMatricesGlobal(filtrados);
     })
     .catch(err => console.error("Error cargando Matriz Global:", err));
+
+    // 4. Cargar Usuarios
+  axios.get("http://localhost:4000/usuario")
+    .then(res => {
+      const filtrados = (res.data || []).filter(u => u.estado === "HABILITADO");
+      setUsuarios(filtrados);
+    })
+    .catch(err => console.error("Error cargando usuarios:", err));
 
 }, [open]);
 
@@ -165,6 +174,12 @@ useEffect(() => {
         formDataToSend.append("matrizGlobalId[]", id);
         });
       }
+      if (Array.isArray(formData.usuarioId)) {
+        formData.usuarioId.forEach((id) => {
+        formDataToSend.append("usuarioId[]", id);
+        });
+      }
+
       // Preparar los datos antes de añadirlos al FormData
       const dataToSubmit = {
           ...formData,
@@ -174,6 +189,7 @@ useEffect(() => {
           puestos_operacion: formData.puestos_operacion || null,
           puestos_estructura: formData.puestos_estructura || null,
       };
+        delete dataToSubmit.usuarioId;
         delete dataToSubmit.matrizGlobalId;
         delete dataToSubmit.aplicativoId;
         delete dataToSubmit.matrizId;
@@ -269,7 +285,7 @@ useEffect(() => {
           
             {/* SELECT Aplicativo */}
             <Grid item xs={12} sm={5}>
-              <FormControl
+              <FormControl required
                 fullWidth
                 size="small"
                 disabled={formData.aplicativoId?.includes(null)}
@@ -313,7 +329,7 @@ useEffect(() => {
           
           {/* SELECT MatrizEscalamiento */}
           <Grid item xs={12} sm={5}>
-            <FormControl fullWidth size="small" disabled={formData.matrizId?.includes(null)}>
+            <FormControl required fullWidth size="small" disabled={formData.matrizId?.includes(null)} >
               <InputLabel>Matriz Escalamiento</InputLabel>
               <Select
                 multiple
@@ -352,7 +368,7 @@ useEffect(() => {
 
           {/* SELECT Matriz Escalamiento GLOBAL */}
           <Grid item xs={12} sm={4}>
-            <FormControl
+            <FormControl required
               fullWidth
               size="small"
               disabled={formData.matrizGlobalId?.includes(null)}
@@ -387,6 +403,49 @@ useEffect(() => {
                 {matricesGlobal.map((matriz) => (
                   <MenuItem key={matriz.id} value={matriz.id}>
                     {matriz.proveedor}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+          {/* SELECT Usuario */}
+          <Grid item xs={12} sm={4}>
+            <FormControl
+              required
+              fullWidth
+              size="small"
+              disabled={formData.usuarioId?.includes(null)}
+            >
+              <InputLabel>Usuario</InputLabel>
+              <Select
+                multiple
+                name="usuarioId"
+                value={formData.usuarioId}
+                onChange={(e) => {
+                  const value = e.target.value;
+
+                  // Si selecciona "Ninguno"
+                  if (value.includes(null)) {
+                    setFormData((prev) => ({
+                      ...prev,
+                      usuarioId: [null]
+                    }));
+                  } else {
+                    setFormData((prev) => ({
+                      ...prev,
+                      usuarioId: value
+                    }));
+                  }
+                }}
+                label="Usuario"
+              >
+                <MenuItem value={null}>
+                  <em>Ninguno</em>
+                </MenuItem>
+
+                {usuarios.map((user) => (
+                  <MenuItem key={user.id} value={user.id}>
+                    {user.nombre_completo}
                   </MenuItem>
                 ))}
               </Select>

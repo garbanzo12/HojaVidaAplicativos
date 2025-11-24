@@ -12,16 +12,19 @@ import {
   Select,
   MenuItem,
   Paper,
+  InputLabel,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 
 const FormularioUsuario = ({ onClose = () => {} }) => {
   const [formData, setFormData] = useState({
-    nombreCompleto: "",
+    nombre_completo: "",
     correo: "",
-    cargo: "",
-    cedula: "",
+    tipo_documento: "",
+    numero_documento: "",
     sede: "",
+    rol: "",
+    contrasena: "",
   });
 
   const handleChange = (e) => {
@@ -32,20 +35,20 @@ const FormularioUsuario = ({ onClose = () => {} }) => {
   const handleCrear = async () => {
     try {
       const dataToSend = {
-        nombre_completo: formData.nombreCompleto,
+        nombre_completo: formData.nombre_completo,
         correo: formData.correo,
-        cargo: formData.cargo,
-        cedula: formData.cedula,
+        tipo_documento: formData.tipo_documento,
+        numero_documento: formData.numero_documento,
         sede: formData.sede,
-        estado: "ACTIVO",
+        rol: formData.rol,
+        contrasena: formData.contrasena, 
+        estado: "HABILITADO",
       };
 
       const response = await axios.post(
         "http://localhost:4000/usuario",
         dataToSend,
-        {
-          headers: { "Content-Type": "application/json" },
-        }
+        { headers: { "Content-Type": "application/json" } }
       );
 
       console.log("Usuario creado:", response.data);
@@ -69,7 +72,6 @@ const FormularioUsuario = ({ onClose = () => {} }) => {
         backgroundColor: "transparent",
       }}
     >
-      {/* Botón cerrar */}
       <IconButton
         onClick={onClose}
         sx={{
@@ -84,7 +86,6 @@ const FormularioUsuario = ({ onClose = () => {} }) => {
         <CloseIcon />
       </IconButton>
 
-      {/* Títulos */}
       <Typography
         variant="h5"
         align="center"
@@ -110,26 +111,17 @@ const FormularioUsuario = ({ onClose = () => {} }) => {
         INFORMACIÓN PRINCIPAL
       </Typography>
 
-      {/* GRID CAMPOS */}
       <Grid container spacing={3} justifyContent="center">
 
-        {/* Nombre Completo */}
+        {/* Nombre */}
         <Grid item xs={12} md={6}>
           <TextField
             label="Nombre Completo"
-            name="nombreCompleto"
-            value={formData.nombreCompleto}
+            name="nombre_completo"
+            value={formData.nombre_completo}
             onChange={handleChange}
             fullWidth
             size="small"
-            sx={{
-              backgroundColor: "transparent",
-              borderRadius: 2,
-              "& .MuiOutlinedInput-root": {
-                "& fieldset": { borderColor: "#cfd8dc" },
-                "&:hover fieldset": { borderColor: "#90caf9" },
-              },
-            }}
           />
         </Grid>
 
@@ -144,96 +136,87 @@ const FormularioUsuario = ({ onClose = () => {} }) => {
             fullWidth
             size="small"
             placeholder="usuario@empresa.com"
-            sx={{
-              backgroundColor: "transparent",
-              borderRadius: 2,
-              "& .MuiOutlinedInput-root": {
-                "& fieldset": { borderColor: "#cfd8dc" },
-                "&:hover fieldset": { borderColor: "#90caf9" },
-              },
-            }}
           />
         </Grid>
 
-        {/* Cargo */}
-        <Grid item xs={12} md={6}>
-          <TextField
-            label="Cargo"
-            name="cargo"
-            value={formData.cargo}
-            onChange={handleChange}
-            fullWidth
-            size="small"
-            sx={{
-              backgroundColor: "transparent",
-              borderRadius: 2,
-              "& .MuiOutlinedInput-root": {
-                "& fieldset": { borderColor: "#cfd8dc" },
-                "&:hover fieldset": { borderColor: "#90caf9" },
-              },
-            }}
-          />
-        </Grid>
-
-        {/* Cédula */}
-        <Grid item xs={12} md={6}>
-          <TextField
-            label="Cédula"
-            name="cedula"
-            type="number"
-            value={formData.cedula}
-            onChange={handleChange}
-            fullWidth
-            size="small"
-            sx={{
-              backgroundColor: "transparent",
-              borderRadius: 2,
-              "& .MuiOutlinedInput-root": {
-                "& fieldset": { borderColor: "#cfd8dc" },
-                "&:hover fieldset": { borderColor: "#90caf9" },
-              },
-            }}
-          />
-        </Grid>
-
-        {/* Sede (Select) */}
+        {/* Tipo Documento (Select) */}
         <Grid item xs={12} md={6}>
           <FormControl fullWidth size="small">
+            <InputLabel>Tipo Documento</InputLabel>
             <Select
-              displayEmpty
-              name="sede"
-              value={formData.sede}
+              label="Tipo Documento"
+              name="tipo_documento"
+              value={formData.tipo_documento}
               onChange={handleChange}
-              sx={{
-                borderRadius: 2,
-                backgroundColor: "transparent",
-                "& .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "#cfd8dc",
-                },
-                "&:hover .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "#90caf9",
-                },
-              }}
             >
-              <MenuItem value="" disabled>
-                Seleccione Sede
-              </MenuItem>
-              <MenuItem value="Pereira">Pereira</MenuItem>
-              <MenuItem value="Bogota">Bogota</MenuItem>
-              <MenuItem value="Manizales">Manizales</MenuItem>
+              <MenuItem value="DIE">DIE</MenuItem>
+              <MenuItem value="PEP">PEP</MenuItem>
+              <MenuItem value="CC">CC</MenuItem>
             </Select>
           </FormControl>
         </Grid>
+
+        {/* Número Documento */}
+        <Grid item xs={12} md={6}>
+          <TextField
+            label="Número Documento"
+            name="numero_documento"
+            type="number"
+            value={formData.numero_documento}
+            onChange={handleChange}
+            fullWidth
+            size="small"
+          />
+        </Grid>
+
+        {/* Sede */}
+        <Grid item xs={12} md={6}>
+          <FormControl fullWidth size="small">
+            <InputLabel>Sede</InputLabel>
+            <Select
+              label="Sede"
+              name="sede"
+              value={formData.sede}
+              onChange={handleChange}
+            >
+              <MenuItem value="pereira">Pereira</MenuItem>
+              <MenuItem value="bogota">Bogotá</MenuItem>
+              <MenuItem value="manizales">Manizales</MenuItem>
+            </Select>
+          </FormControl>
+        </Grid>
+
+        {/* Rol */}
+        <Grid item xs={12} md={6}>
+          <FormControl fullWidth size="small">
+            <InputLabel>Rol</InputLabel>
+            <Select
+              label="Rol"
+              name="rol"
+              value={formData.rol}
+              onChange={handleChange}
+            >
+              <MenuItem value="proveedor">Proveedor</MenuItem>
+              <MenuItem value="administrador">Administrador</MenuItem>
+            </Select>
+          </FormControl>
+        </Grid>
+        {/* Contraseña */}
+        <Grid item xs={12} md={6}>
+          <TextField
+            label="Contraseña"
+            name="contrasena"
+            type="password"
+            value={formData.contrasena}
+            onChange={handleChange}
+            fullWidth
+            size="small"
+            placeholder="Ingresa una contraseña segura"
+          />
+        </Grid>
       </Grid>
 
-      {/* Botón Crear */}
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          mt: 5,
-        }}
-      >
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 5 }}>
         <Button
           variant="contained"
           onClick={handleCrear}
@@ -246,13 +229,8 @@ const FormularioUsuario = ({ onClose = () => {} }) => {
             fontWeight: "bold",
             fontSize: "1rem",
             borderRadius: "12px",
-            boxShadow: "0px 4px 12px rgba(21,101,192,0.3)",
             transition: "0.3s",
-            "&:hover": {
-              backgroundColor: "#0d47a1",
-              boxShadow: "0px 5px 14px rgba(13,71,161,0.4)",
-              transform: "translateY(-2px)",
-            },
+            "&:hover": { backgroundColor: "#0d47a1" },
           }}
         >
           CREAR

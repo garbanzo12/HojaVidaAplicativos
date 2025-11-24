@@ -72,8 +72,7 @@ const FormularioEditarCampana = ({ open, onClose, idCampana, onUpdate }) => {
     correo_soporte_abai: "",
     servicios_prestados: "",
     estado: "HABILITADO",
-
-    // Relaciones
+    usuarioId: "",
     aplicativoId: [],
     matrizId: [],
     matrizGlobalId: [],
@@ -82,29 +81,34 @@ const FormularioEditarCampana = ({ open, onClose, idCampana, onUpdate }) => {
   const [aplicativos, setAplicativos] = useState([]);
   const [matrices, setMatrices] = useState([]);
   const [matricesGlobal, setMatricesGlobal] = useState([]);
-
+  const [usuarios, setUsuarios] = useState([]);
   const [imagenSede, setImagenSede] = useState(null);
   const [imagenCliente, setImagenCliente] = useState(null);
-
+  const [listasCargadas, setListasCargadas] = useState(false);
   const [loading, setLoading] = useState(false);
 
   // ----------------------------------------------------
   // 🔹 Cargar listas (Aplicativos, Matriz, Matriz Global)
   // ----------------------------------------------------
 
-  const cargarListas = async () => {
-    try {
-      const apps = await axios.get("http://localhost:4000/aplicativo");
-      const mats = await axios.get("http://localhost:4000/matriz");
-      const matsG = await axios.get("http://localhost:4000/matriz/global");
+const cargarListas = async () => {
+  try {
+    const apps = await axios.get("http://localhost:4000/aplicativo");
+    const mats = await axios.get("http://localhost:4000/matriz");
+    const matsG = await axios.get("http://localhost:4000/matriz/global");
+    const users = await axios.get("http://localhost:4000/usuario");
 
-      setAplicativos(apps.data || []);
-      setMatrices(mats.data || []);
-      setMatricesGlobal(matsG.data || []);
-    } catch (err) {
-      console.error("Error cargando listas:", err);
-    }
-  };
+    setAplicativos(apps.data || []);
+    setMatrices(mats.data || []);
+    setMatricesGlobal(matsG.data || []);
+    setUsuarios(users.data || []);
+
+    setListasCargadas(true); // ✅ Marcar como listas cargadas
+  } catch (err) {
+    console.error("Error cargando listas:", err);
+  }
+};
+
 
   // ----------------------------------------------------
   // 🔹 Cargar datos de la campaña
@@ -120,14 +124,14 @@ const FormularioEditarCampana = ({ open, onClose, idCampana, onUpdate }) => {
       );
       console.log(data)
 
-      setFormData({
-        ...data,
+    setFormData({
+      ...data,
 
-        // Relaciones: asegurar arrays
-        aplicativoId: data.aplicativos?.map((a) => a.id) || [],
-        matrizId: data.matriz_escalamiento?.map((m) => m.id) || [],
-        matrizGlobalId: data.matriz_escalamiento_global?.map((m) => m.id) || [],
-      });
+      usuarioId: data.usuarios?.[0]?.id || "",
+      aplicativoId: data.aplicativos?.map((a) => a.id) || [],
+      matrizId: data.matriz_escalamiento?.map((m) => m.id) || [],
+      matrizGlobalId: data.matriz_escalamiento_global?.map((m) => m.id) || [],
+    });
     } catch (err) {
       console.error("Error al cargar campaña:", err);
     }
@@ -138,12 +142,18 @@ const FormularioEditarCampana = ({ open, onClose, idCampana, onUpdate }) => {
   // useEffect principal
   // ----------------------------------------------------
 
-  useEffect(() => {
-    if (open) {
-      cargarListas();
-      cargarCampana();
-    }
-  }, [open]);
+useEffect(() => {
+  if (open) {
+    setListasCargadas(false); 
+    cargarListas();
+  }
+}, [open]);
+
+useEffect(() => {
+  if (listasCargadas && open) {
+    cargarCampana(); // ✅ Ahora sí, campañas después de listas
+  }
+}, [listasCargadas]);
 
   // ----------------------------------------------------
   // 🔹 handleChange
@@ -170,6 +180,7 @@ const FormularioEditarCampana = ({ open, onClose, idCampana, onUpdate }) => {
       const formDataToSend = new FormData();
 
       // Arrays
+    
       formData.aplicativoId.forEach((id) =>
         formDataToSend.append("aplicativoId[]", id)
       );
@@ -179,6 +190,8 @@ const FormularioEditarCampana = ({ open, onClose, idCampana, onUpdate }) => {
       formData.matrizGlobalId.forEach((id) =>
         formDataToSend.append("matrizGlobalId[]", id)
       );
+
+      formDataToSend.append("usuarioId", formData.usuarioId);
 
       // Datos de texto
       Object.keys(formData).forEach((key) => {
@@ -340,6 +353,28 @@ const FormularioEditarCampana = ({ open, onClose, idCampana, onUpdate }) => {
                 {matricesGlobal.map((m) => (
                   <MenuItem key={m.id} value={m.id}>
                     {m.proveedor}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+          {/* SELECT Usuario */}
+          <Grid item xs={12} sm={5}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Usuario Responsable</InputLabel>
+              <Select
+                name="usuarioId"
+                value={formData.usuarioId}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    usuarioId: e.target.value,
+                  }))
+                }
+              >
+                {usuarios.map((u) => (
+                  <MenuItem key={u.id} value={u.id}>
+                    {u.nombre_completo}
                   </MenuItem>
                 ))}
               </Select>
