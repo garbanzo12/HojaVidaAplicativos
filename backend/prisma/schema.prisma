@@ -28,6 +28,25 @@ model aplicativo {
   @@index([campanaId], map: "aplicativo_campanaId_fkey")
 }
 
+model usuario {
+  id               Int                   @id @default(autoincrement())
+  nombre_completo  String
+  correo           String
+  tipo_documento   usuario_tipo_documento
+  numero_documento String
+  sede             usuario_sede
+  rol              usuario_rol
+  estado           usuario_estado        @default(HABILITADO)
+
+  // Relación con campaña
+  campanaId        Int?
+  campana          campana?              @relation(fields: [campanaId], references: [id])
+
+  @@index([campanaId], map: "usuario_campanaId_fkey")
+}
+
+
+
 model campana {
   id                          Int                          @id @default(autoincrement())
   nombre_campana              String
@@ -57,6 +76,8 @@ model campana {
   aplicativos                 aplicativo[]
   matriz_escalamiento         matriz_escalamiento[]        @relation("campanatomatriz_escalamiento")
   matriz_escalamiento_global  matriz_escalamiento_global[] @relation("campanatomatriz_escalamiento_global")
+  usuarios                    usuario[]
+
 }
 
 model matriz_escalamiento {
@@ -96,6 +117,29 @@ enum aplicativo_tipo_aplicativo {
 }
 
 enum campana_estado {
+  HABILITADO
+  DESHABILITADO
+}
+
+
+enum usuario_tipo_documento {
+  DIE
+  PEP
+  CC
+}
+
+enum usuario_sede {
+  pereira
+  manizales
+  bogota
+}
+
+enum usuario_rol {
+  proveedor
+  administrador
+}
+
+enum usuario_estado {
   HABILITADO
   DESHABILITADO
 }

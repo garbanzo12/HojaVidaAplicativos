@@ -6,6 +6,7 @@ import cors from "cors";
 import campana from "./routes/campana.js";
 import matriz from "./routes/matriz.js"
 import aplicativo from "./routes/aplicativo.js"
+import usuario from "./routes/usuario.js";
 
 const app = express();
 
@@ -23,6 +24,7 @@ app.use(express.json());
 app.use("/campana", campana);
 app.use("/matriz", matriz);
 app.use("/aplicativo", aplicativo);
+app.use("/usuario", usuario);
 
 app.use("/uploads", express.static("uploads"));
 

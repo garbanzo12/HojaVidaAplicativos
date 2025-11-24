@@ -269,7 +269,7 @@ useEffect(() => {
           
             {/* SELECT Aplicativo */}
             <Grid item xs={12} sm={5}>
-              <FormControl
+              <FormControl required
                 fullWidth
                 size="small"
                 disabled={formData.aplicativoId?.includes(null)}
@@ -313,7 +313,7 @@ useEffect(() => {
           
           {/* SELECT MatrizEscalamiento */}
           <Grid item xs={12} sm={5}>
-            <FormControl fullWidth size="small" disabled={formData.matrizId?.includes(null)}>
+            <FormControl required fullWidth size="small" disabled={formData.matrizId?.includes(null)} >
               <InputLabel>Matriz Escalamiento</InputLabel>
               <Select
                 multiple
@@ -352,7 +352,7 @@ useEffect(() => {
 
           {/* SELECT Matriz Escalamiento GLOBAL */}
           <Grid item xs={12} sm={4}>
-            <FormControl
+            <FormControl required
               fullWidth
               size="small"
               disabled={formData.matrizGlobalId?.includes(null)}

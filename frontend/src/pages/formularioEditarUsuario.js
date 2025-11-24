@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 
 import {
@@ -16,7 +16,7 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 
-const FormularioUsuario = ({ onClose = () => {} }) => {
+const FormularioEditarUsuario = ({ usuario, onClose = () => {}, onUpdated = () => {} }) => {
   const [formData, setFormData] = useState({
     nombre_completo: "",
     correo: "",
@@ -26,35 +26,42 @@ const FormularioUsuario = ({ onClose = () => {} }) => {
     rol: "",
   });
 
+  /** CARGAR DATOS DEL USUARIO AL ABRIR */
+  useEffect(() => {
+    if (usuario) {
+      setFormData({
+        nombre_completo: usuario.nombre_completo || "",
+        correo: usuario.correo || "",
+        tipo_documento: usuario.tipo_documento || "",
+        numero_documento: usuario.numero_documento || "",
+        sede: usuario.sede || "",
+        rol: usuario.rol || "",
+      });
+    }
+  }, [usuario]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleCrear = async () => {
+  /** ACTUALIZAR USUARIO */
+  const handleActualizar = async () => {
     try {
-      const dataToSend = {
-        nombre_completo: formData.nombre_completo,
-        correo: formData.correo,
-        tipo_documento: formData.tipo_documento,
-        numero_documento: formData.numero_documento,
-        sede: formData.sede,
-        rol: formData.rol,
-        estado: "HABILITADO",
-      };
-
-      const response = await axios.post(
-        "http://localhost:4000/usuario",
-        dataToSend,
+      const response = await axios.put(
+        `http://localhost:4000/usuario/${usuario.id}`,
+        formData,
         { headers: { "Content-Type": "application/json" } }
       );
 
-      console.log("Usuario creado:", response.data);
-      alert("✅ Usuario creado correctamente");
-      onClose();
+      console.log("Usuario actualizado:", response.data);
+      alert("✅ Usuario actualizado correctamente");
+
+      onUpdated(); // refrescar tabla
+      onClose();   // cerrar modal
     } catch (error) {
-      console.error("❌ Error al crear usuario:", error.response?.data || error.message);
-      alert("❌ Error al crear el usuario. Mira la consola.");
+      console.error("❌ Error al actualizar usuario:", error.response?.data || error.message);
+      alert("❌ Error al actualizar el usuario. Mira la consola.");
     }
   };
 
@@ -67,7 +74,6 @@ const FormularioUsuario = ({ onClose = () => {} }) => {
         position: "relative",
         maxWidth: 750,
         mx: "auto",
-        backgroundColor: "transparent",
       }}
     >
       <IconButton
@@ -94,7 +100,7 @@ const FormularioUsuario = ({ onClose = () => {} }) => {
           letterSpacing: 0.8,
         }}
       >
-        CREAR USUARIO
+        EDITAR USUARIO
       </Typography>
 
       <Typography
@@ -106,11 +112,10 @@ const FormularioUsuario = ({ onClose = () => {} }) => {
           mb: 4,
         }}
       >
-        INFORMACIÓN PRINCIPAL
+        MODIFICAR INFORMACIÓN
       </Typography>
 
       <Grid container spacing={3} justifyContent="center">
-
         {/* Nombre */}
         <Grid item xs={12} md={6}>
           <TextField
@@ -137,7 +142,7 @@ const FormularioUsuario = ({ onClose = () => {} }) => {
           />
         </Grid>
 
-        {/* Tipo Documento (Select) */}
+        {/* Tipo Documento */}
         <Grid item xs={12} md={6}>
           <FormControl fullWidth size="small">
             <InputLabel>Tipo Documento</InputLabel>
@@ -200,12 +205,13 @@ const FormularioUsuario = ({ onClose = () => {} }) => {
           </FormControl>
         </Grid>
 
+
       </Grid>
 
       <Box sx={{ display: "flex", justifyContent: "center", mt: 5 }}>
         <Button
           variant="contained"
-          onClick={handleCrear}
+          onClick={handleActualizar}
           sx={{
             minWidth: 180,
             py: 1.4,
@@ -219,11 +225,11 @@ const FormularioUsuario = ({ onClose = () => {} }) => {
             "&:hover": { backgroundColor: "#0d47a1" },
           }}
         >
-          CREAR
+          ACTUALIZAR
         </Button>
       </Box>
     </Paper>
   );
 };
 
-export default FormularioUsuario;
+export default FormularioEditarUsuario;
