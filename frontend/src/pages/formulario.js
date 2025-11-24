@@ -88,34 +88,40 @@ const FormularioModal = ({ open, onClose }) => {
   const [imagenCliente, setImagenCliente] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // 🔹 Función de carga de datos (useEffect)
-  useEffect(() => {
-    if (open) {
-      // 1. Cargar Aplicativos
-      axios.get("http://localhost:4000/aplicativo") 
-        .then(res => {
-          // Asume que la lista de aplicativos está en res.data.aplicativos
-          
-          setAplicativos(res.data || []); 
-        })
-        .catch(err => console.error("Error cargando Aplicativos:", err));
+// 🔹 Función de carga de datos (useEffect)
+useEffect(() => {
+  if (open) {
 
-      // 2. Cargar Matrices
-      axios.get("http://localhost:4000/matriz") 
-        .then(res => {
-          // Asume que la lista de matrices está en res.data.registros
-          setMatrices(res.data || []); 
-        })
-        .catch(err => console.error("Error cargando Matrices:", err));
-    }
-    // 3. Cargar Matriz Escalamiento Global
-        axios.get("http://localhost:4000/matriz/global")
-          .then(res => {
-            setMatricesGlobal(res.data || []);
-          })
-          .catch(err => console.error("Error cargando Matriz Global:", err));
+    // 1. Cargar Aplicativos
+    axios.get("http://localhost:4000/aplicativo")
+      .then(res => {
+        // Filtrar solo HABILITADOS
+        const filtrados = (res.data || []).filter(a => a.estado === "HABILITADO");
+        setAplicativos(filtrados);
+      })
+      .catch(err => console.error("Error cargando Aplicativos:", err));
 
-  }, [open]);
+    // 2. Cargar Matrices
+    axios.get("http://localhost:4000/matriz")
+      .then(res => {
+        // Filtrar solo HABILITADOS
+        const filtrados = (res.data || []).filter(m => m.estado === "HABILITADO");
+        setMatrices(filtrados);
+      })
+      .catch(err => console.error("Error cargando Matrices:", err));
+  }
+
+  // 3. Cargar Matriz Escalamiento Global
+  axios.get("http://localhost:4000/matriz/global")
+    .then(res => {
+      // Filtrar solo HABILITADOS
+      const filtrados = (res.data || []).filter(mg => mg.estado === "HABILITADO");
+      setMatricesGlobal(filtrados);
+    })
+    .catch(err => console.error("Error cargando Matriz Global:", err));
+
+}, [open]);
+
 
 
   const handleChange = (e) => {
@@ -261,48 +267,74 @@ const FormularioModal = ({ open, onClose }) => {
         </Typography>
         <Grid container spacing={2} justifyContent="center">
           
-          {/* SELECT Aplicativo */}
-          <Grid item xs={12} sm={5}>
-            <FormControl fullWidth size="small">
-              <InputLabel>Aplicativo</InputLabel>
-              <Select
-                multiple
-                name="aplicativoId"
-                value={formData.aplicativoId}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    aplicativoId: e.target.value
-                  }))
-                }
-                label="Aplicativos"
-              > 
-                <MenuItem value={null}>
-                  <em>Ninguno</em>
-                </MenuItem>
-                {aplicativos.map((app) => (
-                  <MenuItem key={app.id} value={app.id}>
-                    {app.nombre}
+            {/* SELECT Aplicativo */}
+            <Grid item xs={12} sm={5}>
+              <FormControl
+                fullWidth
+                size="small"
+                disabled={formData.aplicativoId?.includes(null)}
+              >
+                <InputLabel>Aplicativo</InputLabel>
+                <Select
+                  multiple
+                  name="aplicativoId"
+                  value={formData.aplicativoId}
+                  onChange={(e) => {
+                    const value = e.target.value;
+
+                    // Si selecciona "Ninguno"
+                    if (value.includes(null)) {
+                      setFormData((prev) => ({
+                        ...prev,
+                        aplicativoId: [null]
+                      }));
+                    } else {
+                      setFormData((prev) => ({
+                        ...prev,
+                        aplicativoId: value
+                      }));
+                    }
+                  }}
+                  label="Aplicativos"
+                >
+                  <MenuItem value={null}>
+                    <em>Ninguno</em>
                   </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
+
+                  {aplicativos.map((app) => (
+                    <MenuItem key={app.id} value={app.id}>
+                      {app.nombre}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
           
           {/* SELECT MatrizEscalamiento */}
           <Grid item xs={12} sm={5}>
-            <FormControl fullWidth size="small">
+            <FormControl fullWidth size="small" disabled={formData.matrizId?.includes(null)}>
               <InputLabel>Matriz Escalamiento</InputLabel>
               <Select
                 multiple
                 name="matrizId"
                 value={formData.matrizId}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    matrizId: e.target.value
-                  }))
-                }
+                onChange={(e) => {
+                  const value = e.target.value;
+
+                  // Si selecciona "Ninguna" (null), forzar a que solo quede "null"
+                  if (value.includes(null)) {
+                    setFormData((prev) => ({
+                      ...prev,
+                      matrizId: [null]
+                    }));
+                  } else {
+                    setFormData((prev) => ({
+                      ...prev,
+                      matrizId: value
+                    }));
+                  }
+                }}
                 label="Matriz Escalamiento"
               >
                 <MenuItem value={null}>
@@ -317,20 +349,35 @@ const FormularioModal = ({ open, onClose }) => {
               </Select>
             </FormControl>
           </Grid>
+
           {/* SELECT Matriz Escalamiento GLOBAL */}
           <Grid item xs={12} sm={4}>
-            <FormControl fullWidth size="small">
+            <FormControl
+              fullWidth
+              size="small"
+              disabled={formData.matrizGlobalId?.includes(null)}
+            >
               <InputLabel>Matriz Global</InputLabel>
               <Select
                 multiple
                 name="matrizGlobalId"
                 value={formData.matrizGlobalId}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    matrizGlobalId: e.target.value
-                  }))
-                }
+                onChange={(e) => {
+                  const value = e.target.value;
+
+                  // Si selecciona "Ninguna"
+                  if (value.includes(null)) {
+                    setFormData((prev) => ({
+                      ...prev,
+                      matrizGlobalId: [null]
+                    }));
+                  } else {
+                    setFormData((prev) => ({
+                      ...prev,
+                      matrizGlobalId: value
+                    }));
+                  }
+                }}
                 label="Matriz Global"
               >
                 <MenuItem value={null}>
@@ -345,6 +392,7 @@ const FormularioModal = ({ open, onClose }) => {
               </Select>
             </FormControl>
           </Grid>
+
           {/* Otros TextFields de DATOS GENERALES */}
           {[
              { name: "ubicacion_sedes", label: "Ubicación Sede" },
