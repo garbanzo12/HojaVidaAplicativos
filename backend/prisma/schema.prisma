@@ -1,0 +1,101 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+generator erd {
+  provider = "prisma-erd-generator"
+  output   = "./ERD.svg"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model aplicativo {
+  id              Int                        @id @default(autoincrement())
+  nombre          String
+  direccion_ip    String
+  puerto          Int
+  url             String
+  tipo_red        String
+  escalamiento    String
+  estado          aplicativo_estado          @default(HABILITADO)
+  tipo_aplicativo aplicativo_tipo_aplicativo
+  campanaId       Int?
+  campana         campana?                   @relation(fields: [campanaId], references: [id])
+
+  @@index([campanaId], map: "aplicativo_campanaId_fkey")
+}
+
+model campana {
+  id                          Int                          @id @default(autoincrement())
+  nombre_campana              String
+  cliente                     String
+  director_operacion_abai     String
+  correo_director             String
+  segmento                    String?
+  nombre_gte_campana          String?
+  correo_gte_campana          String?
+  ubicacion_sedes             String
+  puestos_operacion           Int
+  puestos_estructura          Int
+  segmento_red                String
+  fecha_actualizacion         DateTime
+  nombre_contacto_cliente     String
+  correo_contacto_cliente     String
+  telefono_contacto_cliente   String
+  nombre_contacto_comercial   String
+  correo_contacto_comercial   String
+  telefono_contacto_comercial String
+  soporte_tecnico_abai        String
+  correo_soporte_abai         String
+  servicios_prestados         String?
+  imagen_cliente              String?
+  imagen_sede                 String?
+  estado                      campana_estado               @default(HABILITADO)
+  aplicativos                 aplicativo[]
+  matriz_escalamiento         matriz_escalamiento[]        @relation("campanatomatriz_escalamiento")
+  matriz_escalamiento_global  matriz_escalamiento_global[] @relation("campanatomatriz_escalamiento_global")
+}
+
+model matriz_escalamiento {
+  id                   Int           @id @default(autoincrement())
+  proveedor            String
+  codigo_servicio      String
+  n_telefono_proveedor String
+  n_telefono_asesor    String
+  estado               matriz_estado @default(HABILITADO)
+  campana              campana[]     @relation("campanatomatriz_escalamiento")
+}
+
+model matriz_escalamiento_global {
+  id                   Int           @id @default(autoincrement())
+  proveedor            String
+  codigo_servicio      String
+  n_telefono_proveedor String
+  n_telefono_asesor    String
+  estado               matriz_estado @default(HABILITADO)
+  campana              campana[]     @relation("campanatomatriz_escalamiento_global")
+}
+
+enum matriz_estado {
+  HABILITADO
+  DESHABILITADO
+}
+
+enum aplicativo_estado {
+  HABILITADO
+  DESHABILITADO
+}
+
+enum aplicativo_tipo_aplicativo {
+  internet
+  abai
+  proveedor
+}
+
+enum campana_estado {
+  HABILITADO
+  DESHABILITADO
+}

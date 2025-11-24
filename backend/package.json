@@ -1,0 +1,26 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node index.js",
+    "generate": "prisma generate",
+    "migrate": "prisma migrate dev --name init",
+    "studio": "prisma studio",
+    "start": "node app.js"
+  },
+  "devDependencies": {
+    "@mermaid-js/mermaid-cli": "^11.4.0",
+    "prisma": "^6.19.0",
+    "prisma-erd-generator": "^1.11.2"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.0",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "multer": "^2.0.2",
+    "react": "^19.2.0",
+    "require": "^0.4.4",
+    "zod": "^4.1.12"
+  }
+}
