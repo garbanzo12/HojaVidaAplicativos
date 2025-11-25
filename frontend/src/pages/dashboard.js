@@ -26,21 +26,44 @@ import FormularioAplicativo from "./FormularioAplicativo";
 import TablaCampana from "./tablaCampana";
 import TablaAplicativos from "./tablaAplicativos";
 import FormularioMatriz from "./formularioMatriz";
+import FormularioMatrizGlobal from "./formularioMatrizGlobal.js";
 import TablaMatriz from "./tablaMatriz";
 import TablaGlobal from "./tablaGlobal";
 import FormularioUsuario from "./formularioUsuario";
 import TablaUsuarios from "./tablaUsuarios";
+import { jwtDecode } from "jwt-decode";
+import useAuthGuard from "../hooks/useAuthGuard.js";
+import { useAuth } from "../context/AuthContext";
+
+const token = localStorage.getItem("token");
+let user = null;
+
+try {
+  if (token) {
+    user = jwtDecode(token);
+  }
+} catch (error) {
+  console.error("Token inválido, cerrando sesión...");
+  localStorage.removeItem("token");
+  window.location.href = "/";
+}
+
+
 
 const drawerWidth = 260;
 
 const Dashboard = () => {
+  useAuthGuard(["admin", "proveedor"]);
+  const { logout } = useAuth();
+
   const [menuAnchor, setMenuAnchor] = React.useState({});
   const [abrirFormulario, setAbrirFormulario] = React.useState(false);
   const [abrirAplicativo, setAbrirAplicativo] = React.useState(false);
+  const [abrirMatrizGlobal, setAbrirMatrizGlobal] = React.useState(false);
   const [abrirMatriz, setAbrirMatriz] = React.useState(false);
   const [abrirUsuarios, setAbrirUsuarios] = React.useState(false);
-  
   const [seccionActual, setSeccionActual] = React.useState("inicio");
+  const can = (rolesAllowed) => rolesAllowed.includes(user?.rol);
 
   const handleMenuClick = (event, menuName) => {
     setMenuAnchor({ ...menuAnchor, [menuName]: event.currentTarget });
@@ -65,7 +88,8 @@ const Dashboard = () => {
     { label: "Aplicativos", route: "abai" },
     { label: "Matrizes ", type: "dropdownMatriz" },
   ];
-
+  
+  
   return (
     <Box
       sx={{
@@ -136,7 +160,7 @@ const Dashboard = () => {
               color: "#fff",
             }}
           >
-            PANEL ADMIN
+            PANEL {user.rol.toUpperCase()}
           </Typography>
 
           <Divider sx={{ my: 2, borderColor: "rgba(255,255,255,0.2)" }} />
@@ -168,22 +192,26 @@ const Dashboard = () => {
                     open={Boolean(menuAnchor[item.label])}
                     onClose={() => handleMenuClose(item.label)}
                   >
+                    
+                    {can(["admin"]) && (
                     <MenuItem
-                      onClick={() => {
-                        handleMenuClose(item.label);
-                        setAbrirUsuarios(true);
-                      }}
+                        onClick={() => {
+                          handleMenuClose(item.label);
+                          setAbrirUsuarios(true);
+                        }}
                     >
                       Crear Usuario
                     </MenuItem>
-                    <MenuItem
+                    )}
+                    
+                    {can(["admin"]) && (<MenuItem
                       onClick={() => {
                         handleMenuClose(item.label);
                         setAbrirFormulario(true);
                       }}
                     >
                       Crear Campaña
-                    </MenuItem>
+                    </MenuItem>)}
                     <MenuItem
                       onClick={() => {
                         handleMenuClose(item.label);
@@ -200,6 +228,17 @@ const Dashboard = () => {
                     >
                       Crear Matriz
                     </MenuItem>
+                    
+                     {can(["admin"]) && (<MenuItem
+                      onClick={() => {
+                        handleMenuClose(item.label);
+                        setAbrirMatrizGlobal(true);
+                      }}
+                    >
+                      Crear Matriz Global
+                    </MenuItem>)}
+
+
                   </Menu>
                 </>
               ) : item.type === "dropdownMatriz" ? (
@@ -293,21 +332,22 @@ const Dashboard = () => {
           <IconButton sx={{ color: "white" }}>
             <AccountCircle sx={{ fontSize: 45 }} />
           </IconButton>
-          <Typography>Administrador</Typography>
+          <Typography>{user?.correo}</Typography>
           <Button
-            variant="contained"
-            startIcon={<Logout />}
-            sx={{
-              mt: 1,
-              backgroundColor: "#fff",
-              color: "#002b5b",
-              textTransform: "none",
-              borderRadius: "12px",
-              "&:hover": { backgroundColor: "#f1f1f1" },
-            }}
-          >
-            SALIR
-          </Button>
+                variant="contained"
+                startIcon={<Logout />}
+                sx={{
+                  mt: 1,
+                  backgroundColor: "#fff",
+                  color: "#002b5b",
+                  textTransform: "none",
+                  borderRadius: "12px",
+                  "&:hover": { backgroundColor: "#f1f1f1" },
+                }}
+                onClick={logout}
+            >
+              SALIR
+            </Button>
         </Box>
       </Drawer>
 
@@ -460,6 +500,21 @@ const Dashboard = () => {
             }}
           >
             <FormularioMatriz onClose={() => setAbrirMatriz(false)} />
+          </Box>
+        </Modal>
+      )}
+      {abrirMatrizGlobal && (
+        <Modal open={abrirMatrizGlobal} onClose={() => setAbrirMatrizGlobal(false)}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              minHeight: "100vh",
+              p: 2,
+            }}
+          >
+            <FormularioMatrizGlobal onClose={() => setAbrirMatrizGlobal(false)} />
           </Box>
         </Modal>
       )}
