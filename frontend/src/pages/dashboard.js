@@ -83,7 +83,8 @@ const Dashboard = () => {
 
   const sidebarItems = [
     { label: "Formularios", type: "dropdown" },
-   { label: "Usuarios", route: "Usuario" },
+  
+    { label: "Usuarios", route: "Usuario", roles: ["admin"] },
     { label: "Campaña", route: "campana" },
     { label: "Aplicativos", route: "abai" },
     { label: "Matrizes ", type: "dropdownMatriz" },
@@ -166,7 +167,8 @@ const Dashboard = () => {
           <Divider sx={{ my: 2, borderColor: "rgba(255,255,255,0.2)" }} />
 
           {/* Botones laterales */}
-          {sidebarItems.map((item, index) => (
+          {sidebarItems.filter(item => !item.roles || can(item.roles))
+          .map((item, index) => (
             <Box key={index}>
               {item.type === "dropdown" ? (
                 <>
@@ -422,7 +424,7 @@ const Dashboard = () => {
         {seccionActual === "abai" && <TablaAplicativos />}
         {seccionActual === "matriz" && <TablaMatriz />}
         {seccionActual === "global" && <TablaGlobal />}
-        {seccionActual === "Usuario" && <TablaUsuarios />}
+        {seccionActual === "Usuario" && can(["admin"]) && <TablaUsuarios />}
 
       </Box>
 
