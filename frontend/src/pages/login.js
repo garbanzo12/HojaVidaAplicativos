@@ -17,34 +17,45 @@ import logo from "../img/abai-logo.png";
 import Fondo from "../img/abai-galeria8.jpg";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext.js";
+
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({ email: "", password: "" });
   const navigate = useNavigate();
 
+  const { login } = useAuth();  // ✔ AQUÍ DEBE IR
+
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  try {
-    const res = await axios.post("http://localhost:4000/auth/login", {
-      correo: form.email,
-      contrasena: form.password,
-    });
+    try {
+      const res = await axios.post("http://localhost:4000/auth/login", {
+        correo: form.email,
+        contrasena: form.password,
+      });
 
-    localStorage.setItem("token", res.data.token);
+      console.log("RESPUESTA DEL BACKEND:", res.data);
 
-    alert("Login exitoso");
-    navigate("/dashboard"); 
+      // Guardar token
+      localStorage.setItem("token", res.data.token);
 
-  } catch (error) {
-    alert(error.response?.data?.error || "Error al iniciar sesión");
-  }
-};
+      // ✔ CORRECTO: enviar token y usuario al contexto
+      login(res.data.token, res.data.usuario);
+
+      alert("Login exitoso");
+      navigate("/dashboard");
+
+    } catch (error) {
+      console.log("ERROR:", error);
+      alert(error.response?.data?.error || "Error al iniciar sesión");
+    }
+  };
 
 
   return (

@@ -285,3 +285,17 @@ export const updateEstadoUsuario = async (req, res) => {
     });
   }
 };
+
+
+
+export const me = async (req, res) => {
+  try {
+    const usuario = await prisma.usuario.findUnique({
+      where: { id: req.user.id },
+    });
+
+    res.json({ usuario });
+  } catch (err) {
+    res.status(500).json({ error: "Error al obtener usuario" });
+  }
+};

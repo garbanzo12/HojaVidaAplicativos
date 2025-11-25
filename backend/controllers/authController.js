@@ -35,7 +35,7 @@ export const login = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
-
+ 
     res.json({
       message: "Login exitoso",
       token,

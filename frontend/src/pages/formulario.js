@@ -37,6 +37,28 @@ const modalStyle = {
   msOverflowStyle: "none",
   "&::-webkit-scrollbar": { display: "none" },
 };
+const selectInputStyle = {
+  "& .MuiOutlinedInput-root": {
+    height: 40,
+    width : 150,
+    borderRadius: "8px",
+    display: "flex",
+    alignItems: "center",
+  },
+
+  "& .MuiSelect-select": {
+    padding: "0 14px !important",
+    height: "40px !important",
+    display: "flex !important",
+    alignItems: "center !important",
+  },
+
+  "& .MuiChip-root": {
+    display: "none !important",
+  },
+};
+
+
 
 const sectionTitle = {
   fontWeight: 700,
@@ -229,8 +251,12 @@ useEffect(() => {
   };
 
   return (
-    <Modal open={open} onClose={() => null} disableEscapeKeyDown>
-      <Box component="form" onSubmit={handleSubmit} sx={modalStyle}>
+  <Modal 
+    open={open} 
+    onClose={onClose}
+    disableEscapeKeyDown
+  >      
+  <Box component="form" onSubmit={handleSubmit} sx={modalStyle}>
         
         <IconButton
           onClick={onClose}
@@ -278,179 +304,175 @@ useEffect(() => {
         </Grid>
 
         {/* RELACIONES Y DATOS GENERALES */}
-        <Typography variant="subtitle1" sx={sectionTitle}>
-          VINCULACIÓN & DATOS GENERALES
-        </Typography>
+<Typography variant="subtitle1" sx={sectionTitle}>
+  VINCULACIÓN & DATOS GENERALES
+</Typography>
+
+<Grid container spacing={2} justifyContent="center">
+
+  {/* SELECT Aplicativo */}
+  <Grid item xs={12} sm={5}>
+    <FormControl
+      required
+      fullWidth
+      size="small"
+      sx={selectInputStyle}
+      disabled={formData.aplicativoId?.includes(null)}
+    >
+      <InputLabel>Aplicativo</InputLabel>
+      <Select
+        multiple
+        name="aplicativoId"
+        value={formData.aplicativoId}
+        onChange={(e) => {
+          const value = e.target.value;
+          if (value.includes(null)) {
+            setFormData((prev) => ({
+              ...prev,
+              aplicativoId: [null],
+            }));
+          } else {
+            setFormData((prev) => ({
+              ...prev,
+              aplicativoId: value,
+            }));
+          }
+        }}
+        label="Aplicativo"
+      >
+        <MenuItem value={null}><em>Ninguno</em></MenuItem>
+        {aplicativos.map((app) => (
+          <MenuItem key={app.id} value={app.id}>{app.nombre}</MenuItem>
+        ))}
+      </Select>
+    </FormControl>
+  </Grid>
+
+  {/* SELECT Matriz Escalamiento */}
+  <Grid item xs={12} sm={5}>
+    <FormControl
+      required
+      fullWidth
+      size="small"
+      sx={selectInputStyle}
+      disabled={formData.matrizId?.includes(null)}
+    >
+      <InputLabel>Matriz Escalamiento</InputLabel>
+      <Select
+        multiple
+        name="matrizId"
+        value={formData.matrizId}
+        onChange={(e) => {
+          const value = e.target.value;
+          if (value.includes(null)) {
+            setFormData((prev) => ({
+              ...prev,
+              matrizId: [null],
+            }));
+          } else {
+            setFormData((prev) => ({
+              ...prev,
+              matrizId: value,
+            }));
+          }
+        }}
+        label="Matriz Escalamiento"
+      >
+        <MenuItem value={null}><em>Ninguna</em></MenuItem>
+        {matrices.map((matriz) => (
+          <MenuItem key={matriz.id} value={matriz.id}>
+            {matriz.proveedor}
+          </MenuItem>
+        ))}
+      </Select>
+    </FormControl>
+  </Grid>
+
+  {/* SELECT Matriz Global */}
+  <Grid item xs={12} sm={5}>
+    <FormControl
+      required
+      fullWidth
+      size="small"
+      sx={selectInputStyle}
+      disabled={formData.matrizGlobalId?.includes(null)}
+    >
+      <InputLabel>Matriz Global</InputLabel>
+      <Select
+        multiple
+        name="matrizGlobalId"
+        value={formData.matrizGlobalId}
+        onChange={(e) => {
+          const value = e.target.value;
+          if (value.includes(null)) {
+            setFormData((prev) => ({
+              ...prev,
+              matrizGlobalId: [null],
+            }));
+          } else {
+            setFormData((prev) => ({
+              ...prev,
+              matrizGlobalId: value,
+            }));
+          }
+        }}
+        label="Matriz Global"
+      >
+        <MenuItem value={null}><em>Ninguna</em></MenuItem>
+        {matricesGlobal.map((mg) => (
+          <MenuItem key={mg.id} value={mg.id}>
+            {mg.proveedor}
+          </MenuItem>
+        ))}
+      </Select>
+    </FormControl>
+  </Grid>
+
+  {/* SELECT Usuario */}
+  <Grid item xs={12} sm={5}>
+    <FormControl
+      required
+      fullWidth
+      size="small"
+      sx={selectInputStyle}
+      disabled={formData.usuarioId?.includes(null)}
+    >
+      <InputLabel>Usuario</InputLabel>
+      <Select
+        multiple
+        name="usuarioId"
+        value={formData.usuarioId}
+        onChange={(e) => {
+          const value = e.target.value;
+          if (value.includes(null)) {
+            setFormData((prev) => ({
+              ...prev,
+              usuarioId: [null],
+            }));
+          } else {
+            setFormData((prev) => ({
+              ...prev,
+              usuarioId: value,
+            }));
+          }
+        }}
+        label="Usuario"
+      >
+        <MenuItem value={null}><em>Ninguno</em></MenuItem>
+        {usuarios.map((u) => (
+          <MenuItem key={u.id} value={u.id}>
+            {u.nombre_completo}
+          </MenuItem>
+        ))}
+      </Select>
+    </FormControl>
+  </Grid>
+
+  </Grid>
+
         <Grid container spacing={2} justifyContent="center">
           
-            {/* SELECT Aplicativo */}
-            <Grid item xs={12} sm={5}>
-              <FormControl required
-                fullWidth
-                size="small"
-                disabled={formData.aplicativoId?.includes(null)}
-              >
-                <InputLabel>Aplicativo</InputLabel>
-                <Select
-                  multiple
-                  name="aplicativoId"
-                  value={formData.aplicativoId}
-                  onChange={(e) => {
-                    const value = e.target.value;
-
-                    // Si selecciona "Ninguno"
-                    if (value.includes(null)) {
-                      setFormData((prev) => ({
-                        ...prev,
-                        aplicativoId: [null]
-                      }));
-                    } else {
-                      setFormData((prev) => ({
-                        ...prev,
-                        aplicativoId: value
-                      }));
-                    }
-                  }}
-                  label="Aplicativos"
-                >
-                  <MenuItem value={null}>
-                    <em>Ninguno</em>
-                  </MenuItem>
-
-                  {aplicativos.map((app) => (
-                    <MenuItem key={app.id} value={app.id}>
-                      {app.nombre}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-
-          
-          {/* SELECT MatrizEscalamiento */}
-          <Grid item xs={12} sm={5}>
-            <FormControl required fullWidth size="small" disabled={formData.matrizId?.includes(null)} >
-              <InputLabel>Matriz Escalamiento</InputLabel>
-              <Select
-                multiple
-                name="matrizId"
-                value={formData.matrizId}
-                onChange={(e) => {
-                  const value = e.target.value;
-
-                  // Si selecciona "Ninguna" (null), forzar a que solo quede "null"
-                  if (value.includes(null)) {
-                    setFormData((prev) => ({
-                      ...prev,
-                      matrizId: [null]
-                    }));
-                  } else {
-                    setFormData((prev) => ({
-                      ...prev,
-                      matrizId: value
-                    }));
-                  }
-                }}
-                label="Matriz Escalamiento"
-              >
-                <MenuItem value={null}>
-                  <em>Ninguna</em>
-                </MenuItem>
-
-                {matrices.map((matriz) => (
-                  <MenuItem key={matriz.id} value={matriz.id}>
-                    {matriz.proveedor}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-
-          {/* SELECT Matriz Escalamiento GLOBAL */}
-          <Grid item xs={12} sm={4}>
-            <FormControl required
-              fullWidth
-              size="small"
-              disabled={formData.matrizGlobalId?.includes(null)}
-            >
-              <InputLabel>Matriz Global</InputLabel>
-              <Select
-                multiple
-                name="matrizGlobalId"
-                value={formData.matrizGlobalId}
-                onChange={(e) => {
-                  const value = e.target.value;
-
-                  // Si selecciona "Ninguna"
-                  if (value.includes(null)) {
-                    setFormData((prev) => ({
-                      ...prev,
-                      matrizGlobalId: [null]
-                    }));
-                  } else {
-                    setFormData((prev) => ({
-                      ...prev,
-                      matrizGlobalId: value
-                    }));
-                  }
-                }}
-                label="Matriz Global"
-              >
-                <MenuItem value={null}>
-                  <em>Ninguna</em>
-                </MenuItem>
-
-                {matricesGlobal.map((matriz) => (
-                  <MenuItem key={matriz.id} value={matriz.id}>
-                    {matriz.proveedor}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          {/* SELECT Usuario */}
-          <Grid item xs={12} sm={4}>
-            <FormControl
-              required
-              fullWidth
-              size="small"
-              disabled={formData.usuarioId?.includes(null)}
-            >
-              <InputLabel>Usuario</InputLabel>
-              <Select
-                multiple
-                name="usuarioId"
-                value={formData.usuarioId}
-                onChange={(e) => {
-                  const value = e.target.value;
-
-                  // Si selecciona "Ninguno"
-                  if (value.includes(null)) {
-                    setFormData((prev) => ({
-                      ...prev,
-                      usuarioId: [null]
-                    }));
-                  } else {
-                    setFormData((prev) => ({
-                      ...prev,
-                      usuarioId: value
-                    }));
-                  }
-                }}
-                label="Usuario"
-              >
-                <MenuItem value={null}>
-                  <em>Ninguno</em>
-                </MenuItem>
-
-                {usuarios.map((user) => (
-                  <MenuItem key={user.id} value={user.id}>
-                    {user.nombre_completo}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
+           
 
           {/* Otros TextFields de DATOS GENERALES */}
           {[

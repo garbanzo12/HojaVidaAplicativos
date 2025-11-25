@@ -6,6 +6,7 @@ import {
   eliminarUsuario,
   getUsuariosPorCampana,
   updateEstadoUsuario,
+  me,
 } from "../controllers/usuario.js";
 
 
@@ -28,6 +29,7 @@ router.delete("/:id", eliminarUsuario);
 router.get("/campana/:campanaId", getUsuariosPorCampana);
 
 
+router.get("/me",  me);
 
 
 export default router;

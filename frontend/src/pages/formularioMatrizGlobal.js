@@ -83,7 +83,7 @@ const FormularioMatriz = ({ onSave, onClose }) => {
     <>
       <Paper elevation={6} sx={{ borderRadius: 3, p: 4, maxWidth: 450 }}>
         <Typography variant="h6" mb={2} fontWeight="bold">
-          Crear Matriz de Escalamiento
+          Crear Matriz de Escalamiento Global
         </Typography>
 
         <form onSubmit={handleSubmit}>
