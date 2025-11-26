@@ -175,10 +175,6 @@ const MatrizPage = () => {
 
   return (
     <Box sx={{ p: 4 }}>
-      <Typography variant="h5" mb={3} fontWeight="bold">
-        Gestión de Matriz
-      </Typography>
-
       {loading ? (
         <Typography>Cargando datos...</Typography>
       ) : (

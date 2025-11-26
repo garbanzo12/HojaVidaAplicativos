@@ -197,7 +197,7 @@ const FormularioEditarAplicativo = ({ open, onClose, idAplicativo, onUpdate }) =
               <MenuItem value="proveedor">Proveedor</MenuItem>
             </Select>
           </FormControl>
-        </Grid>
+          </Grid>
         </Grid>
 
         {/* BOTÓN ACTUALIZAR */}

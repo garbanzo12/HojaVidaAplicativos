@@ -1,17 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Box,
+  Grid,
   TextField,
   Button,
   Typography,
+  IconButton,
   Paper,
-  Stack,
-  FormControl,
-  Select,
-  MenuItem,
   Snackbar,
   Alert as MuiAlert,
 } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 import axios from "axios";
 
 const FormularioMatriz = ({ onSave, onClose }) => {
@@ -22,8 +21,6 @@ const FormularioMatriz = ({ onSave, onClose }) => {
     telefonoAsesor: "",
   });
 
-
-  // 🔹 Estados del Snackbar
   const [alertOpen, setAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
   const [alertSeverity, setAlertSeverity] = useState("success");
@@ -34,15 +31,11 @@ const FormularioMatriz = ({ onSave, onClose }) => {
     setAlertOpen(true);
   };
 
-
-
-  // 🔹 Manejar cambios
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  // 🔹 Enviar datos
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -60,7 +53,6 @@ const FormularioMatriz = ({ onSave, onClose }) => {
       });
 
       showAlert("Matriz creada correctamente", "success");
-
       onSave && onSave(res.data);
 
       setFormData({
@@ -69,7 +61,6 @@ const FormularioMatriz = ({ onSave, onClose }) => {
         telefonoProveedor: "",
         telefonoAsesor: "",
       });
-
     } catch (error) {
       showAlert(
         error.response?.data?.message ||
@@ -81,52 +72,166 @@ const FormularioMatriz = ({ onSave, onClose }) => {
 
   return (
     <>
-      <Paper elevation={6} sx={{ borderRadius: 3, p: 4, maxWidth: 450 }}>
-        <Typography variant="h6" mb={2} fontWeight="bold">
-          Crear Matriz de Escalamiento
+      <Paper
+        elevation={0}
+        sx={{
+          p: { xs: 3, sm: 4 },
+          borderRadius: 4,
+          position: "relative",
+          maxWidth: 1100,
+          mx: "auto",
+          backgroundColor: "white",
+        }}
+      >
+        {/* Botón cerrar */}
+        <IconButton
+          onClick={onClose}
+          sx={{
+            position: "absolute",
+            right: 12,
+            top: 12,
+            color: "#666",
+            "&:hover": { color: "#1976d2", transform: "scale(1.1)" },
+            transition: "0.2s",
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+
+        {/* Título */}
+        <Typography
+          variant="h5"
+          align="center"
+          sx={{
+            fontWeight: 700,
+            mb: 1,
+            color: "#000",
+            letterSpacing: 0.8,
+          }}
+        >
+          CREAR MATRIZ DE ESCALAMIENTO
+        </Typography>
+
+        <Typography
+          variant="subtitle1"
+          align="center"
+          sx={{
+            fontWeight: 600,
+            color: "#424242",
+            mb: 4,
+          }}
+        >
+          INFORMACIÓN PRINCIPAL
         </Typography>
 
         <form onSubmit={handleSubmit}>
-          <Stack spacing={2}>
-            <TextField
-              label="Proveedor"
-              name="proveedor"
-              value={formData.proveedor}
-              onChange={handleChange}
-              required
-            />
+          <Grid container spacing={3} justifyContent="center">
 
-            <TextField
-              label="Código del Servicio"
-              name="codigoServicio"
-              value={formData.codigoServicio}
-              onChange={handleChange}
-              required
-            />
+            {/* Proveedor */}
+            <Grid item xs={12} md={8}>
+              <TextField
+                label="Proveedor"
+                name="proveedor"
+                value={formData.proveedor}
+                onChange={handleChange}
+                fullWidth
+                size="small"
+                sx={{
+                  borderRadius: 2,
+                  "& .MuiOutlinedInput-root fieldset": { borderColor: "#cfd8dc" },
+                  "& .MuiOutlinedInput-root:hover fieldset": {
+                    borderColor: "#90caf9",
+                  },
+                }}
+              />
+            </Grid>
 
-            <TextField
-              label="N° Teléfono Proveedor"
-              name="telefonoProveedor"
-              value={formData.telefonoProveedor}
-              onChange={handleChange}
-            />
+            {/* Código de servicio */}
+            <Grid item xs={12} md={4}>
+              <TextField
+                label="Código del Servicio"
+                name="codigoServicio"
+                value={formData.codigoServicio}
+                onChange={handleChange}
+                fullWidth
+                size="small"
+                sx={{
+                  borderRadius: 2,
+                  "& .MuiOutlinedInput-root fieldset": { borderColor: "#cfd8dc" },
+                  "& .MuiOutlinedInput-root:hover fieldset": {
+                    borderColor: "#90caf9",
+                  },
+                }}
+              />
+            </Grid>
 
-            <TextField
-              label="N° Teléfono Asesor"
-              name="telefonoAsesor"
-              value={formData.telefonoAsesor}
-              onChange={handleChange}
-            />
+            {/* Teléfono Proveedor */}
+            <Grid item xs={12} md={6}>
+              <TextField
+                label="N° Teléfono Proveedor"
+                name="telefonoProveedor"
+                value={formData.telefonoProveedor}
+                onChange={handleChange}
+                fullWidth
+                size="small"
+                sx={{
+                  borderRadius: 2,
+                  "& .MuiOutlinedInput-root fieldset": { borderColor: "#cfd8dc" },
+                  "& .MuiOutlinedInput-root:hover fieldset": {
+                    borderColor: "#90caf9",
+                  },
+                }}
+              />
+            </Grid>
 
+            {/* Teléfono Asesor */}
+            <Grid item xs={12} md={6}>
+              <TextField
+                label="N° Teléfono Asesor"
+                name="telefonoAsesor"
+                value={formData.telefonoAsesor}
+                onChange={handleChange}
+                fullWidth
+                size="small"
+                sx={{
+                  borderRadius: 2,
+                  "& .MuiOutlinedInput-root fieldset": { borderColor: "#cfd8dc" },
+                  "& .MuiOutlinedInput-root:hover fieldset": {
+                    borderColor: "#90caf9",
+                  },
+                }}
+              />
+            </Grid>
+          </Grid>
 
-            <Button variant="contained" type="submit">
-              Guardar
+          {/* Botón */}
+          <Box sx={{ display: "flex", justifyContent: "center", mt: 5 }}>
+            <Button
+              variant="contained"
+              type="submit"
+              sx={{
+                minWidth: 180,
+                py: 1.4,
+                px: 4,
+                fontWeight: "bold",
+                fontSize: "1rem",
+                borderRadius: "12px",
+                backgroundColor: "#1565c0",
+                boxShadow: "0px 4px 12px rgba(21,101,192,0.3)",
+                "&:hover": {
+                  backgroundColor: "#0d47a1",
+                  boxShadow: "0px 5px 14px rgba(13,71,161,0.4)",
+                  transform: "translateY(-2px)",
+                },
+              }}
+            >
+              GUARDAR
             </Button>
-          </Stack>
+          </Box>
         </form>
       </Paper>
 
-      {/* 🔹 Snackbar arriba a la derecha */}
+      {/* Snackbar */}
       <Snackbar
         open={alertOpen}
         autoHideDuration={4000}

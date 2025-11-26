@@ -205,9 +205,6 @@ const handleEstadoChange = async (id, currentEstado) => {
 
   return (
     <Box sx={{ p: 4 }}>
-      <Typography variant="h5" mb={3} fontWeight="bold">
-        Gestión de Matriz Global
-      </Typography>
 
       {loading ? (
         <Typography>Cargando datos...</Typography>
