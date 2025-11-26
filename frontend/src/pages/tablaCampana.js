@@ -23,8 +23,10 @@ import {
   CircularProgress,
 } from "@mui/material";
 import FormularioEditar from "./formularioEditar.js";
+import { useAuth } from "../context/AuthContext";
 
 const TablaCampana = () => {
+  const { user } = useAuth(); 
   const [rows, setRows] = useState([]);
   const [selected, setSelected] = useState(null);
   const [editing, setEditing] = useState(null);
@@ -32,49 +34,74 @@ const TablaCampana = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [loading, setLoading] = useState(false);
+  console.log(user)
+useEffect(() => {
+  const fetchCampanas = async () => {
+    setLoading(true);
 
-  useEffect(() => {
-    const fetchCampanas = async () => {
-      setLoading(true);
-      try {
-        const res = await axios.get("http://localhost:4000/campana/detalles");
-        const data = res.data.map((c) => ({
-          id: c.id,
-          nombreCampaña: c.nombre_campana,
-          cliente: c.cliente,
-          directorOperacion: c.director_operacion_abai,
-          correo: c.correo_director,
-          segmento: c.segmento,
-          nombreGerente: c.nombre_gte_campana,
-          correoGerente: c.correo_gte_campana,
-          sede: c.ubicacion_sedes,
-          puestoOperacion: c.puestos_operacion,
-          puestoEstructura: c.puestos_estructura,
-          segmentoRed: c.segmento_red,
-          fechaActualizacion: c.fecha_actualizacion,
-          contactoCliente: c.nombre_contacto_cliente,
-          correoCliente: c.correo_contacto_cliente,
-          telefonoCliente: c.telefono_contacto_cliente,
-          contactoComercial: c.nombre_contacto_comercial,
-          correoComercial: c.correo_contacto_comercial,
-          telefonoComercial: c.telefono_contacto_comercial,
-          contactoTecnico: c.soporte_tecnico_abai,
-          correoTecnico: c.correo_soporte_abai,
-          serviciosTecnico: c.servicios_prestados,
-          estado: c.estado === "HABILITADO" ? "Activo" : "Inactivo",
-          imagen: c.imagen_cliente
-            ? `http://localhost:4000/uploads/${c.imagen_cliente}`
-            : "https://via.placeholder.com/250",
-        }));
-        setRows(data);
-      } catch (err) {
-        console.error("❌ Error al obtener campañas:", err);
-      } finally {
-        setLoading(false);
+    try {
+      // 2️⃣ Obtener todas las campañas (esto lo hacemos siempre)
+      const res = await axios.get("http://localhost:4000/campana/detalles");
+      let campanas = res.data;
+
+      // 👉 SOLO filtrar si el usuario es proveedor
+      if (user?.rol === "proveedor") {
+        // 1️⃣ Obtener campañas vinculadas al usuario
+        const userCampanas = await axios.get(
+          `http://localhost:4000/campana/usuario/${user.id}`
+        );
+
+        const campanasPermitidas = userCampanas.data.map((item) => item.id);
+
+        // 3️⃣ Filtrar solo sus campañas
+        campanas = campanas.filter((c) => campanasPermitidas.includes(c.id));
       }
-    };
+
+      // 4️⃣ Mapear las campañas para mostrarlas
+      const data = campanas.map((c) => ({
+        id: c.id,
+        nombreCampaña: c.nombre_campana,
+        cliente: c.cliente,
+        directorOperacion: c.director_operacion_abai,
+        correo: c.correo_director,
+        segmento: c.segmento,
+        nombreGerente: c.nombre_gte_campana,
+        correoGerente: c.correo_gte_campana,
+        sede: c.ubicacion_sedes,
+        puestoOperacion: c.puestos_operacion,
+        puestoEstructura: c.puestos_estructura,
+        segmentoRed: c.segmento_red,
+        fechaActualizacion: c.fecha_actualizacion,
+        contactoCliente: c.nombre_contacto_cliente,
+        correoCliente: c.correo_contacto_cliente,
+        telefonoCliente: c.telefono_contacto_cliente,
+        contactoComercial: c.nombre_contacto_comercial,
+        correoComercial: c.correo_contacto_comercial,
+        telefonoComercial: c.telefono_contacto_comercial,
+        contactoTecnico: c.soporte_tecnico_abai,
+        correoTecnico: c.correo_soporte_abai,
+        serviciosTecnico: c.servicios_prestados,
+        estado: c.estado === "HABILITADO" ? "Activo" : "Inactivo",
+        imagen: c.imagen_cliente
+          ? `http://localhost:4000/uploads/${c.imagen_cliente}`
+          : "https://via.placeholder.com/250",
+      }));
+
+      setRows(data);
+
+    } catch (err) {
+      console.error("❌ Error al obtener campañas:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (user?.id) {
     fetchCampanas();
-  }, []);
+  }
+}, [user]);
+
+
 
   const handleToggleEstado = async (id, currentEstado) => {
     const nuevoEstado = currentEstado === "Activo" ? "DESHABILITADO" : "HABILITADO";
@@ -202,21 +229,31 @@ const TablaCampana = () => {
                   <TableCell align="center">{c.directorOperacion}</TableCell>
                   <TableCell align="center">{c.correo}</TableCell>
                   <TableCell align="center">
-                    <Button
-                      onClick={() => handleToggleEstado(c.id, c.estado)}
-                      variant="contained"
-                      sx={{
-                        backgroundColor: c.estado === "Activo" ? "#4caf50" : "#e53935",
-                        "&:hover": {
-                          backgroundColor: c.estado === "Activo" ? "#43a047" : "#c62828",
-                        },
-                        borderRadius: "20px",
-                        textTransform: "none",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      {c.estado}
-                    </Button>
+                  <Button
+                    onClick={(e) => {
+                      if (user?.rol === "proveedor") {
+                        e.preventDefault(); // evita que ejecute la acción
+                        return;
+                      }
+                      handleToggleEstado(c.id, c.estado);
+                    }}
+                    variant="contained"
+                    sx={{
+                      backgroundColor: c.estado === "Activo" ? "#4caf50" : "#e53935",
+                      "&:hover": {
+                        backgroundColor: c.estado === "Activo" ? "#43a047" : "#c62828",
+                      },
+                      borderRadius: "20px",
+                      textTransform: "none",
+                      fontWeight: "bold",
+
+                      // 👇 Estilos cuando no puede usarlo, pero conserva color
+                      cursor: user?.rol === "proveedor" ? "not-allowed" : "pointer",
+                    }}
+                  >
+                    {c.estado}
+                  </Button>
+
                   </TableCell>
                   <TableCell align="center">
                     <Button
@@ -246,7 +283,7 @@ const TablaCampana = () => {
                         Ver Detalle
                       </Button>
 
-                      <Button
+                      {user?.rol !== "proveedor" && (<Button
                         variant="contained"
                         color="primary"
                         size="small"
@@ -267,9 +304,10 @@ const TablaCampana = () => {
                           },
                         }}
                         onClick={() => handleEditar(c)}
+                        disabled={user?.rol === "proveedor"}  // El boton se desactiva para el proveedor
                       >
                         Editar
-                      </Button>
+                      </Button>)}
                   </TableCell>
                 </TableRow>
               ))}

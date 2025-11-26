@@ -35,24 +35,23 @@ import { jwtDecode } from "jwt-decode";
 import useAuthGuard from "../hooks/useAuthGuard.js";
 import { useAuth } from "../context/AuthContext";
 
-const token = localStorage.getItem("token");
-let user = null;
-
-try {
-  if (token) {
-    user = jwtDecode(token);
-  }
-} catch (error) {
-  console.error("Token inválido, cerrando sesión...");
-  localStorage.removeItem("token");
-  window.location.href = "/";
-}
-
 
 
 const drawerWidth = 260;
 
 const Dashboard = () => {
+  const token = localStorage.getItem("token");
+  let user = null;
+
+  try {
+    if (token) {
+      user = jwtDecode(token);
+    }
+  } catch (error) {
+    console.error("Token inválido, cerrando sesión...");
+    localStorage.removeItem("token");
+    window.location.href = "/";
+  }
   useAuthGuard(["admin", "proveedor"]);
   const { logout } = useAuth();
 
@@ -84,7 +83,7 @@ const Dashboard = () => {
   const sidebarItems = [
     { label: "Formularios", type: "dropdown" },
   
-    { label: "Usuarios", route: "Usuario", roles: ["admin"] },
+    { label: "Usuarios", route: "Usuario", roles: ["administrador"] },
     { label: "Campaña", route: "campana" },
     { label: "Aplicativos", route: "abai" },
     { label: "Matrizes ", type: "dropdownMatriz" },
@@ -161,8 +160,9 @@ const Dashboard = () => {
               color: "#fff",
             }}
           >
-            PANEL {user.rol.toUpperCase()}
+            PANEL {user?.rol?.toUpperCase()}
           </Typography>
+
 
           <Divider sx={{ my: 2, borderColor: "rgba(255,255,255,0.2)" }} />
 
@@ -195,7 +195,7 @@ const Dashboard = () => {
                     onClose={() => handleMenuClose(item.label)}
                   >
                     
-                    {can(["admin"]) && (
+                    {can(["administrador"]) && (
                     <MenuItem
                         onClick={() => {
                           handleMenuClose(item.label);
@@ -206,7 +206,7 @@ const Dashboard = () => {
                     </MenuItem>
                     )}
                     
-                    {can(["admin"]) && (<MenuItem
+                    {can(["administrador"]) && (<MenuItem
                       onClick={() => {
                         handleMenuClose(item.label);
                         setAbrirFormulario(true);
@@ -231,7 +231,7 @@ const Dashboard = () => {
                       Crear Matriz
                     </MenuItem>
                     
-                     {can(["admin"]) && (<MenuItem
+                     {can(["administrador"]) && (<MenuItem
                       onClick={() => {
                         handleMenuClose(item.label);
                         setAbrirMatrizGlobal(true);
@@ -424,7 +424,7 @@ const Dashboard = () => {
         {seccionActual === "abai" && <TablaAplicativos />}
         {seccionActual === "matriz" && <TablaMatriz />}
         {seccionActual === "global" && <TablaGlobal />}
-        {seccionActual === "Usuario" && can(["admin"]) && <TablaUsuarios />}
+        {seccionActual === "Usuario" && can(["administrador"]) && <TablaUsuarios />}
 
       </Box>
 
