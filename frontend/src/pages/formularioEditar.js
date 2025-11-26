@@ -8,10 +8,7 @@ import {
   Grid,
   IconButton,
   Divider,
-  FormControl,
-  Select,
   MenuItem,
-  InputLabel,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import axios from "axios";
@@ -275,75 +272,84 @@ const FormularioEditarCampana = ({ open, onClose, idCampana, onUpdate }) => {
 
         <Grid container spacing={2} justifyContent="center">
           {/* SELECT Aplicativo */}
-          <Grid item xs={12} sm={5}>
-            <FormControl fullWidth size="small">
-              <InputLabel>Aplicativos</InputLabel>
-              <Select
-                multiple
-                name="aplicativoId"
-                value={formData.aplicativoId}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    aplicativoId: e.target.value,
-                  }))
-                }
-              >
-                {aplicativos.map((app) => (
-                  <MenuItem key={app.id} value={app.id}>
-                    {app.nombre}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              select
+              fullWidth
+              size="small"
+              label="Aplicativos"
+              name="aplicativoId"
+              value={formData.aplicativoId}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  aplicativoId: e.target.value,
+                }))
+              }
+              SelectProps={{
+                multiple: true,
+              }}
+            >
+              {aplicativos.map((app) => (
+                <MenuItem key={app.id} value={app.id}>
+                  {app.nombre}
+                </MenuItem>
+              ))}
+            </TextField>
           </Grid>
 
           {/* SELECT Matriz */}
-          <Grid item xs={12} sm={5}>
-            <FormControl fullWidth size="small">
-              <InputLabel>Matriz Escalamiento</InputLabel>
-              <Select
-                multiple
-                name="matrizId"
-                value={formData.matrizId}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    matrizId: e.target.value,
-                  }))
-                }
-              >
-                {matrices.map((m) => (
-                  <MenuItem key={m.id} value={m.id}>
-                    {m.proveedor}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              select
+              fullWidth
+              size="small"
+              label="Matriz Escalamiento"
+              name="matrizId"
+              value={formData.matrizId}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  matrizId: e.target.value,
+                }))
+              }
+              SelectProps={{
+                multiple: true,
+              }}
+            >
+              {matrices.map((m) => (
+                <MenuItem key={m.id} value={m.id}>
+                  {m.proveedor}
+                </MenuItem>
+              ))}
+            </TextField>
           </Grid>
 
           {/* SELECT Matriz Global */}
-          <Grid item xs={12} sm={4}>
-            <FormControl fullWidth size="small">
-              <InputLabel>Matriz Global</InputLabel>
-              <Select
-                multiple
-                name="matrizGlobalId"
-                value={formData.matrizGlobalId}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    matrizGlobalId: e.target.value,
-                  }))
-                }
-              >
-                {matricesGlobal.map((m) => (
-                  <MenuItem key={m.id} value={m.id}>
-                    {m.proveedor}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              select
+              fullWidth
+              size="small"
+              label="Matriz Global"
+              name="matrizGlobalId"
+              value={formData.matrizGlobalId}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  matrizGlobalId: e.target.value,
+                }))
+              }
+              SelectProps={{
+                multiple: true,
+              }}
+            >
+              {matricesGlobal.map((m) => (
+                <MenuItem key={m.id} value={m.id}>
+                  {m.proveedor}
+                </MenuItem>
+              ))}
+            </TextField>
           </Grid>
 
           {/* Otros campos */}
@@ -354,7 +360,7 @@ const FormularioEditarCampana = ({ open, onClose, idCampana, onUpdate }) => {
             { name: "segmento_red", label: "Segmento Red" },
             { name: "fecha_actualizacion", label: "Fecha Actualización", type: "date" },
           ].map((field) => (
-            <Grid item xs={12} sm={5} key={field.name}>
+            <Grid item xs={12} sm={6} key={field.name}>
               <TextField
                 label={field.label}
                 name={field.name}

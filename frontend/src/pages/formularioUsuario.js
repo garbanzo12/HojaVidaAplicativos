@@ -8,8 +8,6 @@ import {
   Button,
   Typography,
   IconButton,
-  FormControl,
-  Select,
   MenuItem,
   Paper,
 } from "@mui/material";
@@ -198,31 +196,30 @@ const FormularioUsuario = ({ onClose = () => {} }) => {
 
         {/* Sede (Select) */}
         <Grid item xs={12} md={6}>
-          <FormControl fullWidth size="small">
-            <Select
-              displayEmpty
-              name="sede"
-              value={formData.sede}
-              onChange={handleChange}
-              sx={{
-                borderRadius: 2,
-                backgroundColor: "transparent",
-                "& .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "#cfd8dc",
-                },
-                "&:hover .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "#90caf9",
-                },
-              }}
-            >
-              <MenuItem value="" disabled>
-                Seleccione Sede
-              </MenuItem>
-              <MenuItem value="Pereira">Pereira</MenuItem>
-              <MenuItem value="Bogota">Bogota</MenuItem>
-              <MenuItem value="Manizales">Manizales</MenuItem>
-            </Select>
-          </FormControl>
+          <TextField
+            select
+            fullWidth
+            size="small"
+            label="Sede"
+            name="sede"
+            value={formData.sede}
+            onChange={handleChange}
+            sx={{
+              backgroundColor: "transparent",
+              borderRadius: 2,
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": { borderColor: "#cfd8dc" },
+                "&:hover fieldset": { borderColor: "#90caf9" },
+              },
+            }}
+          >
+            <MenuItem value="" disabled>
+              Seleccione Sede
+            </MenuItem>
+            <MenuItem value="Pereira">Pereira</MenuItem>
+            <MenuItem value="Bogota">Bogota</MenuItem>
+            <MenuItem value="Manizales">Manizales</MenuItem>
+          </TextField>
         </Grid>
       </Grid>
 

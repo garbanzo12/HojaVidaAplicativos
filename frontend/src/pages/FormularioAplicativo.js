@@ -8,10 +8,9 @@ import {
   Button,
   Typography,
   IconButton,
-  FormControl,
-  Select,
   MenuItem,
   Paper,
+  FormControl,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 
@@ -119,32 +118,32 @@ const FormularioAplicativo = ({ onClose = () => {} }) => {
 
       <Grid container spacing={3} justifyContent="center">
         {/* Tipo de aplicativo */}
-        <Grid item xs={12} md={4}>
-          <FormControl fullWidth size="small" required>
-            <Select
-              displayEmpty
-              name="tipoAplicativo"
-              value={formData.tipoAplicativo}
-              onChange={handleChange}
-              sx={{
-                borderRadius: 2,
-                backgroundColor: "transparent",
-                "& .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "#cfd8dc",
-                },
-                "&:hover .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "#90caf9",
-                },
-              }}
-            >
-              <MenuItem value="" disabled>
-                Seleccione Aplicativo
-              </MenuItem>
-              <MenuItem value="Aplicativo ABAI">Aplicativo ABAI</MenuItem>
-              <MenuItem value="App Proveedor">App Proveedor</MenuItem>
-              <MenuItem value="App Internet">App Internet</MenuItem>
-            </Select>
-          </FormControl>
+        <Grid item xs={12} md={6}>
+          <TextField
+            select
+            fullWidth
+            size="small"
+            required
+            label="Tipo de Aplicativo"
+            name="tipoAplicativo"
+            value={formData.tipoAplicativo}
+            onChange={handleChange}
+            sx={{
+              backgroundColor: "transparent",
+              borderRadius: 2,
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": { borderColor: "#cfd8dc" },
+                "&:hover fieldset": { borderColor: "#90caf9" },
+              },
+            }}
+          >
+            <MenuItem value="" disabled>
+              Seleccione Aplicativo
+            </MenuItem>
+            <MenuItem value="Aplicativo ABAI">Aplicativo ABAI</MenuItem>
+            <MenuItem value="App Proveedor">App Proveedor</MenuItem>
+            <MenuItem value="App Internet">App Internet</MenuItem>
+          </TextField>
         </Grid>
 
         {/* Campos de texto */}
@@ -159,7 +158,7 @@ const FormularioAplicativo = ({ onClose = () => {} }) => {
           <Grid
             item
             xs={12}
-            md={field.name === "nombre" || field.name === "direccionIP" ? 4 : 6}
+            md={6}
             key={field.name}
           >
             <TextField

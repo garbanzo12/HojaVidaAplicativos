@@ -9,9 +9,6 @@ import {
   IconButton,
   Divider,
   MenuItem,
-  Select,
-  InputLabel,
-  FormControl,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import axios from "axios";
@@ -183,20 +180,20 @@ const FormularioEditarAplicativo = ({ open, onClose, idAplicativo, onUpdate }) =
 
                   {/* SELECT: Tipo de aplicativo */}
         <Grid item xs={12} sm={10}>
-          <FormControl fullWidth size="small" required>
-            <InputLabel id="tipo-aplicativo-label">Tipo de aplicativo</InputLabel>
-            <Select
-              labelId="tipo-aplicativo-label"
-              name="tipo_aplicativo"
-              value={formData.tipo_aplicativo}
-              onChange={handleChange}
-              label="Tipo de aplicativo"
-            >
-              <MenuItem value="internet">Internet</MenuItem>
-              <MenuItem value="abai">Abai</MenuItem>
-              <MenuItem value="proveedor">Proveedor</MenuItem>
-            </Select>
-          </FormControl>
+          <TextField
+            select
+            fullWidth
+            size="small"
+            required
+            label="Tipo de aplicativo"
+            name="tipo_aplicativo"
+            value={formData.tipo_aplicativo}
+            onChange={handleChange}
+          >
+            <MenuItem value="internet">Internet</MenuItem>
+            <MenuItem value="abai">Abai</MenuItem>
+            <MenuItem value="proveedor">Proveedor</MenuItem>
+          </TextField>
         </Grid>
         </Grid>
 
