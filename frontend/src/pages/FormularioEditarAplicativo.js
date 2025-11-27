@@ -9,6 +9,9 @@ import {
   IconButton,
   Divider,
   MenuItem,
+  FormControl,
+  InputLabel,
+  Select,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import axios from "axios";
@@ -53,11 +56,7 @@ const FormularioEditarAplicativo = ({ open, onClose, idAplicativo, onUpdate }) =
     tipo_aplicativo: "", 
   });
 
-
   const [loading, setLoading] = useState(false);
-
-
-
 
   // 📌 Cargar datos del aplicativo
   const cargarAplicativo = async () => {
@@ -76,14 +75,14 @@ const FormularioEditarAplicativo = ({ open, onClose, idAplicativo, onUpdate }) =
         estado: data.estado || "HABILITADO",
         campanaId: data.campanaId || "",
         tipo_aplicativo: data.tipo_aplicativo || "",
-
       });
     } catch (error) {
       console.error("❌ Error al cargar el aplicativo:", error);
-  alert(
-    "Error al guardar la matriz. " +
-      error.response?.data?.message || error.message
-  );    }
+      alert(
+        "Error al cargar el aplicativo. " +
+        (error.response?.data?.message || error.message)
+      );
+    }
   };
 
   // 🔁 Efecto al abrir modal
@@ -106,14 +105,16 @@ const FormularioEditarAplicativo = ({ open, onClose, idAplicativo, onUpdate }) =
 
     try {
       await axios.put(`http://localhost:4000/aplicativo/${idAplicativo}`, formData);
+      alert("✅ Aplicativo actualizado correctamente");
       onUpdate();
       onClose();
     } catch (error) {
       console.error("❌ Error al actualizar aplicativo:", error);
-  alert(
-    "Error al guardar la matriz. " +
-      error.response?.data?.message || error.message
-  );    } finally {
+      alert(
+        "Error al actualizar el aplicativo. " +
+        (error.response?.data?.message || error.message)
+      );
+    } finally {
       setLoading(false);
     }
   };
@@ -159,7 +160,7 @@ const FormularioEditarAplicativo = ({ open, onClose, idAplicativo, onUpdate }) =
           {[
             { name: "nombre", label: "Nombre del Aplicativo" },
             { name: "direccion_ip", label: "Dirección IP" },
-            { name: "puerto", label: "Puerto" },
+            { name: "puerto", label: "Puerto", type: "number" },
             { name: "url", label: "URL" },
             { name: "tipo_red", label: "Tipo de Red" },
             { name: "escalamiento", label: "Escalamiento" },
@@ -168,6 +169,7 @@ const FormularioEditarAplicativo = ({ open, onClose, idAplicativo, onUpdate }) =
               <TextField
                 label={field.label}
                 name={field.name}
+                type={field.type || "text"}
                 fullWidth
                 size="small"
                 required
@@ -177,24 +179,23 @@ const FormularioEditarAplicativo = ({ open, onClose, idAplicativo, onUpdate }) =
             </Grid>
           ))}
 
-
-                  {/* SELECT: Tipo de aplicativo */}
-        <Grid item xs={12} sm={10}>
-          <TextField
-            select
-            fullWidth
-            size="small"
-            required
-            label="Tipo de aplicativo"
-            name="tipo_aplicativo"
-            value={formData.tipo_aplicativo}
-            onChange={handleChange}
-          >
-            <MenuItem value="internet">Internet</MenuItem>
-            <MenuItem value="abai">Abai</MenuItem>
-            <MenuItem value="proveedor">Proveedor</MenuItem>
-          </TextField>
-        </Grid>
+          {/* SELECT: Tipo de aplicativo */}
+          <Grid item xs={12} sm={10}>
+            <TextField
+              select
+              fullWidth
+              size="small"
+              required
+              label="Tipo de Aplicativo"
+              name="tipo_aplicativo"
+              value={formData.tipo_aplicativo}
+              onChange={handleChange}
+            >
+              <MenuItem value="internet">Internet</MenuItem>
+              <MenuItem value="abai">Abai</MenuItem>
+              <MenuItem value="proveedor">Proveedor</MenuItem>
+            </TextField>
+          </Grid>
         </Grid>
 
         {/* BOTÓN ACTUALIZAR */}

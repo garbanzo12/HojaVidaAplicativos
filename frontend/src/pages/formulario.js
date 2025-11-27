@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Box,
   Button,
@@ -7,18 +7,18 @@ import {
   TextField,
   Grid,
   IconButton,
-  Divider,
-  FormControl,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
   Select,
   MenuItem,
   InputLabel,
+  FormControl,
+  Card,
 } from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import CloseIcon from "@mui/icons-material/Close";
-import axios from "axios";
-
-// ----------------------------------------------------
-// 🛑 DEFINICIONES DE ESTILOS FALTANTES 🛑
-// ----------------------------------------------------
+import DeleteIcon from "@mui/icons-material/Delete";
 
 const modalStyle = {
   position: "absolute",
@@ -26,645 +26,713 @@ const modalStyle = {
   left: "50%",
   transform: "translate(-50%, -50%)",
   width: "92%",
-  maxWidth: 700,
+  maxWidth: 900,
   bgcolor: "#ffffff",
   borderRadius: "20px",
   boxShadow: "0 10px 40px rgba(0,0,0,0.15)",
-  p: { xs: 3, sm: 5 },
+  p: 4,
   maxHeight: "90vh",
-  overflowY: "auto",
-  scrollbarWidth: "none",
-  msOverflowStyle: "none",
-  "&::-webkit-scrollbar": { display: "none" },
-};
-const selectInputStyle = {
-  "& .MuiOutlinedInput-root": {
-    height: 40,
-    width : 150,
-    borderRadius: "8px",
-    display: "flex",
-    alignItems: "center",
-  },
-
-  "& .MuiSelect-select": {
-    padding: "0 14px !important",
-    height: "40px !important",
-    display: "flex !important",
-    alignItems: "center !important",
-  },
-
-  "& .MuiChip-root": {
-    display: "none !important",
-  },
+  overflowY: "scroll",
+  scrollbarWidth: "none", // Firefox
+  msOverflowStyle: "none", 
 };
 
-
+const cardAccordionStyle = {
+  boxShadow: "0 3px 15px rgba(0,0,0,0.08)",
+  borderRadius: "14px",
+  mb: 2,
+};
 
 const sectionTitle = {
-  fontWeight: 700,
-  textAlign: "center",
-  mt: 4,
-  mb: 2,
-  color: "#1565c0",
-  letterSpacing: 0.5,
+  fontWeight: "bold",
+  color: "#0d47a1",
 };
 
-// ----------------------------------------------------
-// 🚀 COMPONENTE PRINCIPAL
-// ----------------------------------------------------
-
-const FormularioModal = ({ open, onClose }) => {
-  const [formData, setFormData] = useState({
-    nombre_campana: "",
-    cliente: "",
-    director_operacion_abai: "",
-    correo_director: "",
-    segmento: "",
-    nombre_gte_campana: "",
-    correo_gte_campana: "",
-    ubicacion_sedes: "",
-    puestos_operacion: "",
-    puestos_estructura: "",
-    segmento_red: "",
-    fecha_actualizacion: "",
-    nombre_contacto_cliente: "",
-    correo_contacto_cliente: "",
-    telefono_contacto_cliente: "",
-    nombre_contacto_comercial: "",
-    correo_contacto_comercial: "",
-    telefono_contacto_comercial: "",
-    soporte_tecnico_abai: "",
-    correo_soporte_abai: "",
-    servicios_prestados: "",
-    estado: "HABILITADO",
-    usuarioId: [],
-    aplicativoId: [], 
-    matrizId: [], 
-    matrizGlobalId: [],
-
-  });
-  const [matricesGlobal, setMatricesGlobal] = useState([]);
-  const [usuarios, setUsuarios] = useState([]);
-  const [aplicativos, setAplicativos] = useState([]);
-  const [matrices, setMatrices] = useState([]);
-  const [imagenSede, setImagenSede] = useState(null);
-  const [imagenCliente, setImagenCliente] = useState(null);
-  const [loading, setLoading] = useState(false);
-
-// 🔹 Función de carga de datos (useEffect)
-useEffect(() => {
-  if (open) {
-
-    // 1. Cargar Aplicativos
-    axios.get("http://localhost:4000/aplicativo")
-      .then(res => {
-        // Filtrar solo HABILITADOS
-        const filtrados = (res.data || []).filter(a => a.estado === "HABILITADO");
-        setAplicativos(filtrados);
-      })
-      .catch(err => console.error("Error cargando Aplicativos:", err));
-
-    // 2. Cargar Matrices
-    axios.get("http://localhost:4000/matriz")
-      .then(res => {
-        // Filtrar solo HABILITADOS
-        const filtrados = (res.data || []).filter(m => m.estado === "HABILITADO");
-        setMatrices(filtrados);
-      })
-      .catch(err => console.error("Error cargando Matrices:", err));
+// Estilos personalizados para los selects
+const selectStyles = {
+  '& .MuiOutlinedInput-root': {
+    borderRadius: '8px',
+    minWidth: '160px',
+  },
+  '& .MuiSelect-select': {
+    padding: '10px 14px',
+    minWidth: '130px',
+  
+  },
+  '& .MuiInputLabel-root': {
+    whiteSpace: 'nowrap',
   }
+};
 
-  // 3. Cargar Matriz Escalamiento Global
-  axios.get("http://localhost:4000/matriz/global")
-    .then(res => {
-      // Filtrar solo HABILITADOS
-      const filtrados = (res.data || []).filter(mg => mg.estado === "HABILITADO");
-      setMatricesGlobal(filtrados);
-    })
-    .catch(err => console.error("Error cargando Matriz Global:", err));
+// Props comunes para todos los MenuProps de los Select
+const menuProps = {
+  PaperProps: {
+    style: {
+      maxHeight: 300,
+       minWidth: 250,
+    },
+  },
+  anchorOrigin: {
+    vertical: 'bottom',
+    horizontal: 'left',
+  },
+  transformOrigin: {
+    vertical: 'top',
+    horizontal: 'left',
+  },
+};
 
-    // 4. Cargar Usuarios
-  axios.get("http://localhost:4000/usuario")
-    .then(res => {
-      const filtrados = (res.data || []).filter(u => u.estado === "HABILITADO");
-      setUsuarios(filtrados);
-    })
-    .catch(err => console.error("Error cargando usuarios:", err));
+const initialFormData = {
+  // SECCIÓN 1
+  nombre_campana: "",
+  cliente: "",
+  director_operacion_abai: "",
+  correo_director: "",
+  // SECCIÓN 2
+  aplicativo: "",
+  matriz_escalamiento: "",
+  matriz_global: "",
+  usuario: "",
+  ubicacion_sede: "",
+  puesto_operacion: "",
+  puesto_estructuracion: "",
+  segmento_red: "",
+  fecha_actualizacion: "",
+  // SECCIÓN 3
+  gerente_campana: "",
+  correo_gerente: "",
+  telefono_gerente: "",
+  // SECCIÓN 4
+  contacto_cliente: "",
+  correo_contacto_cliente: "",
+  telefono_contacto_cliente: "",
+  nombre_comerciante: "",
+  correo_comerciante: "",
+  telefono_comerciante: "",
+  // SECCIÓN 5
+  soporte_tecnico_abai: "",
+  correo_soporte_abai: "",
+  servicios_prestados: "",
+  // SECCIÓN 6
+  imagen_sede: null,
+  imagen_cliente: null,
+};
 
-}, [open]);
-
-
+export default function FormularioModal({ open, onClose }) {
+  const [formData, setFormData] = useState(initialFormData);
+  const [previewSede, setPreviewSede] = useState(null);
+  const [previewCliente, setPreviewCliente] = useState(null);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    
-    const isIdField = name === 'aplicativoId' || name === 'matrizId';
-    
-    let parsedValue = value;
-
-    if (isIdField) {
-        // Si el valor es "", lo convertimos a null (para Prisma SetNull), sino a Number
-        parsedValue = value === "" ? null : Number(value);
-    } else if (e.target.type === 'number') {
-        // Para TextFields de tipo number
-        parsedValue = value ? Number(value) : (value === 0 ? 0 : "");
-    }
-        
-    setFormData((prev) => ({ ...prev, [name]: parsedValue }));
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-      
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
-      const formDataToSend = new FormData();
-
-      if (Array.isArray(formData.aplicativoId)) {
-              formData.aplicativoId.forEach((id) => {
-                formDataToSend.append("aplicativoId[]", id);
-              });
-            }
-      if (Array.isArray(formData.matrizId)) {
-        formData.matrizId.forEach((id) => {
-        formDataToSend.append("matrizId[]", id);
-        });
-      }
-      if (Array.isArray(formData.matrizGlobalId)) {
-        formData.matrizGlobalId.forEach((id) => {
-        formDataToSend.append("matrizGlobalId[]", id);
-        });
-      }
-      if (Array.isArray(formData.usuarioId)) {
-        formData.usuarioId.forEach((id) => {
-        formDataToSend.append("usuarioId[]", id);
-        });
-      }
-
-      // Preparar los datos antes de añadirlos al FormData
-      const dataToSubmit = {
-          ...formData,
-          // Asegurar que las IDs sean null o número
-          
-          // Los campos numéricos ya deben ser números o strings vacíos gracias a handleChange
-          puestos_operacion: formData.puestos_operacion || null,
-          puestos_estructura: formData.puestos_estructura || null,
+  const handleImagenSede = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData({ ...formData, imagen_sede: file });
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewSede(reader.result);
       };
-        delete dataToSubmit.usuarioId;
-        delete dataToSubmit.matrizGlobalId;
-        delete dataToSubmit.aplicativoId;
-        delete dataToSubmit.matrizId;
-      // Agregar los campos de texto al FormData
-      Object.keys(dataToSubmit).forEach((key) => {
-        // Excluir claves con valor null si no queremos que se envíen como string "null"
-        if (dataToSubmit[key] !== null && dataToSubmit[key] !== undefined) {
-            formDataToSend.append(key, dataToSubmit[key]);
-        }
-      });
-      
-
-      // Agregar las imágenes
-      if (imagenSede) formDataToSend.append("imagen_sede", imagenSede);
-      if (imagenCliente) formDataToSend.append("imagen_cliente", imagenCliente);
-
-        console.log("🧪 Revisando FormData antes de enviar:");
-        for (let [key, value] of formDataToSend.entries()) {
-          console.log(key, value);
-        }
-      // Enviar la solicitud POST
-      const response = await axios.post("http://localhost:4000/campana", formDataToSend, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      console.log("✅ Campaña creada:", response.data);
-      alert("✅ Campaña creada correctamente");
-      onClose(); // Cerrar el modal y refrescar la lista si es necesario
-    } catch (error) {
-      console.error("❌ Error al crear campaña:", error.response?.data || error.message);
-      alert("❌ Error al crear la campaña: " + (error.response?.data?.message || error.message));
-    } finally {
-      setLoading(false);
+      reader.readAsDataURL(file);
     }
+  };
+
+  const handleImagenCliente = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData({ ...formData, imagen_cliente: file });
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewCliente(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const eliminarImagenSede = () => {
+    setFormData({ ...formData, imagen_sede: null });
+    setPreviewSede(null);
+  };
+
+  const eliminarImagenCliente = () => {
+    setFormData({ ...formData, imagen_cliente: null });
+    setPreviewCliente(null);
+  };
+
+  const resetForm = () => {
+    setFormData(initialFormData);
+    setPreviewSede(null);
+    setPreviewCliente(null);
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log("Datos del formulario:", formData);
+    alert("Formulario enviado correctamente");
+    
+    // Resetear el formulario y cerrar el modal
+    resetForm();
+    onClose();
+  };
+
+  const handleClose = () => {
+    resetForm();
+    onClose();
   };
 
   return (
-  <Modal 
-    open={open} 
-    onClose={onClose}
-    disableEscapeKeyDown
-  >      
-  <Box component="form" onSubmit={handleSubmit} sx={modalStyle}>
-        
+    <Modal 
+      open={open} 
+      onClose={(event, reason) => {
+        if (reason === 'backdropClick') {
+          return;
+        }
+        handleClose();
+      }}
+    >
+      <Box component="form" onSubmit={handleSubmit} sx={modalStyle}>
+        {/* CERRAR */}
         <IconButton
-          onClick={onClose}
-          sx={{
-            position: "absolute",
-            right: 16,
-            top: 16,
-            color: "#555",
-            "&:hover": { color: "#1565c0" },
-          }}
+          onClick={handleClose}
+          sx={{ position: "absolute", right: 16, top: 16, bgcolor: "#f5f5f5" }}
         >
           <CloseIcon />
         </IconButton>
 
-        <Typography variant="h5" textAlign="center" sx={{ mb: 1, color: "#0d47a1", letterSpacing: 0.8, fontWeight: "bold" }}>
+        {/* TÍTULO */}
+        <Typography variant="h5" align="center" sx={{ mb: 3, fontWeight: "bold", color: "#0d47a1" }}>
           CREAR CAMPAÑA
         </Typography>
 
-        <Divider sx={{ mb: 3 }} />
+        {/* SECCIÓN 1 - INFORMACIÓN PRINCIPAL */}
+        <Card sx={cardAccordionStyle}>
+          <Accordion defaultExpanded>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography sx={sectionTitle}> Información Principal</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <TextField 
+                    label="Nombre de Campaña *" 
+                    name="nombre_campana" 
+                    value={formData.nombre_campana}
+                    fullWidth 
+                    size="small" 
+                    onChange={handleChange} 
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField 
+                    label="Cliente *" 
+                    name="cliente" 
+                    value={formData.cliente}
+                    fullWidth 
+                    size="small" 
+                    onChange={handleChange} 
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField 
+                    label="Director Operación ABAI *" 
+                    name="director_operacion_abai" 
+                    value={formData.director_operacion_abai}
+                    fullWidth 
+                    size="small" 
+                    onChange={handleChange} 
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField 
+                    label="Correo Director *" 
+                    name="correo_director" 
+                    value={formData.correo_director}
+                    type="email" 
+                    fullWidth 
+                    size="small" 
+                    onChange={handleChange} 
+                  />
+                </Grid>
+              </Grid>
+            </AccordionDetails>
+          </Accordion>
+        </Card>
 
-        {/* INFORMACIÓN PRINCIPAL */}
-        <Typography variant="subtitle1" sx={sectionTitle}>
-          INFORMACIÓN PRINCIPAL
-        </Typography>
-        <Grid container spacing={2} justifyContent="center">
-          {[
-            { name: "nombre_campana", label: "Nombre de Campaña" },
-            { name: "cliente", label: "Cliente" },
-            { name: "director_operacion_abai", label: "Director Operación ABAI" },
-            { name: "correo_director", label: "Correo Director", type: "email" },
-          ].map((field) => (
-            <Grid item xs={12} sm={10} key={field.name}>
-              <TextField
-                label={field.label}
-                name={field.name}
-                type={field.type || "text"}
-                fullWidth
-                size="small"
-                required
-                value={formData[field.name] || ""}
-                onChange={handleChange}
-              />
-            </Grid>
-          ))}
-        </Grid>
+        {/* SECCIÓN 2 - VINCULACIÓN */}
+        <Card sx={cardAccordionStyle}>
+          <Accordion defaultExpanded>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography sx={sectionTitle}> Vinculación & Datos Generales</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Grid container spacing={2}>
+                {/* FILA 1: Selectores - 4 columnas */}
+                <Grid item xs={12} sm={6} md={3} ml={5}>
+                  <FormControl fullWidth size="small" sx={selectStyles}>
+                    <InputLabel id="aplicativo-label">Aplicativo *</InputLabel>
+                    <Select
+                      labelId="aplicativo-label"
+                      name="aplicativo"
+                      value={formData.aplicativo}
+                      label="Aplicativo *"
+                      onChange={handleChange}
+                      MenuProps={menuProps}
+                    >
+                      <MenuItem value="">
+                        <em>Ninguno</em>
+                      </MenuItem>
+                      <MenuItem value="App1">Aplicación 1</MenuItem>
+                      <MenuItem value="App2">Aplicación 2</MenuItem>
+                      <MenuItem value="App3">Aplicación 3</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
 
-        {/* RELACIONES Y DATOS GENERALES */}
-<Typography variant="subtitle1" sx={sectionTitle}>
-  VINCULACIÓN & DATOS GENERALES
-</Typography>
+                <Grid item xs={12} sm={6} md={3}>
+                  <FormControl fullWidth size="small" sx={selectStyles}>
+                    <InputLabel id="matriz-escalamiento-label">Matriz Escalamiento *</InputLabel>
+                    <Select
+                      labelId="matriz-escalamiento-label"
+                      name="matriz_escalamiento"
+                      value={formData.matriz_escalamiento}
+                      label="Matriz Escalamiento *"
+                      onChange={handleChange}
+                      MenuProps={menuProps}
+                    >
+                      <MenuItem value="">
+                        <em>Ninguna</em>
+                      </MenuItem>
+                      <MenuItem value="Matriz1">Matriz 1</MenuItem>
+                      <MenuItem value="Matriz2">Matriz 2</MenuItem>
+                      <MenuItem value="Matriz3">Matriz 3</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
 
-<Grid container spacing={2} justifyContent="center">
+                <Grid item xs={12} sm={6} md={3}>
+                  <FormControl fullWidth size="small" sx={selectStyles}>
+                    <InputLabel id="matriz-global-label">Matriz Global *</InputLabel>
+                    <Select
+                      labelId="matriz-global-label"
+                      name="matriz_global"
+                      value={formData.matriz_global}
+                      label="Matriz Global *"
+                      onChange={handleChange}
+                      MenuProps={menuProps}
+                    >
+                      <MenuItem value="">
+                        <em>Ninguna</em>
+                      </MenuItem>
+                      <MenuItem value="Global1">Global 1</MenuItem>
+                      <MenuItem value="Global2">Global 2</MenuItem>
+                      <MenuItem value="Global3">Global 3</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
 
-  {/* SELECT Aplicativo */}
-  <Grid item xs={12} sm={5}>
-    <FormControl
-      required
-      fullWidth
-      size="small"
-      sx={selectInputStyle}
-      disabled={formData.aplicativoId?.includes(null)}
-    >
-      <InputLabel>Aplicativo</InputLabel>
-      <Select
-        multiple
-        name="aplicativoId"
-        value={formData.aplicativoId}
-        onChange={(e) => {
-          const value = e.target.value;
-          if (value.includes(null)) {
-            setFormData((prev) => ({
-              ...prev,
-              aplicativoId: [null],
-            }));
-          } else {
-            setFormData((prev) => ({
-              ...prev,
-              aplicativoId: value,
-            }));
-          }
-        }}
-        label="Aplicativo"
-      >
-        <MenuItem value={null}><em>Ninguno</em></MenuItem>
-        {aplicativos.map((app) => (
-          <MenuItem key={app.id} value={app.id}>{app.nombre}</MenuItem>
-        ))}
-      </Select>
-    </FormControl>
-  </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <FormControl fullWidth size="small" sx={selectStyles}>
+                    <InputLabel id="usuario-label">Usuario *</InputLabel>
+                    <Select
+                      labelId="usuario-label"
+                      name="usuario"
+                      value={formData.usuario}
+                      label="Usuario *"
+                      onChange={handleChange}
+                      MenuProps={menuProps}
+                    >
+                      <MenuItem value="">
+                        <em>Ninguno</em>
+                      </MenuItem>
+                      <MenuItem value="Usuario1">Usuario 1</MenuItem>
+                      <MenuItem value="Usuario2">Usuario 2</MenuItem>
+                      <MenuItem value="Usuario3">Usuario 3</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
 
-  {/* SELECT Matriz Escalamiento */}
-  <Grid item xs={12} sm={5} sx={{ mb: 2 }} style={{ marginLeft: '6px' }}>
-    <FormControl
-      required
-      fullWidth
-      size="small"
-      sx={selectInputStyle}
-      disabled={formData.matrizId?.includes(null)}
-    >
-      <InputLabel>Matriz Escalamiento</InputLabel>
-      <Select
-        multiple
-        name="matrizId"
-        value={formData.matrizId}
-        onChange={(e) => {
-          const value = e.target.value;
-          if (value.includes(null)) {
-            setFormData((prev) => ({
-              ...prev,
-              matrizId: [null],
-            }));
-          } else {
-            setFormData((prev) => ({
-              ...prev,
-              matrizId: value,
-            }));
-          }
-        }}
-        label="Matriz Escalamiento"
-      >
-        <MenuItem value={null}><em>Ninguna</em></MenuItem>
-        {matrices.map((matriz) => (
-          <MenuItem key={matriz.id} value={matriz.id}>
-            {matriz.proveedor}
-          </MenuItem>
-        ))}
-      </Select>
-    </FormControl>
-  </Grid>
+                {/* FILA 2: Ubicación Sede - ancho completo */}
+                <Grid item xs={12} sm={3} md={3} ml={5}>
+                  <TextField 
+                    label="Ubicación Sede *" 
+                    name="ubicacion_sede" 
+                    value={formData.ubicacion_sede}
+                    fullWidth 
+                    size="small" 
+                    onChange={handleChange} 
+                  />
+                </Grid>
 
-  {/* SELECT Matriz Global */}
-  <Grid item xs={12} sm={5} style={{ marginLeft: '6px' }}>
-    <FormControl
-      required
-      fullWidth
-      size="small"
-      sx={selectInputStyle}
-      disabled={formData.matrizGlobalId?.includes(null)}
-    >
-      <InputLabel>Matriz Global</InputLabel>
-      <Select
-        multiple
-        name="matrizGlobalId"
-        value={formData.matrizGlobalId}
-        onChange={(e) => {
-          const value = e.target.value;
-          if (value.includes(null)) {
-            setFormData((prev) => ({
-              ...prev,
-              matrizGlobalId: [null],
-            }));
-          } else {
-            setFormData((prev) => ({
-              ...prev,
-              matrizGlobalId: value,
-            }));
-          }
-        }}
-        label="Matriz Global"
-      >
-        <MenuItem value={null}><em>Ninguna</em></MenuItem>
-        {matricesGlobal.map((mg) => (
-          <MenuItem key={mg.id} value={mg.id}>
-            {mg.proveedor}
-          </MenuItem>
-        ))}
-      </Select>
-    </FormControl>
-  </Grid>
+                {/* FILA 3: Campos numéricos y texto */}
+                <Grid item xs={12} sm={3} md={3}>
+                  <TextField 
+                    label="N° Puesto de Operación *" 
+                    name="puesto_operacion" 
+                    value={formData.puesto_operacion}
+                    type="number"
+                    fullWidth 
+                    size="small" 
+                    onChange={handleChange} 
+                  />
+                </Grid>
+                <Grid item xs={12} sm={3} md={3}>
+                  <TextField 
+                    label="N° Puesto de Estructuración *" 
+                    name="puesto_estructuracion" 
+                    value={formData.puesto_estructuracion}
+                    type="number"
+                    fullWidth 
+                    size="small" 
+                    onChange={handleChange} 
+                  />
+                </Grid>
+                <Grid item xs={12} sm={3} md={3} ml={5}>
+                  <TextField 
+                    label="Segmento de Red *" 
+                    name="segmento_red" 
+                    value={formData.segmento_red}
+                    fullWidth 
+                    size="small" 
+                    onChange={handleChange} 
+                  />
+                </Grid>
 
-  {/* SELECT Usuario */}
-  <Grid item xs={12} sm={5} style={{ marginLeft: '6px' }}>
-    <FormControl
-      required
-      fullWidth
-      size="small"
-      sx={selectInputStyle}
-      disabled={formData.usuarioId?.includes(null)}
-    >
-      <InputLabel>Usuario</InputLabel>
-      <Select
-        multiple
-        name="usuarioId"
-        value={formData.usuarioId}
-        onChange={(e) => {
-          const value = e.target.value;
-          if (value.includes(null)) {
-            setFormData((prev) => ({
-              ...prev,
-              usuarioId: [null],
-            }));
-          } else {
-            setFormData((prev) => ({
-              ...prev,
-              usuarioId: value,
-            }));
-          }
-        }}
-        label="Usuario"
-      >
-        <MenuItem value={null}><em>Ninguno</em></MenuItem>
-        {usuarios.map((u) => (
-          <MenuItem key={u.id} value={u.id}>
-            {u.nombre_completo}
-          </MenuItem>
-        ))}
-      </Select>
-    </FormControl>
-  </Grid>
+                {/* FILA 4: Fecha */}
+                <Grid item xs={12} sm={6} md={3}>
+                  <TextField 
+                    label="Fecha Actualización *" 
+                    name="fecha_actualizacion" 
+                    value={formData.fecha_actualizacion}
+                    type="date" 
+                    fullWidth 
+                    size="small" 
+                    InputLabelProps={{ shrink: true }} 
+                    onChange={handleChange} 
+                  />
+                </Grid>
+              </Grid>
+            </AccordionDetails>
+          </Accordion>
+        </Card>
 
-  </Grid>
+        {/* SECCIÓN 3 - GERENTES */}
+        <Card sx={cardAccordionStyle}>
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography sx={sectionTitle}> Gerentes de Campaña</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <TextField 
+                    label="Gerente *" 
+                    name="gerente_campana" 
+                    value={formData.gerente_campana}
+                    fullWidth 
+                    size="small" 
+                    onChange={handleChange} 
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField 
+                    label="Nombre Gerente de Campaña  *" 
+                    name="nombre_gerente" 
+                    value={formData.correo_gerente}
+                    type="email" 
+                    fullWidth 
+                    size="small" 
+                    onChange={handleChange} 
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField 
+                    label="Correo Gerente de campaña*" 
+                    name="Correo" 
+                    value={formData.telefono_gerente}
+                    type="tel"
+                    fullWidth 
+                    size="small" 
+                    onChange={handleChange} 
+                  />
+                </Grid>
+              </Grid>
+            </AccordionDetails>
+          </Accordion>
+        </Card>
 
-        <Grid container spacing={2} justifyContent="center">
-          
-           
+        {/* SECCIÓN 4 - CONTACTO CLIENTE */}
+        <Card sx={cardAccordionStyle}>
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography sx={sectionTitle}> Contacto Cliente</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <TextField 
+                    label="Nombre Contacto *" 
+                    name="contacto_cliente" 
+                    value={formData.contacto_cliente}
+                    fullWidth 
+                    size="small" 
+                    onChange={handleChange} 
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField 
+                    label="Correo *" 
+                    name="correo_contacto_cliente" 
+                    value={formData.correo_contacto_cliente}
+                    type="email" 
+                    fullWidth 
+                    size="small" 
+                    onChange={handleChange} 
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField 
+                    label="Teléfono *" 
+                    name="telefono_contacto_cliente" 
+                    value={formData.telefono_contacto_cliente}
+                    type="tel"
+                    fullWidth 
+                    size="small" 
+                    onChange={handleChange} 
+                  />
+                </Grid>
+                  <Grid item xs={12} sm={6}>
+                  <TextField 
+                    label="Nombre Contacto Comerciante *" 
+                    name="nombre_comerciante" 
+                    value={formData.nombre_comerciante}
+                    fullWidth 
+                    size="small" 
+                    onChange={handleChange} 
+                  />
+                </Grid>
+                  <Grid item xs={12} sm={6}>
+                  <TextField 
+                    label="Correo Comerciante *" 
+                    name="correo_comerciante" 
+                    value={formData.correo_comerciante}
+                    type="email"
+                    fullWidth 
+                    size="small" 
+                    onChange={handleChange} 
+                  />
+                </Grid>
+                  <Grid item xs={12} sm={6}>
+                  <TextField 
+                    label="Teléfono Comerciante* *" 
+                    name="telefono_comerciante" 
+                    value={formData.telefono_comerciante}
+                    type="tel"
+                    fullWidth 
+                    size="small" 
+                    onChange={handleChange} 
+                  />
+                </Grid>
+              </Grid>
+            </AccordionDetails>
+          </Accordion>
+        </Card>
 
-          {/* Otros TextFields de DATOS GENERALES */}
-          {[
-             { name: "ubicacion_sedes", label: "Ubicación Sede" },
-             { name: "puestos_operacion", label: "N° Puestos de Operación", type: "number" },
-             { name: "puestos_estructura", label: "N° Puestos de Estructura", type: "number" },
-             { name: "segmento_red", label: "Segmento de Red" },
-             { name: "fecha_actualizacion", label: "Fecha Actualización", type: "date" },
-          ].map((field) => (
-             <Grid item xs={12} sm={5} key={field.name}> 
-               <TextField
-                 label={field.label}
-                 name={field.name}
-                 type={field.type || "text"}
-                 fullWidth
-                 size="small"
-                 required
-                 InputLabelProps={field.type === "date" ? { shrink: true } : undefined}
-                 value={formData[field.name] || ""}
-                 onChange={handleChange}
-               />
-             </Grid>
-          ))}
-        </Grid>
-        
-        {/* GERENTES DE CAMPAÑA */}
-        <Typography variant="subtitle1" sx={sectionTitle}>
-          GERENTES DE CAMPAÑA
-        </Typography>
-        <Grid container spacing={2} justifyContent="center">
-          {[
-            { name: "segmento", label: "Segmento" },
-            { name: "nombre_gte_campana", label: "Nombre Gerente de Campaña" },
-            { name: "correo_gte_campana", label: "Correo Gerente de Campaña", type: "email" },
-          ].map((field) => (
-            <Grid item xs={12} sm={10} key={field.name}>
-              <TextField
-                label={field.label}
-                name={field.name}
-                type={field.type || "text"}
-                fullWidth
-                size="small"
-                required
-                value={formData[field.name] || ""}
-                onChange={handleChange}
-              />
-            </Grid>
-          ))}
-        </Grid>
+        {/* SECCIÓN 5 - SOPORTE */}
+        <Card sx={cardAccordionStyle}>
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography sx={sectionTitle}> Soporte y Servicios</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <TextField 
+                    label="Soporte Tecnico ABAI *" 
+                    name="soporte_tecnico_abai" 
+                    value={formData.soporte_tecnico_abai}
+                    fullWidth 
+                    size="small" 
+                    onChange={handleChange} 
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField 
+                    label="Correo Soporte ABAI *" 
+                    name="correo_soporte_abai" 
+                    value={formData.correo_soporte_abai}
+                    type="email"
+                    fullWidth 
+                    size="small" 
+                    onChange={handleChange} 
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField 
+                    label="Servicios Prestados*" 
+                    name="servicios_prestados" 
+                    value={formData.servicios_prestados}
+                    fullWidth 
+                    size="small" 
+                    onChange={handleChange} 
+                  />
+                </Grid>
+              </Grid>
+            </AccordionDetails>
+          </Accordion>
+        </Card>
 
-        {/* CONTACTOS */}
-        <Typography variant="subtitle1" sx={sectionTitle}>
-          CONTACTOS
-        </Typography>
-        <Grid container spacing={2} justifyContent="center">
-          {[
-            { name: "nombre_contacto_cliente", label: "Nombre Contacto Cliente" },
-            { name: "correo_contacto_cliente", label: "Correo Cliente", type: "email" },
-            { name: "telefono_contacto_cliente", label: "Teléfono Cliente", type: "tel" },
-            { name: "nombre_contacto_comercial", label: "Nombre Contacto Comercial" },
-            { name: "correo_contacto_comercial", label: "Correo Comercial", type: "email" },
-            { name: "telefono_contacto_comercial", label: "Teléfono Comercial", type: "tel" },
-          ].map((field) => (
-            <Grid item xs={12} sm={10} key={field.name}>
-              <TextField
-                label={field.label}
-                name={field.name}
-                type={field.type || "text"}
-                fullWidth
-                size="small"
-                required
-                value={formData[field.name] || ""}
-                onChange={handleChange}
-              />
-            </Grid>
-          ))}
-        </Grid>
+        {/* SECCIÓN 6 - IMAGENES */}
+        <Card sx={cardAccordionStyle}>
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography sx={sectionTitle}> Imágenes</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Grid container spacing={3} justifyContent="center">
+                {/* IMAGEN SEDE */}
+                <Grid item xs={12} sm={6} display="flex" flexDirection="column" alignItems="center">
+                  {!previewSede ? (
+                    <Button 
+                      variant="outlined" 
+                      component="label"
+                      fullWidth
+                      sx={{ 
+                        py: 1.2,
+                        borderRadius: "10px",
+                        borderColor: "#1565c0",
+                        color: "#1565c0",
+                        fontWeight: 600,
+                        "&:hover": { 
+                          backgroundColor: "#1565c0", 
+                          color: "#fff" 
+                        },
+                      }}
+                    >
+                      Subir Imagen Sede
+                      <input
+                        type="file"
+                        hidden
+                        accept="image/*"
+                        onChange={handleImagenSede}
+                      />
+                    </Button>
+                  ) : (
+                    <Box sx={{ width: '100%', textAlign: 'center' }}>
+                      <Box
+                        component="img"
+                        src={previewSede}
+                        alt="Preview Sede"
+                        sx={{
+                          width: '100%',
+                          maxHeight: 200,
+                          objectFit: 'contain',
+                          borderRadius: '10px',
+                          border: '2px solid #1565c0',
+                          mb: 1
+                        }}
+                      />
+                      <Button
+                        variant="contained"
+                        color="error"
+                        startIcon={<DeleteIcon />}
+                        onClick={eliminarImagenSede}
+                        sx={{
+                          borderRadius: '8px',
+                          fontWeight: 600,
+                        }}
+                      >
+                        Eliminar Imagen
+                      </Button>
+                    </Box>
+                  )}
+                </Grid>
 
-        {/* SOPORTE Y SERVICIOS */}
-        <Typography variant="subtitle1" sx={sectionTitle}>
-          SOPORTE Y SERVICIOS
-        </Typography>
-        <Grid container spacing={2} justifyContent="center">
-          {[
-            { name: "soporte_tecnico_abai", label: "Soporte Técnico ABAI" },
-            { name: "correo_soporte_abai", label: "Correo Soporte ABAI", type: "email" },
-            { name: "servicios_prestados", label: "Servicios Prestados" },
-          ].map((field) => (
-            <Grid item xs={12} sm={10} key={field.name}>
-              <TextField
-                label={field.label}
-                name={field.name}
-                type={field.type || "text"}
-                fullWidth
-                size="small"
-                required
-                value={formData[field.name] || ""}
-                onChange={handleChange}
-              />
-            </Grid>
-          ))}
-        </Grid>
+                {/* IMAGEN CLIENTE */}
+                <Grid item xs={12} sm={6} display="flex" flexDirection="column" alignItems="center">
+                  {!previewCliente ? (
+                    <Button 
+                      variant="outlined" 
+                      component="label"
+                      fullWidth
+                      sx={{ 
+                        py: 1.2,
+                        borderRadius: "10px",
+                        borderColor: "#1565c0",
+                        color: "#1565c0",
+                        fontWeight: 600,
+                        "&:hover": { 
+                          backgroundColor: "#1565c0", 
+                          color: "#fff" 
+                        },
+                      }}
+                    >
+                      Subir Imagen Cliente
+                      <input
+                        type="file"
+                        hidden
+                        accept="image/*"
+                        onChange={handleImagenCliente}
+                      />
+                    </Button>
+                  ) : (
+                    <Box sx={{ width: '100%', textAlign: 'center' }}>
+                      <Box
+                        component="img"
+                        src={previewCliente}
+                        alt="Preview Cliente"
+                        sx={{
+                          width: '100%',
+                          maxHeight: 200,
+                          objectFit: 'contain',
+                          borderRadius: '10px',
+                          border: '2px solid #1565c0',
+                          mb: 1
+                        }}
+                      />
+                      <Button
+                        variant="contained"
+                        color="error"
+                        startIcon={<DeleteIcon />}
+                        onClick={eliminarImagenCliente}
+                        sx={{
+                          borderRadius: '8px',
+                          fontWeight: 600,
+                        }}
+                      >
+                        Eliminar Imagen
+                      </Button>
+                    </Box>
+                  )}
+                </Grid>
+              </Grid>
+            </AccordionDetails>
+          </Accordion>
+        </Card>
 
-
-        {/* IMÁGENES */}
-        <Typography variant="subtitle1" sx={sectionTitle}>
-          IMÁGENES
-        </Typography>
-        <Grid container spacing={2} justifyContent="center">
-          <Grid item xs={12} sm={5}>
-            <Button
-              variant="outlined"
-              component="label"
-              fullWidth
-              sx={{
-                py: 1.2,
-                borderRadius: "10px",
-                borderColor: "#1565c0",
-                color: "#1565c0",
-                fontWeight: 600,
-                "&:hover": { backgroundColor: "#1565c0", color: "#fff" },
-              }}
-            >
-              Subir Imagen Sede
-              <input
-                type="file"
-                hidden
-                accept="image/*"
-                onChange={(e) => setImagenSede(e.target.files[0])}
-              />
-            </Button>
-            {imagenSede && (
-              <Typography variant="body2" mt={1} textAlign="center">
-                📁 {imagenSede.name}
-              </Typography>
-            )}
-          </Grid>
-
-          <Grid item xs={12} sm={5}>
-            <Button
-              variant="outlined"
-              component="label"
-              fullWidth
-              sx={{
-                py: 1.2,
-                borderRadius: "10px",
-                borderColor: "#1565c0",
-                color: "#1565c0",
-                fontWeight: 600,
-                "&:hover": { backgroundColor: "#1565c0", color: "#fff" },
-              }}
-            >
-              Subir Imagen Cliente
-              <input
-                type="file"
-                hidden
-                accept="image/*"
-                onChange={(e) => setImagenCliente(e.target.files[0])}
-              />
-            </Button>
-            {imagenCliente && (
-              <Typography variant="body2" mt={1} textAlign="center">
-                📁 {imagenCliente.name}
-              </Typography>
-            )}
-          </Grid>
-        </Grid>
-
-        {/* BOTÓN CREAR */}
-        <Box textAlign="center" mt={5}>
+        {/* BOTÓN FINAL */}
+        <Box textAlign="center" sx={{ mt: 3 }}>
           <Button
             variant="contained"
-            color="primary"
             type="submit"
-            disabled={loading}
             sx={{
-              width: "60%",
-              py: 1.4,
-              borderRadius: "12px",
+              width: "30%",
+              py: 1.5,
               fontWeight: "bold",
-              fontSize: "1rem",
-              textTransform: "none",
+              borderRadius: "10px",
+              backgroundColor: "#1565c0",
               boxShadow: "0 4px 12px rgba(21,101,192,0.3)",
-              "&:hover": { backgroundColor: "#0d47a1", boxShadow: "0 5px 15px rgba(13,71,161,0.4)" },
+              "&:hover": {
+                backgroundColor: "#0d47a1",
+                boxShadow: "0 5px 15px rgba(13,71,161,0.4)",
+              },
             }}
           >
-            {loading ? "Creando..." : "CREAR"}
+            CREAR CAMPAÑA
           </Button>
         </Box>
       </Box>
     </Modal>
   );
-};
-
-export default FormularioModal;
+}
