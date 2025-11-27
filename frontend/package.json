@@ -21,7 +21,9 @@
     "react-router-dom": "^7.9.6",
     "react-scripts": "5.0.1",
     "react-slick": "^0.31.0",
+    "react-tsparticles": "^2.12.2",
     "slick-carousel": "^1.8.1",
+    "tsparticles": "^3.9.1",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
