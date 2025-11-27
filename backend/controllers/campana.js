@@ -393,3 +393,39 @@ export const updateEstadoCampana = async (req, res) => {
     });
   }
 };
+
+
+
+
+// Obtener campañas por usuario
+export const obtenerCampanasPorUsuario = async (req, res) => {
+  try {
+    const usuarioId = Number(req.params.id);
+
+    if (!usuarioId || isNaN(usuarioId)) {
+      return res.status(400).json({ error: "ID de usuario inválido" });
+    }
+
+    const campanas = await prisma.campana.findMany({
+      where: {
+        usuarios: {
+          some: { id: usuarioId }
+        }
+      },
+      include: {
+        usuarios: true,
+        aplicativos: true,
+        matriz_escalamiento: true,
+        matriz_escalamiento_global: true
+      }
+    });
+
+    res.status(200).json(campanas);
+
+  } catch (error) {
+    console.error("❌ Error al obtener campañas por usuario:", error);
+    res.status(500).json({ error: "Error al obtener campañas por usuario" });
+  }
+};
+
+

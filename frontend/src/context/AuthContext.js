@@ -4,31 +4,27 @@ import { jwtDecode } from "jwt-decode";
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(undefined);
 
-  // Leer token cuando carga la app
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (!token) return;
+
+    if (!token) {
+      setUser(null);
+      return;
+    }
 
     try {
       const decoded = jwtDecode(token);
-
-      const now = Date.now() / 1000;
-      if (decoded.exp < now) {
-        localStorage.removeItem("token");
-        return;
-      }
-
       setUser(decoded);
-    } catch (err) {
-      localStorage.removeItem("token");
+    } catch (error) {
+      setUser(null);
     }
   }, []);
 
-  const login = (token) => {
-    const decoded = jwtDecode(token);
-    setUser(decoded);
+  const login = (token, userData) => {
+    localStorage.setItem("token", token);
+    setUser(userData);  // <-- ACTUALIZA AL INSTANTE
   };
 
   const logout = () => {
@@ -37,7 +33,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, setUser, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

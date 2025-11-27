@@ -6,6 +6,7 @@ import {
   updateCampana,
   getCampanasDetalles,
   updateEstadoCampana,
+  obtenerCampanasPorUsuario,
 } from "../controllers/campana.js";
 import { campanaSchema } from "../validators/campanaValidator.js";
 import { validate } from "../validators/validateMiddleware.js";
@@ -27,6 +28,8 @@ router.post(
   validate(campanaSchema),
   createCampana
 );
+router.get("/usuario/:id", obtenerCampanasPorUsuario);
+
 router.get("/:id", getCampanaById);
 router.put("/estado/:id", updateEstadoCampana);
 
