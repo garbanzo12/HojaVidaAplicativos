@@ -1,148 +1,10 @@
-// import { PrismaClient } from "@prisma/client";
-// const prisma = new PrismaClient();
 
-// // 🔹 Obtener todos los usuarios (opcionalmente filtrados por estado)
-// export const getUsuarios = async (req, res) => {
-//   try {
-//     const usuarios = await prisma.usuario.findMany({
-//       include: {
-//         campana: true,
-//       },
-//     });
-//     res.json(usuarios);
-//   } catch (error) {
-//     console.error("Error al obtener usuarios:", error);
-//     res.status(500).json({ error: "Error al obtener usuarios" });
-//   }
-// };
-
-// // 🔹 Crear un usuario
-// export const createUsuario = async (req, res) => {
-//   try {
-//     const {
-//       nombre_completo,
-//       correo,
-//       tipo_documento,
-//       numero_documento,
-//       sede,
-//       rol,
-//     } = req.body;
-
-//     const usuario = await prisma.usuario.create({
-//       data: {
-//         nombre_completo,
-//         correo,
-//         tipo_documento,
-//         numero_documento,
-//         sede,
-//         rol,
-//       },
-//     });
-
-//     res.json(usuario);
-//   } catch (error) {
-//     console.error("Error al crear usuario:", error);
-//     res.status(500).json({ error: "Error al crear usuario" });
-//   }
-// };
-
-// // 🔹 Actualizar un usuario
-// export const actualizarUsuario = async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     const data = req.body;
-
-//     const usuario = await prisma.usuario.update({
-//       where: { id: Number(id) },
-//       data,
-//     });
-
-//     res.json(usuario);
-//   } catch (error) {
-//     console.error("Error al actualizar usuario:", error);
-//     res.status(500).json({ error: "Error al actualizar usuario" });
-//   }
-// };
-
-// // 🔹 Eliminar usuario
-// export const eliminarUsuario = async (req, res) => {
-//   try {
-//     const { id } = req.params;
-
-//     await prisma.usuario.delete({
-//       where: { id: Number(id) },
-//     });
-
-//     res.json({ message: "Usuario eliminado" });
-//   } catch (error) {
-//     console.error("Error al eliminar usuario:", error);
-//     res.status(500).json({ error: "Error al eliminar usuario" });
-//   }
-// };
-
-// // 🔹 Obtener usuarios por campaña
-// export const getUsuariosPorCampana = async (req, res) => {
-//   try {
-//     const { campanaId } = req.params;
-
-//     const usuarios = await prisma.usuario.findMany({
-//       where: { campanaId: Number(campanaId) },
-//     });
-
-//     res.json(usuarios);
-//   } catch (error) {
-//     console.error("Error al obtener usuarios por campaña:", error);
-//     res.status(500).json({ error: "Error al obtener usuarios por campaña" });
-//   }
-// };
-
-
-
-// export const updateEstadoUsuario = async (req, res) => {
-//   const { id } = req.params;
-
-//   try {
-//     // 1️⃣ Buscar la campaña por ID
-//     const usuario = await prisma.usuario.findUnique({
-//       where: { id: Number(id) },
-//     });
-
-//     // 2️⃣ Si no existe, devolver error
-//     if (!usuario) {
-//       return res.status(404).json({
-//         success: false,
-//         message: "Campaña no encontrada.",
-//       });
-//     }
-
-//     // 3️⃣ Determinar el nuevo estado
-//     const nuevoEstado =
-//       usuario.estado === "HABILITADO" ? "DESHABILITADO" : "HABILITADO";
-
-//     // 4️⃣ Actualizar en base de datos
-//     const usuarioActualizada = await prisma.usuario.update({
-//       where: { id: Number(id) },
-//       data: { estado: nuevoEstado },
-//     });
-
-//     // 5️⃣ Responder con éxito
-//     res.json({
-//       success: true,
-//       message: `Estado actualizado a ${nuevoEstado}`,
-//       data: usuarioActualizada,
-//     });
-//   } catch (error) {
-//     console.error("Error al actualizar el estado de la campaña:", error);
-//     res.status(500).json({
-//       success: false,
-//       message: "Error al actualizar el estado de la campaña.",
-//     });
-//   }
-// };
 
 
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { usuarioSchemaCrear } from "../validators/usuarioValidator.js";
+import { usuarioSchemaEditar } from "../validators/usuarioValidator.js";
 
 const prisma = new PrismaClient();
 
@@ -164,33 +26,27 @@ export const getUsuarios = async (req, res) => {
 // 🔹 Crear un usuario (con hashing)
 export const createUsuario = async (req, res) => {
   try {
-    const {
-      nombre_completo,
-      correo,
-      tipo_documento,
-      numero_documento,
-      sede,
-      rol,
-      contrasena,
-    } = req.body;
+    // 🔍 1) Validar
+    const validatedData = usuarioSchemaCrear.parse(req.body);
 
-    // Hash de la contraseña
-    const hashedPassword = await bcrypt.hash(contrasena, 10);
+    // 🔐 2) Hashear contraseña
+    validatedData.contrasena = await bcrypt.hash(validatedData.contrasena, 10);
 
+    // 📝 3) Guardar en BD
     const usuario = await prisma.usuario.create({
-      data: {
-        nombre_completo,
-        correo,
-        tipo_documento,
-        numero_documento,
-        sede,
-        rol,
-        contrasena: hashedPassword,
-      },
+      data: validatedData,
     });
 
     res.json(usuario);
+
   } catch (error) {
+    if (error.name === "ZodError") {
+      return res.status(400).json({
+        error: "Error de validación",
+        detalles: error.errors,
+      });
+    }
+
     console.error("Error al crear usuario:", error);
     res.status(500).json({ error: "Error al crear usuario" });
   }
@@ -201,21 +57,32 @@ export const createUsuario = async (req, res) => {
 export const actualizarUsuario = async (req, res) => {
   try {
     const { id } = req.params;
-    const data = req.body;
 
-    if (data.contrasena) {
-      data.contrasena = await bcrypt.hash(data.contrasena, 10);
+    // 🔍 Validar parcialmente
+    const validatedData = usuarioSchemaEditar.parse(req.body);
+
+    // 🔐 Si viene contraseña, hashearla
+    if (validatedData.contrasena) {
+      validatedData.contrasena = await bcrypt.hash(validatedData.contrasena, 10);
     }
 
     const usuario = await prisma.usuario.update({
       where: { id: Number(id) },
-      data,
+      data: validatedData,
     });
 
     res.json(usuario);
+
   } catch (error) {
+    if (error.name === "ZodError") {
+      return res.status(400).json({
+        error: "Error de validación",
+        detalles: error.errors,
+      });
+    }
+
     console.error("Error al actualizar usuario:", error);
-    res.status(500).json({ error: "Error al actualizar usuario" });
+    return res.status(500).json({ error: "Error al actualizar usuario" });
   }
 };
 

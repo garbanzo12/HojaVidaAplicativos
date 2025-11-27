@@ -24,6 +24,7 @@ const FormularioEditarUsuario = ({ usuario, onClose = () => {}, onUpdated = () =
     numero_documento: "",
     sede: "",
     rol: "",
+    contrasena: "" ,
   });
 
   /** CARGAR DATOS DEL USUARIO AL ABRIR */
@@ -36,6 +37,7 @@ const FormularioEditarUsuario = ({ usuario, onClose = () => {}, onUpdated = () =
         numero_documento: usuario.numero_documento || "",
         sede: usuario.sede || "",
         rol: usuario.rol || "",
+        contrasena: "",
       });
     }
   }, [usuario]);
@@ -46,24 +48,33 @@ const FormularioEditarUsuario = ({ usuario, onClose = () => {}, onUpdated = () =
   };
 
   /** ACTUALIZAR USUARIO */
-  const handleActualizar = async () => {
-    try {
-      const response = await axios.put(
-        `http://localhost:4000/usuario/${usuario.id}`,
-        formData,
-        { headers: { "Content-Type": "application/json" } }
-      );
+const handleActualizar = async () => {
+  try {
+    // Crear copia del form
+    const dataToSend = { ...formData };
 
-      console.log("Usuario actualizado:", response.data);
-      alert("✅ Usuario actualizado correctamente");
-
-      onUpdated(); // refrescar tabla
-      onClose();   // cerrar modal
-    } catch (error) {
-      console.error("❌ Error al actualizar usuario:", error.response?.data || error.message);
-      alert("❌ Error al actualizar el usuario. Mira la consola.");
+    // Si no escribió contraseña, NO la enviamos
+    if (!dataToSend.contrasena) {
+      delete dataToSend.contrasena;
     }
-  };
+
+    const response = await axios.put(
+      `http://localhost:4000/usuario/${usuario.id}`,
+      dataToSend,
+      { headers: { "Content-Type": "application/json" } }
+    );
+
+    console.log("Usuario actualizado:", response.data);
+    alert("✅ Usuario actualizado correctamente");
+
+    onUpdated();
+    onClose();
+  } catch (error) {
+    console.error("❌ Error al actualizar usuario:", error.response?.data || error.message);
+    alert("❌ Error al actualizar el usuario. Mira la consola.");
+  }
+};
+
 
   return (
     <Paper
@@ -203,6 +214,19 @@ const FormularioEditarUsuario = ({ usuario, onClose = () => {}, onUpdated = () =
               <MenuItem value="administrador">Administrador</MenuItem>
             </Select>
           </FormControl>
+        </Grid>
+        {/* Cambiar Contraseña */}
+        <Grid item xs={12}>
+          <TextField
+            label=" Contraseña (Opcional)"
+            name="contrasena"
+            type="password"
+            value={formData.contrasena}
+            onChange={handleChange}
+            fullWidth
+            size="small"
+            placeholder="Ingresa una nueva contraseña"
+          />
         </Grid>
 
 

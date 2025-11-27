@@ -34,7 +34,7 @@ const TablaUsuarios = () => {
         correo: u.correo,
         rol: u.rol,
         sede: u.sede,
-        campana: u.campana?.nombre_campana || "—",
+        campana: Array.isArray(u.campana) && u.campana.length > 0 ? u.campana[0].nombre_campana : "—",        
         estado: u.estado,
         tipo_documento : u.tipo_documento,
         numero_documento : u.numero_documento,
