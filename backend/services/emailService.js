@@ -16,7 +16,7 @@ export const transporter = nodemailer.createTransport({
  * Función para enviar el correo de recuperación
  */
 export async function sendResetEmail(email, token) {
-    const resetUrl = `http://localhost:4000/auth/reset-password?token=${token}`;
+    const resetUrl = `http://localhost:3000/cambiar-password?token=${token}`;
 
     const mailOptions = {
         from: '"ABAI Soporte" <atencion.soporte09@gmail.com>',  // 👈 CORRECTO

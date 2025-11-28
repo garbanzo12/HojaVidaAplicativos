@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import LockResetIcon from "@mui/icons-material/LockReset";
 import EmailIcon from "@mui/icons-material/Email";
-import Fondo from "../img/2.jpg"; // MISMO FONDO DEL LOGIN
+import Fondo from "../img/2.jpg";
 
 const RecuperarPassword = () => {
   const [email, setEmail] = useState("");
@@ -28,15 +28,28 @@ const RecuperarPassword = () => {
     }
 
     setError("");
+    setMensajeExito(false);
     setLoading(true);
 
     try {
-      // Simulación de backend
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const res = await fetch("http://localhost:4000/auth/forgot-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || "Error al enviar el correo");
+      }
+
       setMensajeExito(true);
-      setEmail("");
+      setEmail(""); // limpiar input
     } catch (err) {
-      setError("Error al enviar el correo");
+      setError(err.message || "Error al enviar el correo");
     } finally {
       setLoading(false);
     }
@@ -53,7 +66,7 @@ const RecuperarPassword = () => {
         overflow: "hidden",
       }}
     >
-      {/* Fondo blur */}
+      {/* Fondo */}
       <Box
         sx={{
           position: "absolute",
@@ -66,7 +79,7 @@ const RecuperarPassword = () => {
         }}
       />
 
-      {/* Overlay oscuro */}
+      {/* Overlay */}
       <Box
         sx={{
           position: "absolute",
@@ -77,7 +90,7 @@ const RecuperarPassword = () => {
         }}
       />
 
-      {/* Card glass */}
+      {/* Card */}
       <Paper
         elevation={0}
         sx={{
@@ -99,7 +112,8 @@ const RecuperarPassword = () => {
         </Typography>
 
         <Typography variant="body2" color="text.secondary" mb={3}>
-          Ingresa tu correo y te enviaremos un enlace para restablecer tu contraseña
+          Ingresa tu correo y te enviaremos un enlace para restablecer tu
+          contraseña
         </Typography>
 
         {mensajeExito && (
@@ -145,8 +159,7 @@ const RecuperarPassword = () => {
               height: 45,
               borderRadius: 3,
               fontWeight: 600,
-              background:
-                "linear-gradient(135deg, #1c4ae2 0%, #3a6ad3 100%)",
+              background: "linear-gradient(135deg, #1c4ae2 0%, #3a6ad3 100%)",
               "&:hover": {
                 transform: "translateY(-2px)",
                 boxShadow: "0 8px 25px rgba(28,74,226,0.6)",

@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "./pages/login";
 import Dashboard from "./pages/dashboard";
 import RecuperarPassword from "./pages/recuperarContrasena.js";
+import CambiarPassword from "./pages/cambiarContrasena.js";
 import { AuthProvider } from "./context/AuthContext.js";
 import ProtectedRoute from "./components/ProtectedRoute.js";
 import PublicRoute from "./components/PublicRoute.js";
@@ -41,7 +42,14 @@ function App() {
               </ProtectedRoute>
             }
           />
-
+          <Route
+            path="/cambiar-password"
+            element={
+              <PublicRoute>
+                <CambiarPassword />
+              </PublicRoute>
+            }
+          />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

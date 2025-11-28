@@ -14,15 +14,18 @@ import {
 } from "@mui/material";
 import { Visibility, VisibilityOff, Lock } from "@mui/icons-material";
 import axios from "axios";
-import Fondo from "../img/2.jpg"; 
+import { useSearchParams, useNavigate } from "react-router-dom";
+import Fondo from "../img/2.jpg";
 
 const CambiarPassword = () => {
-  const [showActual, setShowActual] = useState(false);
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const token = searchParams.get("token"); // token desde ?token=...
+
   const [showNueva, setShowNueva] = useState(false);
   const [showConfirmar, setShowConfirmar] = useState(false);
 
   const [form, setForm] = useState({
-    actual: "",
     nueva: "",
     confirmar: "",
   });
@@ -40,7 +43,8 @@ const CambiarPassword = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!form.actual || !form.nueva || !form.confirmar) {
+    // Validaciones
+    if (!form.nueva || !form.confirmar) {
       return setAlerta({
         open: true,
         message: "Todos los campos son obligatorios",
@@ -48,10 +52,10 @@ const CambiarPassword = () => {
       });
     }
 
-    if (form.nueva.length < 6) {
+    if (form.nueva.length < 5) {
       return setAlerta({
         open: true,
-        message: "La nueva contraseña debe tener mínimo 6 caracteres",
+        message: "La nueva contraseña debe tener mínimo 5 caracteres",
         severity: "warning",
       });
     }
@@ -64,35 +68,41 @@ const CambiarPassword = () => {
       });
     }
 
-    try {
-      const token = localStorage.getItem("token");
+    if (!token) {
+      return setAlerta({
+        open: true,
+        message:
+          "Token no encontrado. Abre el enlace que te llegó por correo o pega el token en la URL como ?token=...",
+        severity: "error",
+      });
+    }
 
-      await axios.put(
-        "http://localhost:4000/auth/cambiar-password",
-        {
-          actual: form.actual,
-          nueva: form.nueva,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+    try {
+      // Enviar token y nueva contraseña EN EL BODY (POST)
+      const res = await axios.post("http://localhost:4000/auth/reset-password", {
+        token,
+        newPassword: form.nueva,
+      });
 
       setAlerta({
         open: true,
-        message: "Contraseña actualizada correctamente 💖",
+        message: res.data?.message || "Contraseña restablecida correctamente 💖",
         severity: "success",
       });
 
-      setForm({ actual: "", nueva: "", confirmar: "" });
+      setForm({ nueva: "", confirmar: "" });
 
+      // Opcional: redirigir al login después de 2s
+      setTimeout(() => {
+        navigate("/");
+      }, 1800);
     } catch (error) {
       setAlerta({
         open: true,
         message:
-          error.response?.data?.error || "Error al actualizar la contraseña",
+          error.response?.data?.message ||
+          error.response?.data?.error ||
+          "Error al restablecer la contraseña",
         severity: "error",
       });
     }
@@ -152,7 +162,7 @@ const CambiarPassword = () => {
               variant="h5"
               sx={{ textAlign: "center", fontWeight: 700, mb: 1 }}
             >
-              Cambiar contraseña
+              Restablecer contraseña
             </Typography>
 
             <Typography
@@ -163,7 +173,7 @@ const CambiarPassword = () => {
                 mb: 4,
               }}
             >
-              Protege tu cuenta actualizando tu contraseña
+              Ingresa tu nueva contraseña para continuar
             </Typography>
 
             <Box
@@ -171,24 +181,6 @@ const CambiarPassword = () => {
               onSubmit={handleSubmit}
               sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}
             >
-              <TextField
-                label="Contraseña actual"
-                name="actual"
-                type={showActual ? "text" : "password"}
-                value={form.actual}
-                onChange={handleChange}
-                fullWidth
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton onClick={() => setShowActual(!showActual)}>
-                        {showActual ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-              />
-
               <TextField
                 label="Nueva contraseña"
                 name="nueva"
@@ -217,7 +209,9 @@ const CambiarPassword = () => {
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="end">
-                      <IconButton onClick={() => setShowConfirmar(!showConfirmar)}>
+                      <IconButton
+                        onClick={() => setShowConfirmar(!showConfirmar)}
+                      >
                         {showConfirmar ? <VisibilityOff /> : <Visibility />}
                       </IconButton>
                     </InputAdornment>
@@ -245,7 +239,7 @@ const CambiarPassword = () => {
                   },
                 }}
               >
-                Actualizar contraseña
+                Restablecer contraseña
               </Button>
             </Box>
           </CardContent>
