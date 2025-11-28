@@ -31,6 +31,7 @@ const Login = () => {
   const navigate = useNavigate();
   const { user, login } = useAuth();
 
+
   useEffect(() => {
     if (user) {
       navigate("/dashboard");
