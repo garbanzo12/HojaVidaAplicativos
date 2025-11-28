@@ -9,13 +9,14 @@ import {
   me,
 } from "../controllers/usuario.js";
 
-
 const router = express.Router();
 
-// Obtener todos los usuarios
-router.get("/", getUsuarios);
+// Rutas específicas siempre deben ir primero 👇
+router.get("/me", me);
+router.get("/campana/:campanaId", getUsuariosPorCampana);
 
-// Crear usuario
+// Luego las generales
+router.get("/", getUsuarios);
 router.post("/", createUsuario);
 
 // Actualizar usuario
@@ -24,12 +25,5 @@ router.put("/:id", actualizarUsuario);
 
 // Eliminar usuario
 router.delete("/:id", eliminarUsuario);
-
-// Obtener usuarios de una campaña específica
-router.get("/campana/:campanaId", getUsuariosPorCampana);
-
-
-router.get("/me",  me);
-
 
 export default router;
