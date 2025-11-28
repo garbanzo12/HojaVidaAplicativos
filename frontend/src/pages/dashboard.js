@@ -334,7 +334,7 @@ const Dashboard = () => {
           <IconButton sx={{ color: "white" }}>
             <AccountCircle sx={{ fontSize: 45 }} />
           </IconButton>
-          <Typography>{user?.correo}</Typography>
+          <Typography>{user?.nombre_completo}</Typography>
           <Button
                 variant="contained"
                 startIcon={<Logout />}
