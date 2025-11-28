@@ -208,7 +208,7 @@ export default function FormularioModal({ open, onClose }) {
 
         {/* SECCIÓN 1 - INFORMACIÓN PRINCIPAL */}
         <Card sx={cardAccordionStyle}>
-          <Accordion defaultExpanded>
+          <Accordion >
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <Typography sx={sectionTitle}> Información Principal</Typography>
             </AccordionSummary>
@@ -262,7 +262,7 @@ export default function FormularioModal({ open, onClose }) {
 
         {/* SECCIÓN 2 - VINCULACIÓN */}
         <Card sx={cardAccordionStyle}>
-          <Accordion defaultExpanded>
+          <Accordion >
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <Typography sx={sectionTitle}> Vinculación & Datos Generales</Typography>
             </AccordionSummary>
