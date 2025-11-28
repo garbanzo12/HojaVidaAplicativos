@@ -38,8 +38,8 @@ model usuario {
   estado           usuario_estado        @default(HABILITADO)
   campana         campana[]             @relation("UsuariosCampanas")
   contrasena       String
-
-
+  resetToken        String?  
+  resetTokenExpires DateTime? 
 }
 
 

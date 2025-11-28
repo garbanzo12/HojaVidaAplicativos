@@ -58,11 +58,11 @@ export async function forgotPassword(req, res) {
 
     try {
         // 1. Verificar Usuario
-        const usuario = await prisma.usuario.findUnique({ where: { email } });
-        
+        const usuario = await prisma.usuario.findUnique({ where: { correo  : email} });
+        console.log(usuario)
         // Si no se encuentra el usuario, devuelve un mensaje genérico por seguridad.
         if (!usuario) {
-            return res.status(200).json({ message: 'Si el correo existe, recibirás un enlace de recuperación.' });
+            return res.status(404).json({ message: 'Si el correo existe, recibirás un enlace de recuperación.' });
         }
 
         // 2. Generar Token (Validez de 1 hora = 3600 segundos)
@@ -85,7 +85,7 @@ export async function forgotPassword(req, res) {
         });
 
         // 4. Enviar Correo
-        await sendResetEmail(usuario.email, token);
+        await sendResetEmail(usuario.correo, token);
         
         // Respuesta al cliente
         return res.status(200).json({ message: 'Si el correo existe, recibirás un enlace de recuperación.' });
@@ -107,7 +107,7 @@ export async function resetPassword(req, res) {
     if (!token || !newPassword) {
         return res.status(400).json({ message: 'Token y nueva contraseña son requeridos.' });
     }
-
+    console.log(token," |||||| ", newPassword)
     try {
         // 2. Buscar y Validar Token
         const usuario = await prisma.usuario.findFirst({
@@ -119,7 +119,7 @@ export async function resetPassword(req, res) {
                 },
             },
         });
-
+        console.log(usuario)
         if (!usuario) {
             return res.status(400).json({ message: 'El enlace de recuperación es inválido o ha expirado.' });
         }
