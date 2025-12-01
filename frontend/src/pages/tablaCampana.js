@@ -81,6 +81,10 @@ useEffect(() => {
         contactoTecnico: c.soporte_tecnico_abai,
         correoTecnico: c.correo_soporte_abai,
         serviciosTecnico: c.servicios_prestados,
+        aplicativo: c.aplicativo_nombre,
+        matrizEscalamiento: c.matriz_nombre,
+        matrizGlobal: c.matriz_global_nombre,
+        encargado: c.usuario_nombre,
         estado: c.estado === "HABILITADO" ? "Activo" : "Inactivo",
         imagen: c.imagen_cliente
           ? `http://localhost:4000/uploads/${c.imagen_cliente}`
@@ -520,6 +524,65 @@ useEffect(() => {
             </Box>
           </Box>
         ))}
+
+        {/* NUEVA SECCIÓN - VINCULACIÓN */}
+          <Box sx={{ px: 4, py: 3, backgroundColor: "#fff" }}>
+            <Box sx={{ textAlign: "center", mb: 2.5 }}>
+              <Typography
+                variant="h6"
+                sx={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 1,
+                  fontWeight: 700,
+                  color: "#000000ff",
+                  borderBottom: "3px solid #325FDBFF",
+                  pb: 0.5,
+                }}
+              >
+                Vinculación & Relacionados
+              </Typography>
+            </Box>
+
+            <Grid
+              container
+              spacing={2.5}
+              justifyContent="center"
+              alignItems="center"
+              sx={{ maxWidth: 900, mx: "auto" }}
+            >
+              {[
+                ["Aplicativo", selected.aplicativo || "—"],
+                ["Matriz Escalamiento", selected.matrizEscalamiento || "—"],
+                ["Matriz Global", selected.matrizGlobal || "—"],
+                ["Encargado", selected.encargado || "—"],
+              ].map(([label, value], i) => (
+                <Grid item xs={12} sm={6} md={3} key={i}>
+                  <Typography
+                    sx={{
+                      color: "#5a6c7d",
+                      fontSize: "0.9rem",
+                      mb: 0.5,
+                      textAlign: "center",
+                    }}
+                  >
+                    <strong style={{ color: "#000000ff" }}>{label}:</strong>
+                  </Typography>
+                  <Typography
+                    sx={{
+                      textAlign: "center",
+                      color: "#2c3e50",
+                      wordBreak: "break-word",
+                    }}
+                  >
+                    {value}
+                  </Typography>
+                </Grid>
+              ))}
+            </Grid>
+          </Box>
+
 
         <Box sx={{ px: 4, py: 3, backgroundColor: "#fff" }}>
           <Box sx={{ textAlign: "center", mb: 2.5 }}>
