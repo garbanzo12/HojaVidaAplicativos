@@ -249,48 +249,56 @@ const TablaUsuarios = () => {
 
       {/* MODAL DE CAMPAÑAS */}
       <Modal open={openCampanas} onClose={() => setOpenCampanas(false)}>
-        <Box
-          sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: "90%",
-            maxWidth: 400,
-            bgcolor: "white",
-            borderRadius: 3,
-            p: 3,
-          }}
-        >
-          <Typography variant="h6" fontWeight="bold" mb={2}>
-            Campañas asignadas
-          </Typography>
+  <Box
+    sx={{
+      position: "absolute",
+      top: "50%",
+      left: "50%",
+      transform: "translate(-50%, -50%)",
+      width: "90%",
+      maxWidth: 400,
+      bgcolor: "white",
+      borderRadius: 3,
+      p: 3,
+      textAlign: "center",     // 🔥 CENTRA TODO EL TEXTO
+    }}
+  >
+    <Typography variant="h6" fontWeight="bold" mb={2}>
+      Campañas asignadas
+    </Typography>
 
-          {campanasUsuario.map((c, i) => (
-            <Box
-              key={i}
-              sx={{
-                padding: "10px 15px",
-                backgroundColor: "#f5f5f5",
-                borderRadius: 2,
-                mb: 1,
-                fontSize: "15px",
-              }}
-            >
-              {c.nombre_campana}
-            </Box>
-          ))}
+    {campanasUsuario.map((c, i) => (
+      <Box
+        key={i}
+        sx={{
+          padding: "10px 15px",
+          backgroundColor: "#f5f5f5",
+          borderRadius: 2,
+          mb: 1,
+          fontSize: "15px",
+          textAlign: "center",  // 🔥 CENTRA CADA CAMPAÑA
+        }}
+      >
+        {c.nombre_campana}
+      </Box>
+    ))}
 
-          <Button
-            fullWidth
-            variant="contained"
-            sx={{ mt: 2, borderRadius: "10px" }}
-            onClick={() => setOpenCampanas(false)}
-          >
-            Cerrar
-          </Button>
-        </Box>
-      </Modal>
+    <Button
+      variant="contained"
+      sx={{
+        mt: 2,
+        borderRadius: "10px",
+        width: "120px",   // 🔥 BOTÓN MÁS CORTO
+        mx: "auto",       // 🔥 CENTRADO
+        display: "block",
+      }}
+      onClick={() => setOpenCampanas(false)}
+    >
+      Cerrar
+    </Button>
+  </Box>
+</Modal>
+
 
       {/* MODAL EDITAR */}
       <Modal open={Boolean(editing)} onClose={() => setEditing(null)}>
