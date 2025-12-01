@@ -23,6 +23,9 @@ const TablaUsuarios = () => {
   const [editing, setEditing] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  const [openCampanas, setOpenCampanas] = useState(false);
+  const [campanasUsuario, setCampanasUsuario] = useState([]);
+
   const fetchUsuarios = async () => {
     try {
       setLoading(true);
@@ -34,10 +37,10 @@ const TablaUsuarios = () => {
         correo: u.correo,
         rol: u.rol,
         sede: u.sede,
-        campana: Array.isArray(u.campana) && u.campana.length > 0 ? u.campana[0].nombre_campana : "—",        
+        campanas: Array.isArray(u.campana) ? u.campana : [],
         estado: u.estado,
-        tipo_documento : u.tipo_documento,
-        numero_documento : u.numero_documento,
+        tipo_documento: u.tipo_documento,
+        numero_documento: u.numero_documento,
       }));
 
       setRows(data);
@@ -173,7 +176,28 @@ const TablaUsuarios = () => {
                   <TableCell align="center">{row.correo}</TableCell>
                   <TableCell align="center">{row.rol}</TableCell>
                   <TableCell align="center">{row.sede}</TableCell>
-                  <TableCell align="center">{row.campana}</TableCell>
+
+                  {/* CAMPAÑAS */}
+                  <TableCell align="center">
+                    {row.campanas.length === 0 && "—"}
+
+                    {row.campanas.length === 1 &&
+                      row.campanas[0].nombre_campana}
+
+                    {row.campanas.length > 1 && (
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => {
+                          setCampanasUsuario(row.campanas);
+                          setOpenCampanas(true);
+                        }}
+                        sx={{ textTransform: "none", borderRadius: "15px" }}
+                      >
+                        Ver
+                      </Button>
+                    )}
+                  </TableCell>
 
                   <TableCell align="center">
                     <Button
@@ -223,27 +247,73 @@ const TablaUsuarios = () => {
         </Paper>
       )}
 
+      {/* MODAL DE CAMPAÑAS */}
+      <Modal open={openCampanas} onClose={() => setOpenCampanas(false)}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: "90%",
+            maxWidth: 400,
+            bgcolor: "white",
+            borderRadius: 3,
+            p: 3,
+          }}
+        >
+          <Typography variant="h6" fontWeight="bold" mb={2}>
+            Campañas asignadas
+          </Typography>
+
+          {campanasUsuario.map((c, i) => (
+            <Box
+              key={i}
+              sx={{
+                padding: "10px 15px",
+                backgroundColor: "#f5f5f5",
+                borderRadius: 2,
+                mb: 1,
+                fontSize: "15px",
+              }}
+            >
+              {c.nombre_campana}
+            </Box>
+          ))}
+
+          <Button
+            fullWidth
+            variant="contained"
+            sx={{ mt: 2, borderRadius: "10px" }}
+            onClick={() => setOpenCampanas(false)}
+          >
+            Cerrar
+          </Button>
+        </Box>
+      </Modal>
+
+      {/* MODAL EDITAR */}
       <Modal open={Boolean(editing)} onClose={() => setEditing(null)}>
-  <Box
-    sx={{
-      position: "absolute",
-      top: "50%",
-      left: "50%",
-      transform: "translate(-50%, -50%)",
-      width: "90%",
-      maxWidth: 800,
-      bgcolor: "white",
-      borderRadius: 4,
-      p: 3,
-    }}
-  >
-    <FormularioEditarUsuario
-      usuario={editing}
-      onClose={() => setEditing(null)}
-      onUpdated={fetchUsuarios}
-    />
-  </Box>
-</Modal>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: "90%",
+            maxWidth: 800,
+            bgcolor: "white",
+            borderRadius: 4,
+            p: 3,
+          }}
+        >
+          <FormularioEditarUsuario
+            usuario={editing}
+            onClose={() => setEditing(null)}
+            onUpdated={fetchUsuarios}
+          />
+        </Box>
+      </Modal>
     </Box>
   );
 };
