@@ -81,10 +81,10 @@ useEffect(() => {
         contactoTecnico: c.soporte_tecnico_abai,
         correoTecnico: c.correo_soporte_abai,
         serviciosTecnico: c.servicios_prestados,
-        aplicativo: c.aplicativo_nombre,
-        matrizEscalamiento: c.matriz_nombre,
-        matrizGlobal: c.matriz_global_nombre,
-        encargado: c.usuario_nombre,
+        aplicativo : c.aplicativos,
+        matrizEscalamiento : c.matriz_escalamiento,
+        matrizglobal : c.matriz_escalamiento_global,
+        encargado : c.usuarios,
         estado: c.estado === "HABILITADO" ? "Activo" : "Inactivo",
         imagen: c.imagen_cliente
           ? `http://localhost:4000/uploads/${c.imagen_cliente}`
@@ -546,41 +546,73 @@ useEffect(() => {
             </Box>
 
             <Grid
-              container
-              spacing={2.5}
-              justifyContent="center"
-              alignItems="center"
-              sx={{ maxWidth: 900, mx: "auto" }}
-            >
-              {[
-                ["Aplicativo", selected.aplicativo || "—"],
-                ["Matriz Escalamiento", selected.matrizEscalamiento || "—"],
-                ["Matriz Global", selected.matrizGlobal || "—"],
-                ["Encargado", selected.encargado || "—"],
-              ].map(([label, value], i) => (
-                <Grid item xs={12} sm={6} md={3} key={i}>
+             container
+             spacing={2}
+             sx={{
+               mt: 1,
+               display: "flex",
+               justifyContent: "center",   // Centra horizontalmente
+               alignItems: "center",       // Centra verticalmente (opcional)
+               textAlign: "center",        // Asegura que el texto dentro esté centrado
+             }}
+            >              
+                {[
+                ["Aplicativo", selected.aplicativo, "nombre"],
+                ["Matriz Escalamiento", selected.matrizEscalamiento, "proveedor"],
+                ["Matriz Global", selected.matrizglobal, "proveedor"],
+                ["Encargado", selected.encargado, "nombre_completo"],
+              ].map(([label, value, field], i) => (
+            <Grid item xs={12} sm={6} md={3} key={i}>
+            
+              {/* Título */}
+              <Typography
+                sx={{
+                  color: "#5a6c7d",
+                  fontSize: "0.9rem",
+                  mb: 0.5,
+                  textAlign: "center",
+                }}
+              >
+                <strong style={{ color: "#000000ff" }}>{label}:</strong>
+              </Typography>
+
+              {/* CONTENIDO ARRAY O VALOR NORMAL */}
+              {Array.isArray(value) ? (
+                value.length > 0 ? (
+                  value.map((item, idx) => (
+                    <Typography
+                      key={idx}
+                      sx={{
+                        textAlign: "center",
+                        color: "#2c3e50",
+                        wordBreak: "break-word",
+                      }}
+                    >
+                      {item[field]}
+                    </Typography>
+                  ))
+                ) : (
                   <Typography
-                    sx={{
-                      color: "#5a6c7d",
-                      fontSize: "0.9rem",
-                      mb: 0.5,
-                      textAlign: "center",
-                    }}
+                    sx={{ textAlign: "center", color: "#2c3e50" }}
                   >
-                    <strong style={{ color: "#000000ff" }}>{label}:</strong>
+                    —
                   </Typography>
-                  <Typography
-                    sx={{
-                      textAlign: "center",
-                      color: "#2c3e50",
-                      wordBreak: "break-word",
-                    }}
-                  >
-                    {value}
-                  </Typography>
-                </Grid>
+                )
+              ) : (
+                <Typography
+                  sx={{
+                    textAlign: "center",
+                    color: "#2c3e50",
+                    wordBreak: "break-word",
+                  }}
+                >
+                  {value || "—"}
+                </Typography>
+              )}
+            </Grid>
               ))}
             </Grid>
+
           </Box>
 
 
@@ -808,6 +840,10 @@ useEffect(() => {
             contactoTecnico: c.soporte_tecnico_abai,
             correoTecnico: c.correo_soporte_abai,
             serviciosTecnico: c.servicios_prestados,
+            aplicativo : c.aplicativos,
+            matrizEscalamiento : c.matriz_escalamiento,
+            matrizglobal : c.matriz_escalamiento_global,
+            encargado : c.usuarios,
             estado: c.estado === "HABILITADO" ? "Activo" : "Inactivo",
             imagen: c.imagen_cliente
               ? `http://localhost:4000/uploads/${c.imagen_cliente}`
