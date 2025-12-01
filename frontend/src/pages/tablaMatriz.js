@@ -11,7 +11,9 @@ import {
   TextField,
   Button,
   Modal,
+  InputAdornment,
 } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
 import axios from "axios";
 import FormularioEditarMatriz from "./FormularioEditarMatriz";
 
@@ -26,11 +28,40 @@ const TablaMatriz = ({ registros = [], onEstadoChange, onEditar }) => {
 
   return (
     <Box sx={{ width: "90%", mx: "auto", mt: 4 }}>
-      <Typography variant="h6" fontWeight="bold" mb={2}>
-        MATRIZ DE ESCALAMIENTO
-      </Typography>
+      {/* Header con título y búsqueda en la misma línea */}
+      <Box sx={{ 
+        display: "flex", 
+        justifyContent: "space-between", 
+        alignItems: "center",
+        mb: 3 
+      }}>
+        <Typography variant="h6" fontWeight="bold">
+          MATRIZ DE ESCALAMIENTO
+        </Typography>
 
-
+        <TextField
+          placeholder="Buscar aplicativo"
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.target.value)}
+          sx={{
+            width: "500px",
+            backgroundColor: "white",
+            borderRadius: "8px",
+            "& .MuiOutlinedInput-root": {
+              borderRadius: "8px",
+              "& fieldset": {
+                borderColor: "#ddd",
+              },
+              "&:hover fieldset": {
+                borderColor: "#002b5b",
+              },
+              "&.Mui-focused fieldset": {
+                borderColor: "#002b5b",
+              },
+            },
+          }}
+        />
+      </Box>
 
       <Paper
         sx={{
@@ -175,10 +206,6 @@ const MatrizPage = () => {
 
   return (
     <Box sx={{ p: 4 }}>
-      <Typography variant="h5" mb={3} fontWeight="bold">
-        Gestión de Matriz
-      </Typography>
-
       {loading ? (
         <Typography>Cargando datos...</Typography>
       ) : (
@@ -189,7 +216,7 @@ const MatrizPage = () => {
         />
       )}
 
-      {/* ✅ Modal de edición */}
+      {/* Modal de edición */}
       <Modal open={Boolean(editando)} onClose={() => setEditando(null)}>
         <Box>
           {editando && (

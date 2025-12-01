@@ -9,6 +9,7 @@ import {
   Typography,
   Box,
   Button,
+  TextField,
 } from "@mui/material";
 import axios from "axios";
 
@@ -29,9 +30,40 @@ const TablaMatriz = ({ registros = [], onEstadoChange, onEditar }) => {
 
   return (
     <Box sx={{ width: "90%", mx: "auto", mt: 4 }}>
-      <Typography variant="h6" fontWeight="bold" mb={2}>
-        MATRIZ DE ESCALAMIENTO GLOBAL
-      </Typography>
+      {/* Header con título y búsqueda en la misma línea */}
+      <Box sx={{ 
+        display: "flex", 
+        justifyContent: "space-between", 
+        alignItems: "center",
+        mb: 3 
+      }}>
+        <Typography variant="h6" fontWeight="bold">
+          MATRIZ DE ESCALAMIENTO GLOBAL
+        </Typography>
+
+        <TextField
+          placeholder="Buscar aplicativo"
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.target.value)}
+          sx={{
+            width: "500px",
+            backgroundColor: "white",
+            borderRadius: "8px",
+            "& .MuiOutlinedInput-root": {
+              borderRadius: "8px",
+              "& fieldset": {
+                borderColor: "#ddd",
+              },
+              "&:hover fieldset": {
+                borderColor: "#002b5b",
+              },
+              "&.Mui-focused fieldset": {
+                borderColor: "#002b5b",
+              },
+            },
+          }}
+        />
+      </Box>
 
       <Paper
         sx={{
@@ -205,9 +237,6 @@ const handleEstadoChange = async (id, currentEstado) => {
 
   return (
     <Box sx={{ p: 4 }}>
-      <Typography variant="h5" mb={3} fontWeight="bold">
-        Gestión de Matriz Global
-      </Typography>
 
       {loading ? (
         <Typography>Cargando datos...</Typography>
