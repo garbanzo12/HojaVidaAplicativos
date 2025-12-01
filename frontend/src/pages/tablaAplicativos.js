@@ -89,7 +89,7 @@ const ListarAplicativo = () => {
         padding: "40px",
         minHeight: "100vh",
       }}
-     >
+    >
       <Box
         display="flex"
         alignItems="center"
@@ -112,7 +112,21 @@ const ListarAplicativo = () => {
           LISTA DE APLICATIVOS
         </Typography>
 
-
+        {/* 🔥 CORREGIDO SOLO ESTA PARTE 🔥 */}
+        <TextField
+          label="Buscar aplicativo"
+          variant="outlined"
+          fullWidth
+          value={query}
+          onChange={(e) => setQuery(e.target.value.toLowerCase())}
+          sx={{
+            backgroundColor: "white",
+            borderRadius: 2,
+            boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+            flex: 1,
+            minWidth: "300px",
+          }}
+        />
       </Box>
 
       <Paper
