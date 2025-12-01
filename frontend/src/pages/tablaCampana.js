@@ -176,6 +176,21 @@ useEffect(() => {
             LISTA DE CAMPAÑAS
           </Typography>
 
+          <TextField
+            label="Buscar campañas"
+            variant="outlined"
+            fullWidth
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            sx={{
+              backgroundColor: "white",
+              borderRadius: 2,
+              boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+              flex: 1,
+              minWidth: "300px",
+            }}
+          />
+
 
         </Box>
 
@@ -318,19 +333,6 @@ useEffect(() => {
           </TableBody>
         </Table>
 
-        <Box display="flex" justifyContent="center" alignItems="center" py={1}>
-          <TablePagination
-            component="div"
-            count={filtered.length}
-            page={page}
-            onPageChange={handleChangePage}
-            rowsPerPage={rowsPerPage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-            rowsPerPageOptions={[5, 10, 25]}
-            labelDisplayedRows={() => ""}
-            labelRowsPerPage=""
-          />
-        </Box>
       </TableContainer>
 
       {/* 🔍 Modal Detalle */}
