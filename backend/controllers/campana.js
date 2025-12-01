@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { tuple } from "zod";
 const prisma = new PrismaClient();
 
 // ✅ Ruta de prueba
@@ -23,7 +24,12 @@ export const getCampanas = async (req, res) => {
 export const getCampanasDetalles = async (req, res) => {
   try {
     const campanas = await prisma.campana.findMany({
-
+        include : {
+          aplicativos : true,
+          matriz_escalamiento : true,
+          matriz_escalamiento_global : true,
+          usuarios : true,
+        }
     });
 
     res.json(campanas);
