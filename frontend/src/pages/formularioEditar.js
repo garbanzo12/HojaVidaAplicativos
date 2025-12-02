@@ -167,7 +167,7 @@ export default function FormularioEditarCampana({ open, onClose, idCampana, onUp
         aplicativo: data.aplicativos?.map(a => a.id) || [],
         matriz_escalamiento: data.matriz_escalamiento?.map(m => m.id) || [],
         matriz_global: data.matriz_escalamiento_global?.map(mg => mg.id) || [],
-        usuario: data.usuarios || "",
+        usuario: data.usuarios?.length ? data.usuarios[0].id : "",
         ubicacion_sede: data.ubicacion_sedes || "",
         puesto_operacion: data.puestos_operacion ?? "", // puede ser number
         puesto_estructuracion: data.puestos_estructura ?? "",
