@@ -85,9 +85,9 @@ const initialFormData = {
   cliente: "",
   director_operacion_abai: "",
   correo_director: "",
-  aplicativo: "",
-  matriz_escalamiento: "",
-  matriz_global: "",
+  aplicativo: [],
+  matriz_escalamiento: [],
+  matriz_global: [],
   usuario: "",
   ubicacion_sede: "",
   puesto_operacion: "",
@@ -164,10 +164,10 @@ export default function FormularioEditarCampana({ open, onClose, idCampana, onUp
         director_operacion_abai: data.director_operacion_abai || "",
         correo_director: data.correo_director || "",
         // Preseleccionar selects tomando primer id si existiera
-        aplicativo: data.aplicativos?.[0]?.id || "",
-        matriz_escalamiento: data.matriz_escalamiento?.[0]?.id || "",
-        matriz_global: data.matriz_escalamiento_global?.[0]?.id || "",
-        usuario: data.usuarios?.[0]?.id || "",
+        aplicativo: data.aplicativos?.map(a => a.id) || [],
+        matriz_escalamiento: data.matriz_escalamiento?.map(m => m.id) || [],
+        matriz_global: data.matriz_escalamiento_global?.map(mg => mg.id) || [],
+        usuario: data.usuarios || "",
         ubicacion_sede: data.ubicacion_sedes || "",
         puesto_operacion: data.puestos_operacion ?? "", // puede ser number
         puesto_estructuracion: data.puestos_estructura ?? "",
@@ -237,8 +237,13 @@ export default function FormularioEditarCampana({ open, onClose, idCampana, onUp
       return;
     }
 
+    if (Array.isArray(value)) {
+      setFormData(prev => ({ ...prev, [name]: value.map(v => Number(v)) }));
+      return;
+    }
+    // para selects que representan relaciones (aplicativo, matriz*, usuario) los guardamos como número o ""
     if (["aplicativo", "matriz_escalamiento", "matriz_global", "usuario"].includes(name)) {
-      setFormData(prev => ({ ...prev, [name]: value === "" ? "" : Number(value) }));
+      setFormData(prev => ({ ...prev, [name]: value }));
       return;
     }
 
@@ -296,9 +301,9 @@ export default function FormularioEditarCampana({ open, onClose, idCampana, onUp
 
       // Convertir selects a la estructura que espera el backend:
       // aplicativoId[], matrizId[], matrizGlobalId[], usuarioId (simple)
-      const aplicativoIdArr = formData.aplicativo ? [Number(formData.aplicativo)] : [];
-      const matrizIdArr = formData.matriz_escalamiento ? [Number(formData.matriz_escalamiento)] : [];
-      const matrizGlobalArr = formData.matriz_global ? [Number(formData.matriz_global)] : [];
+      const aplicativoIdArr = formData.aplicativo || [];
+      const matrizIdArr = formData.matriz_escalamiento || [];
+      const matrizGlobalArr = formData.matriz_global || [];
       const usuarioIdVal = formData.usuario ? Number(formData.usuario) : "";
 
       aplicativoIdArr.forEach(id => formDataToSend.append("aplicativoId[]", id));
@@ -419,9 +424,18 @@ export default function FormularioEditarCampana({ open, onClose, idCampana, onUp
                 <Grid item xs={12} sm={6} md={3}>
                   <FormControl fullWidth size="small" sx={selectStyles}>
                     <InputLabel id="aplicativo-label">Aplicativo</InputLabel>
-                    <Select labelId="aplicativo-label" name="aplicativo" value={formData.aplicativo || ""} label="Aplicativo" onChange={handleChange} MenuProps={menuProps}>
-                      <MenuItem value=""><em>Ninguno</em></MenuItem>
-                      {aplicativos.map(app => <MenuItem key={app.id} value={app.id}>{app.nombre}</MenuItem>)}
+                    <Select
+                      labelId="aplicativo-label"
+                      name="aplicativo"
+                      multiple
+                      value={formData.aplicativo}
+                      label="Aplicativo"
+                      onChange={handleChange}
+                      MenuProps={menuProps}
+                    >
+                      {aplicativos.map(app => (
+                        <MenuItem key={app.id} value={app.id}>{app.nombre}</MenuItem>
+                      ))}
                     </Select>
                   </FormControl>
                 </Grid>
@@ -429,9 +443,20 @@ export default function FormularioEditarCampana({ open, onClose, idCampana, onUp
                 <Grid item xs={12} sm={6} md={3}>
                   <FormControl fullWidth size="small" sx={selectStyles}>
                     <InputLabel id="matriz-escalamiento-label">Matriz Escalamiento</InputLabel>
-                    <Select labelId="matriz-escalamiento-label" name="matriz_escalamiento" value={formData.matriz_escalamiento || ""} label="Matriz Escalamiento" onChange={handleChange} MenuProps={menuProps}>
-                      <MenuItem value=""><em>Ninguna</em></MenuItem>
-                      {matrices.map(m => <MenuItem key={m.id} value={m.id}>{m.proveedor || m.nombre || `Matriz ${m.id}`}</MenuItem>)}
+                    <Select
+                      labelId="matriz-escalamiento-label"
+                      name="matriz_escalamiento"
+                      multiple
+                      value={formData.matriz_escalamiento}
+                      label="Matriz Escalamiento"
+                      onChange={handleChange}
+                      MenuProps={menuProps}
+                    >
+                      {matrices.map(m => (
+                        <MenuItem key={m.id} value={m.id}>
+                          {m.proveedor || m.nombre || `Matriz ${m.id}`}
+                        </MenuItem>
+                      ))}
                     </Select>
                   </FormControl>
                 </Grid>
@@ -439,9 +464,20 @@ export default function FormularioEditarCampana({ open, onClose, idCampana, onUp
                 <Grid item xs={12} sm={6} md={3}>
                   <FormControl fullWidth size="small" sx={selectStyles}>
                     <InputLabel id="matriz-global-label">Matriz Global</InputLabel>
-                    <Select labelId="matriz-global-label" name="matriz_global" value={formData.matriz_global || ""} label="Matriz Global" onChange={handleChange} MenuProps={menuProps}>
-                      <MenuItem value=""><em>Ninguna</em></MenuItem>
-                      {matricesGlobal.map(mg => <MenuItem key={mg.id} value={mg.id}>{mg.proveedor || mg.nombre || `Global ${mg.id}`}</MenuItem>)}
+                    <Select
+                      labelId="matriz-global-label"
+                      name="matriz_global"
+                      multiple
+                      value={formData.matriz_global}
+                      label="Matriz Global"
+                      onChange={handleChange}
+                      MenuProps={menuProps}
+                    >
+                      {matricesGlobal.map(mg => (
+                        <MenuItem key={mg.id} value={mg.id}>
+                          {mg.proveedor || mg.nombre || `Global ${mg.id}`}
+                        </MenuItem>
+                      ))}
                     </Select>
                   </FormControl>
                 </Grid>
