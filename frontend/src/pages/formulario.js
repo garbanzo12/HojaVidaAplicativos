@@ -629,17 +629,7 @@ export default function FormularioModal({ open, onClose }) {
                     onChange={handleChange}
                   />
                 </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    label="Teléfono Gerente"
-                    name="telefono_gerente"
-                    value={formData.telefono_gerente}
-                    type="tel"
-                    fullWidth
-                    size="small"
-                    onChange={handleChange}
-                  />
-                </Grid>
+                
               </Grid>
             </AccordionDetails>
           </Accordion>
