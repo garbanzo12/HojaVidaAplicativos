@@ -34,6 +34,7 @@ const ListarAplicativo = () => {
         tipo_red: a.tipo_red,
         escalamiento: a.escalamiento,
         estado: a.estado,
+        url : a.url,
       }));
       setRows(data);
     } catch (err) {
@@ -76,6 +77,7 @@ const ListarAplicativo = () => {
   const handleCerrarEditar = () => setEditing(null);
 
   const handleVerUrl = (url) => {
+    console.log(url)
     if (url) {
       window.open(url, "_blank", "noopener,noreferrer");
     } else {
@@ -231,11 +233,11 @@ const ListarAplicativo = () => {
                     >
                       Editar
                     </Button>
-
                     <Button
                       variant="outlined"
                       size="small"
                       onClick={() => handleVerUrl(row.url)}
+                    
                       sx={{
                         color: "#0288d1",
                         borderColor: "#0288d1",
