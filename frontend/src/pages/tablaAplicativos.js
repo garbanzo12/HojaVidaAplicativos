@@ -14,16 +14,24 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import FormularioEditarAplicativo from "./FormularioEditarAplicativo";
+import { useAuth } from "../context/AuthContext.js";
 
 const ListarAplicativo = () => {
   const [rows, setRows] = useState([]);
   const [query, setQuery] = useState("");
   const [editing, setEditing] = useState(null);
   const [loading, setLoading] = useState(false);
+  const { user } = useAuth(); 
 
-  const fetchAplicativos = async () => {
-    try {
-      setLoading(true);
+const fetchAplicativos = async () => {
+  try {
+    setLoading(true);
+
+    console.log(user)
+    const esProveedor = user?.rol === "proveedor";
+
+    if (!esProveedor) {
+      // Si NO es proveedor ⇒ trae TODOS los aplicativos como ya lo tenías
       const res = await axios.get("http://localhost:4000/aplicativo/detalles");
       const data = res.data.map((a) => ({
         id: a.id,
@@ -34,15 +42,56 @@ const ListarAplicativo = () => {
         tipo_red: a.tipo_red,
         escalamiento: a.escalamiento,
         estado: a.estado,
-        url : a.url,
+        url: a.url,
       }));
       setRows(data);
-    } catch (err) {
-      console.error("❌ Error al obtener aplicativos:", err);
-    } finally {
-      setLoading(false);
+      return;
     }
-  };
+
+    // 🔥 SI ES PROVEEDOR, SE APLICA FILTRO 🔥
+    const campanasRes = await axios.get("http://localhost:4000/campana/detalles");
+    const campanas = campanasRes.data;
+
+    // campañas donde participa el usuario
+    const campanasDelUsuario = campanas.filter((c) =>
+      c.usuarios.some((u) => u.id === user.id)
+    );
+
+    // extraer aplicativos de esas campañas
+    const aplicativosFiltrados = [];
+
+    campanasDelUsuario.forEach((campana) => {
+      campana.aplicativos.forEach((app) => {
+        aplicativosFiltrados.push(app);
+      });
+    });
+
+    // eliminar duplicados por ID
+    const unicos = Array.from(
+      new Map(aplicativosFiltrados.map((a) => [a.id, a])).values()
+    );
+
+    // Formatear como lo necesita la tabla
+    const data = unicos.map((a) => ({
+      id: a.id,
+      nombre: a.nombre,
+      direccion_ip: a.direccion_ip,
+      puerto: a.puerto,
+      tipoAplicativo: a.tipo_aplicativo,
+      tipo_red: a.tipo_red,
+      escalamiento: a.escalamiento,
+      estado: a.estado,
+      url: a.url,
+    }));
+
+    setRows(data);
+  } catch (err) {
+    console.error("Error filtrando aplicativos:", err);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   useEffect(() => {
     fetchAplicativos();

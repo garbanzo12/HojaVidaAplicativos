@@ -486,7 +486,6 @@ export default function FormularioEditarCampana({ open, onClose, idCampana, onUp
                   <FormControl fullWidth size="small" sx={selectStyles}>
                     <InputLabel id="usuario-label">Encargado</InputLabel>
                     <Select labelId="usuario-label" name="usuario" value={formData.usuario || ""} label="Encargado" onChange={handleChange} MenuProps={menuProps}>
-                      <MenuItem value=""><em>Ninguno</em></MenuItem>
                       {usuarios.map(u => <MenuItem key={u.id} value={u.id}>{u.nombre_completo || u.nombre || `Usuario ${u.id}`}</MenuItem>)}
                     </Select>
                   </FormControl>

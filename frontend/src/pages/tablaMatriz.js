@@ -13,9 +13,9 @@ import {
   Modal,
   InputAdornment,
 } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
 import axios from "axios";
 import FormularioEditarMatriz from "./FormularioEditarMatriz";
+import { useAuth } from "../context/AuthContext.js";
 
 const TablaMatriz = ({ registros = [], onEstadoChange, onEditar }) => {
   const [busqueda, setBusqueda] = useState("");
@@ -167,17 +167,52 @@ const MatrizPage = () => {
   const [registros, setRegistros] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editando, setEditando] = useState(null);
+  const { user } = useAuth(); 
 
-  const obtenerMatriz = async () => {
-    try {
+ const obtenerMatriz = async () => {
+  try {
+    setLoading(true);
+
+    const esProveedor = user?.rol === "proveedor";
+
+    // Si NO es proveedor: consulta normal
+    if (!esProveedor) {
       const response = await axios.get("http://localhost:4000/matriz");
       setRegistros(response.data);
-    } catch (error) {
-      console.error("Error al cargar la matriz:", error);
-    } finally {
-      setLoading(false);
+      return;
     }
-  };
+
+    // 🔥 SI ES PROVEEDOR → FILTRAR POR CAMPAÑAS 🔥
+    const resCampanas = await axios.get("http://localhost:4000/campana/detalles");
+    const campanas = resCampanas.data;
+
+    // campañas donde participa este usuario
+    const campanasDelUsuario = campanas.filter((c) =>
+      c.usuarios.some((u) => u.id === user.id)
+    );
+
+    // Unir todas las matrices_escalamiento de esas campañas
+    let matrizFiltrada = [];
+
+    campanasDelUsuario.forEach((campana) => {
+      if (campana.matriz_escalamiento) {
+        matrizFiltrada.push(...campana.matriz_escalamiento);
+      }
+    });
+
+    // Eliminar duplicados
+    const unicos = Array.from(
+      new Map(matrizFiltrada.map((m) => [m.id, m])).values()
+    );
+
+    setRegistros(unicos);
+  } catch (error) {
+    console.error("Error al cargar la matriz:", error);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const handleEstadoChange = async (id, currentEstado) => {
     const estadoNormalizado = currentEstado.toLowerCase();

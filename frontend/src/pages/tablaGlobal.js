@@ -12,6 +12,8 @@ import {
   TextField,
 } from "@mui/material";
 import axios from "axios";
+import { useAuth } from "../context/AuthContext.js";
+
 
 import FormularioEditarMatriz from "../pages/FormularioEditarMatrizGlobal"; 
 // ⬆ Cambia la ruta si tu archivo está en otro lado
@@ -20,7 +22,10 @@ import FormularioEditarMatriz from "../pages/FormularioEditarMatrizGlobal";
 //   COMPONENTE TABLA
 // ======================= //
 const TablaMatriz = ({ registros = [], onEstadoChange, onEditar }) => {
+  const { user } = useAuth(); 
   const [busqueda, setBusqueda] = useState("");
+
+  const esProveedor = user?.rol === "proveedor";
 
   const filtrados = registros.filter((fila) =>
     Object.values(fila).some((v) =>
@@ -30,37 +35,27 @@ const TablaMatriz = ({ registros = [], onEstadoChange, onEditar }) => {
 
   return (
     <Box sx={{ width: "90%", mx: "auto", mt: 4 }}>
-      {/* Header con título y búsqueda en la misma línea */}
-      <Box sx={{ 
-        display: "flex", 
-        justifyContent: "space-between", 
-        alignItems: "center",
-        mb: 3 
-      }}>
+      {/* Header con título y búsqueda */}
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 3,
+        }}
+      >
         <Typography variant="h6" fontWeight="bold">
           MATRIZ DE ESCALAMIENTO GLOBAL
         </Typography>
 
         <TextField
-          placeholder="Buscar aplicativo"
+          placeholder="Buscar proveedor"
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
           sx={{
             width: "500px",
             backgroundColor: "white",
             borderRadius: "8px",
-            "& .MuiOutlinedInput-root": {
-              borderRadius: "8px",
-              "& fieldset": {
-                borderColor: "#ddd",
-              },
-              "&:hover fieldset": {
-                borderColor: "#002b5b",
-              },
-              "&.Mui-focused fieldset": {
-                borderColor: "#002b5b",
-              },
-            },
           }}
         />
       </Box>
@@ -80,8 +75,13 @@ const TablaMatriz = ({ registros = [], onEstadoChange, onEditar }) => {
               <TableCell sx={{ color: "white", fontWeight: "bold" }}>Teléfono Proveedor</TableCell>
               <TableCell sx={{ color: "white", fontWeight: "bold" }}>Teléfono Asesor</TableCell>
               <TableCell sx={{ color: "white", fontWeight: "bold" }}>Estado</TableCell>
-              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Editar</TableCell>
-            </TableRow>
+              {esProveedor ? (
+                <TableCell sx={{ color: "white" }}></TableCell>
+              ) : (
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Editar</TableCell>
+              )}
+                          
+               </TableRow>
           </TableHead>
 
           <TableBody>
@@ -99,9 +99,16 @@ const TablaMatriz = ({ registros = [], onEstadoChange, onEditar }) => {
                   <TableCell>{fila.n_telefono_proveedor}</TableCell>
                   <TableCell>{fila.n_telefono_asesor}</TableCell>
 
+                  {/* BOTÓN ESTADO */}
                   <TableCell>
                     <Button
-                      onClick={() => onEstadoChange(fila.id, fila.estado)}
+                      onClick={(e) => {
+                        if (esProveedor) {
+                          e.preventDefault();
+                          return; 
+                        }
+                        onEstadoChange(fila.id, fila.estado);
+                      }}
                       variant="contained"
                       sx={{
                         backgroundColor:
@@ -119,20 +126,24 @@ const TablaMatriz = ({ registros = [], onEstadoChange, onEditar }) => {
                         borderRadius: "20px",
                         textTransform: "none",
                         fontWeight: "bold",
+                        cursor: esProveedor ? "not-allowed" : "pointer",
                       }}
                     >
-                      {fila.estado.toLowerCase() === "habilitado" ? "Activo" : "Inactivo"}
+                      {fila.estado.toLowerCase() === "habilitado"
+                        ? "Activo"
+                        : "Inactivo"}
                     </Button>
                   </TableCell>
 
                   {/* BOTÓN EDITAR */}
                   <TableCell>
-                    <Button
-                      variant="contained"
+                    {!esProveedor && (
+                      <Button
+                        variant="contained"
                         color="primary"
                         size="small"
-                      onClick={() => onEditar(fila.id)}
-                      sx={{
+                        onClick={() => onEditar(fila.id)}
+                        sx={{
                           ml: 1,
                           textTransform: "none",
                           borderRadius: "10px",
@@ -140,17 +151,15 @@ const TablaMatriz = ({ registros = [], onEstadoChange, onEditar }) => {
                           py: 0.5,
                           fontWeight: 600,
                           backgroundColor: "#1565c0",
-                          boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-                          transition: "all 0.25s ease",
                           "&:hover": {
                             backgroundColor: "#0d47a1",
                             transform: "scale(1.05)",
-                            boxShadow: "0 3px 8px rgba(0,0,0,0.25)",
                           },
                         }}
-                    >
-                      Editar
-                    </Button>
+                      >
+                        Editar
+                      </Button>
+                    )}
                   </TableCell>
                 </TableRow>
               ))
@@ -161,6 +170,7 @@ const TablaMatriz = ({ registros = [], onEstadoChange, onEditar }) => {
     </Box>
   );
 };
+
 
 // ======================= //
 //   COMPONENTE MATRIZ PAGE
