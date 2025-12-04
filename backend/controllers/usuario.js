@@ -55,6 +55,7 @@ export const getUsuarios = async (req, res) => { // Creo mi función para obtene
 };
 
 
+
 //  Actualizar un usuario
 export const actualizarUsuario = async (req, res) => { // Creo mi función para actualizar usuario 
   try {
@@ -86,7 +87,29 @@ export const actualizarUsuario = async (req, res) => { // Creo mi función para 
     return res.status(500).json({ error: "Error al actualizar usuario" });
   }
 };
+// ✅ Obtener usuario por ID
+export const getUsuarioNombreById = async (req, res) => { // Creo mi función para obtener usuario por id
+  const { id } = req.params; // Obtengo mi id del cuerpo
 
+  try {
+    const usuario = await prisma.usuario.findUnique({
+      where: { id: Number(id) },
+        select: {
+          nombre_completo : true,
+          rol : true,
+      }, // Obtengo que corresponde a su id
+    });
+
+    if (!usuario) {
+      return res.status(404).json({ message: "usuario no encontrado" });
+    } // Si no hay usuario se devuelve 400 y un mensaje
+
+    res.json(usuario); // Se devuelven la usuario
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error al obtener la campaña", error });
+  } // Si hay un catch devuelvo 500 y un mensaje
+};
 
 
 // Obtener usuarios por campaña

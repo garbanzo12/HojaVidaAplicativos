@@ -1,4 +1,6 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+
 import {
   Box,
   Drawer,
@@ -41,17 +43,31 @@ const drawerWidth = 260;
 
 const Dashboard = () => {
   const token = localStorage.getItem("token");
-  let user = null;
+  const { user } = useAuth(); 
+  const [userDB, setUserDB] = React.useState(null);
 
-  try {
-    if (token) {
-      user = jwtDecode(token);
-    }
-  } catch (error) {
-    console.error("Token inválido, cerrando sesión...");
-    localStorage.removeItem("token");
-    window.location.href = "/";
-  }
+
+
+  
+    useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        if (!token) return;
+
+        const response = await axios.get(
+          `http://localhost:4000/usuario/nombreusuario/${user.id}`
+        );
+
+        setUserDB(response.data);
+      } catch (error) {
+        console.error(error);
+        logout();
+      }
+    };
+
+      fetchUser();
+    }, []);
+  
   useAuthGuard(["admin", "proveedor"]);
   const { logout } = useAuth();
 
@@ -62,7 +78,7 @@ const Dashboard = () => {
   const [abrirMatriz, setAbrirMatriz] = React.useState(false);
   const [abrirUsuarios, setAbrirUsuarios] = React.useState(false);
   const [seccionActual, setSeccionActual] = React.useState("inicio");
-  const can = (rolesAllowed) => rolesAllowed.includes(user?.rol);
+  const can = (rolesAllowed) => rolesAllowed.includes(userDB?.rol);
 
   const handleMenuClick = (event, menuName) => {
     setMenuAnchor({ ...menuAnchor, [menuName]: event.currentTarget });
@@ -182,7 +198,11 @@ const estiloItem = {
               color: "#fff",
             }}
           >
+
              {user?.rol?.toUpperCase()}
+
+            PANEL {userDB?.rol?.toUpperCase()}
+
           </Typography>
 
 
@@ -356,7 +376,7 @@ const estiloItem = {
           <IconButton sx={{ color: "white" }}>
             <AccountCircle sx={{ fontSize: 45 }} />
           </IconButton>
-          <Typography>{user?.nombre_completo}</Typography>
+          <Typography>{userDB?.nombre_completo}</Typography>
           <Button
                 variant="contained"
                 startIcon={<Logout />}
