@@ -1,27 +1,25 @@
-import { PrismaClient } from "@prisma/client";
-import { tuple } from "zod";
-const prisma = new PrismaClient();
+import { PrismaClient } from "@prisma/client"; // Estoy importanto el cliente de prisma
+const prisma = new PrismaClient(); // Inicializo el cliente de prisma con una variable prismaimport { tuple } from "zod";
+//import { tuple } from "zod";
 
-// ✅ Ruta de prueba
-export const testConnection = (req, res) => {
-  res.send("Servidor y Prisma funcionando correctamente 🚀");
-};
 
-// ✅ Obtener todas las campañas
-export const getCampanas = async (req, res) => {
+
+//Obtener todas las campañas
+export const getCampanas = async (req, res) => { // Hago mi funcion para obtener campañas
   try {
     const campanas = await prisma.campana.findMany({
       select: { id: true, nombre_campana: true , estado : true },
-    });
+    });  // Obtengo todas las campañas y devuelvo su id, nombre y estado
 
-    res.json({ success: true, campanas });
+    res.json({ success: true, campanas }); // Si la petición es satisfactoria devuelvo exito y las campañas
   } catch (error) {
     console.error("Error al obtener campañas:", error);
     res.status(500).json({ success: false, message: "Error al obtener campañas" });
-  }
+  } // Si hay un catch devuelvo 500 y un mensaje
 };
 
-export const getCampanasDetalles = async (req, res) => {
+//Obtener todas las campañas con detalles
+export const getCampanasDetalles = async (req, res) => { // Creo mi funcion para obtener campañas con detalles
   try {
     const campanas = await prisma.campana.findMany({
         include : {
@@ -30,22 +28,22 @@ export const getCampanasDetalles = async (req, res) => {
           matriz_escalamiento_global : true,
           usuarios : true,
         }
-    });
+    }); // Obtengo campañas e incluyo los aplicativos, matrices y usuarios relacionados a cada campaña
 
-    res.json(campanas);
+    res.json(campanas); // Si la petición es exitosa devuelvo las campañas
   } catch (error) {
     console.error("Error al obtener campañas:", error);
     res.status(500).json({
       success: false,
       message: "Error al obtener campañas.",
     });
-  }
+  } // Si hay un catch devuelvo 500 y un mensaje
 };
 
 
 // ✅ Obtener campaña por ID
-export const getCampanaById = async (req, res) => {
-  const { id } = req.params;
+export const getCampanaById = async (req, res) => { // Creo mi función para obtener campañas por id
+  const { id } = req.params; // Obtengo mi id del cuerpo
 
   try {
     const campana = await prisma.campana.findUnique({
@@ -55,23 +53,23 @@ export const getCampanaById = async (req, res) => {
           matriz_escalamiento: true,
           matriz_escalamiento_global: true,
           usuarios : true,
-      },
+      }, // Obtengo que corresponde a us id e le incluyo los aplciativos, matrices y usuario que esten relacionados a ella
     });
 
     if (!campana) {
       return res.status(404).json({ message: "Campaña no encontrada" });
-    }
+    } // Si no hay campaña se devuelve 400 y un mensaje
 
-    res.status(200).json(campana);
+    res.json(campana); // Se devuelven la campaña
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error al obtener la campaña", error });
-  }
+  } // Si hay un catch devuelvo 500 y un mensaje
 };
 
 
-// ✅ Crear nueva campaña
-export const createCampana = async (req, res) => {
+// Crear nueva campaña
+export const createCampana = async (req, res) => { // Creo mi función para crear una campaña
   try {
     const {
       nombre_campana,
@@ -96,13 +94,9 @@ export const createCampana = async (req, res) => {
       correo_soporte_abai,
       servicios_prestados,
       estado,
-    } = req.body;
+    } = req.body; // Le asigno al cuerpo los datos que se esperan 
 
-    console.log("📥 BODY COMPLETO:", req.body);
-
-    // ----------------------------
-    // 1. NORMALIZAR ARRAYS
-    // ----------------------------
+    // A continuación hago una normalización en los arrays que llegan desde el front de aplicativos, matrices y usuarios
 
     // Usuarios
     let usuarioIds = req.body["usuarioId[]"] || req.body.usuarioId || [];
@@ -122,15 +116,13 @@ export const createCampana = async (req, res) => {
     let matrizGlobalIds = req.body["matrizGlobalId[]"] || req.body.matrizGlobalId || [];
     if (!Array.isArray(matrizGlobalIds)) matrizGlobalIds = [matrizGlobalIds];
     matrizGlobalIds = matrizGlobalIds.map(Number).filter(Boolean);
+    
+    // console.log("📌 Usuarios IDs:", usuarioIds);
+    // console.log("📌 APLICATIVOS IDs:", aplicativoIds);
+    // console.log("📌 MATRIZ NORMAL IDs:", matrizIds);
+    // console.log("📌 MATRIZ GLOBAL IDs:", matrizGlobalIds);
 
-    console.log("📌 Usuarios IDs:", usuarioIds);
-    console.log("📌 APLICATIVOS IDs:", aplicativoIds);
-    console.log("📌 MATRIZ NORMAL IDs:", matrizIds);
-    console.log("📌 MATRIZ GLOBAL IDs:", matrizGlobalIds);
-
-    // ----------------------------
-    // 2. ARCHIVOS
-    // ----------------------------
+    // A continuación hago un tratamiento a los archivos(imagenes) que llegan al body
     const imagen_cliente = req.files?.imagen_cliente
       ? req.files.imagen_cliente[0].filename
       : null;
@@ -139,9 +131,7 @@ export const createCampana = async (req, res) => {
       ? req.files.imagen_sede[0].filename
       : null;
 
-    // ----------------------------
-    // 3. CREAR CAMPANA + RELACIONES
-    // ----------------------------
+    
 
     const nuevaCampana = await prisma.campana.create({
       data: {
@@ -187,50 +177,49 @@ export const createCampana = async (req, res) => {
 
         imagen_cliente,
         imagen_sede,
-      },
+      }, // Creo mi campaña y recorro los arrays de aplicativo, matrices y usuarios para relacionarlos a la campaña
     });
 
-    console.log("✅ APLICATIVOS GUARDADOS:", aplicativoIds);
-    console.log("✅ MATRIZ NORMAL GUARDADOS:", matrizIds);
-    console.log("✅ MATRIZ GLOBAL GUARDADOS:", matrizGlobalIds);
+    // console.log("✅ APLICATIVOS GUARDADOS:", aplicativoIds);
+    // console.log("✅ MATRIZ NORMAL GUARDADOS:", matrizIds);
+    // console.log("✅ MATRIZ GLOBAL GUARDADOS:", matrizGlobalIds);
 
-    res.status(201).json({
+    res.json({
       success: true,
       message: "Campaña creada correctamente",
       nuevaCampana,
-    });
+    }); // Si la petición es satisfactoria devuelvo mensaje de exito y la campaña
 
   } catch (error) {
     console.error("❌ Error al crear la campaña:", error);
     res.status(500).json({ error: "Error al crear la campaña" });
-  }
+  } // Si hay un catch devuelvo 500 y un mensaje
 };
 
 
 // ✅ Actualizar campaña
-export const updateCampana = async (req, res) => {
-  const { id } = req.params;
-  const campanaId = Number(id);
+export const updateCampana = async (req, res) => { // Creo mi función para actualizar camapaña
+  const { id } = req.params; // Obtengo id del cuerpo
+  const campanaId = Number(id); // Si el id llega como no numerico, se le convierte
 
   if (Number.isNaN(campanaId)) {
     return res.status(400).json({ success: false, message: "ID inválido." });
-  }
+  } // Si no hay id o es invalido se devuelvo 400
 
   try {
-    // 1. Verificar existencia
     const existing = await prisma.campana.findUnique({
       where: { id: campanaId }
-    });
+    }); // Busco la campaña que corresponda a su id
 
     if (!existing) {
       return res.status(404).json({ success: false, message: "Campaña no encontrada." });
-    }
+    } // Si no exite devuelvo un 404
 
-    // 2. Body RAW (viene como strings)
-    const raw = { ...req.body };
-    delete raw.id;
+   
+    const raw = { ...req.body };  // Body RAW (viene como strings)
+    delete raw.id; // Elimino del raw el id
 
-    const dataToUpdate = {};
+    const dataToUpdate = {}; // Inicializo una variable
 
     // --------- STRINGS ---------
     const camposString = [
@@ -255,11 +244,12 @@ export const updateCampana = async (req, res) => {
       "estado"
     ];
 
+    
     camposString.forEach(campo => {
       if (raw[campo] && raw[campo].trim() !== "") {
         dataToUpdate[campo] = raw[campo];
       }
-    });
+    });// Si hay un dato para actualizar se agrega a la variable de actualización
 
     // --------- NÚMEROS ---------
     if (raw.puestos_operacion !== undefined) {
@@ -278,38 +268,33 @@ export const updateCampana = async (req, res) => {
       if (!isNaN(d.getTime())) dataToUpdate.fecha_actualizacion = d;
     }
 
-    console.log("📌 Campos normales:", dataToUpdate);
+    // console.log("📌 Campos normales:", dataToUpdate);
 
-    // ============================================================
-    // 🔥 RELACIONES (CONVERSION REAL)
-    // ============================================================
-
-    // UTIL para convertir string o array → array de números
+    
+    //  RELACIONES 
+    // Para convertir string o array → array de números
     const parseIds = (input) => {
       if (!input) return [];
       if (Array.isArray(input)) return input.map(v => Number(v));
       return [Number(input)];
     };
 
-    // Recibir lo que manda el frontend
+    // Recibo lo que manda el frontend
     const usuarioIds = parseIds(raw.usuarioId);
     const aplicativosIds = parseIds(raw.aplicativoId);
     const matrizIds = parseIds(raw.matrizId);
     const matrizGlobalIds = parseIds(raw.matrizGlobalId);
 
-    console.log("📌 usuarioIds =>", usuarioIds);
-    console.log("📌 aplicativosIds =>", aplicativosIds);
-    console.log("📌 matrizIds =>", matrizIds);
-    console.log("📌 matrizGlobalIds =>", matrizGlobalIds);
+    // console.log("📌 usuarioIds =>", usuarioIds);
+    // console.log("📌 aplicativosIds =>", aplicativosIds);
+    // console.log("📌 matrizIds =>", matrizIds);
+    // console.log("📌 matrizGlobalIds =>", matrizGlobalIds);
 
-    // ============================================================
-    // 🔥 UPDATE EN PRISMA
-    // ============================================================
 
     const updated = await prisma.campana.update({
-      where: { id: campanaId },
+      where: { id: campanaId }, // Actualizo la campaña segun su id
       data: {
-        ...dataToUpdate,
+        ...dataToUpdate, // Le asigno a data los datos que se van a actualizar
 
         // 1:N usuarios
         ...(usuarioIds.length > 0 && {
@@ -340,16 +325,16 @@ export const updateCampana = async (req, res) => {
       }
     });
 
-    return res.status(200).json({
+    return res.json({
       success: true,
       message: "Campaña actualizada correctamente",
       data: updated
-    });
+    }); // Si la petición es satisfactoria devuelvo un mensaje de exito y el data
 
   } catch (error) {
     console.error("❌ ERROR UPDATE:", error);
     return res.status(500).json({ success: false, message: "Error al actualizar", error });
-  }
+  } // Si hay un catch devuelvo 500 y un mensaje
 };
 
 
@@ -358,59 +343,59 @@ export const updateCampana = async (req, res) => {
 
 
 
-export const updateEstadoCampana = async (req, res) => {
-  const { id } = req.params;
+export const updateEstadoCampana = async (req, res) => { // Creo mi función para actualizar campaña
+  const { id } = req.params; // Obtengo el id del cuerpo
 
   try {
-    // 1️⃣ Buscar la campaña por ID
+    //  Busco la campaña por ID
     const campana = await prisma.campana.findUnique({
-      where: { id: Number(id) },
+      where: { id: Number(id) }, // Busco la campaña segun su id
     });
 
-    // 2️⃣ Si no existe, devolver error
+   
     if (!campana) {
       return res.status(404).json({
         success: false,
         message: "Campaña no encontrada.",
       });
-    }
+    }  // Si no existe devuelvo 404 y mensaje 
 
-    // 3️⃣ Determinar el nuevo estado
     const nuevoEstado =
-      campana.estado === "HABILITADO" ? "DESHABILITADO" : "HABILITADO";
+      campana.estado === "HABILITADO" ? "DESHABILITADO" : "HABILITADO";    //  Determino el nuevo estado
 
-    // 4️⃣ Actualizar en base de datos
+
+    
     const campanaActualizada = await prisma.campana.update({
       where: { id: Number(id) },
       data: { estado: nuevoEstado },
-    });
+    }); // Actualizo la la campaña segun id y data
 
-    // 5️⃣ Responder con éxito
     res.json({
       success: true,
       message: `Estado actualizado a ${nuevoEstado}`,
       data: campanaActualizada,
-    });
+    }); // Si la petición es satisfactoria devuelvo mensaje de exito y data
+
   } catch (error) {
     console.error("Error al actualizar el estado de la campaña:", error);
     res.status(500).json({
       success: false,
       message: "Error al actualizar el estado de la campaña.",
     });
-  }
+  } // Si hay un catch devuelvo 500 y un mensaje
 };
 
 
 
 
 // Obtener campañas por usuario
-export const obtenerCampanasPorUsuario = async (req, res) => {
+export const obtenerCampanasPorUsuario = async (req, res) => { // Creo mi función para obtener campañas segun usuario
   try {
-    const usuarioId = Number(req.params.id);
+    const usuarioId = Number(req.params.id); // Obtengo el id del usuario y lo convierto a numerico
 
     if (!usuarioId || isNaN(usuarioId)) {
       return res.status(400).json({ error: "ID de usuario inválido" });
-    }
+    } // Si no hay usuario o es invalido devuelvo 400
 
     const campanas = await prisma.campana.findMany({
       where: {
@@ -423,15 +408,15 @@ export const obtenerCampanasPorUsuario = async (req, res) => {
         aplicativos: true,
         matriz_escalamiento: true,
         matriz_escalamiento_global: true
-      }
+      } // Devuelvo las campañas donde le usuario tenga el id que se esta esperando, ademas se incluyen los aplciativos,matrices y usuarios
     });
 
-    res.status(200).json(campanas);
+    res.json(campanas); // Si la petición es exitosa se devuelven las campañas
 
   } catch (error) {
     console.error("❌ Error al obtener campañas por usuario:", error);
     res.status(500).json({ error: "Error al obtener campañas por usuario" });
-  }
+  } // Si hay un catch devuelvo 500 y un mensaje
 };
 
 
