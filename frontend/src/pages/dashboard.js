@@ -545,10 +545,15 @@ const Dashboard = () => {
             </Box>
           ))}
         </Box>
-
-
     </Box>
+    
   )}
+
+    {seccionActual === "campana" && <TablaCampana />}
+        {seccionActual === "abai" && <TablaAplicativos />}
+        {seccionActual === "matriz" && <TablaMatriz />}
+        {seccionActual === "global" && <TablaGlobal />}
+        {seccionActual === "Usuario" && can(["administrador"]) && <TablaUsuarios />}
 </Box>
 
       {/* === MODALES === */}
