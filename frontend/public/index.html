@@ -3,11 +3,11 @@
   <head>
     <meta charset="utf-8" />
 
-    <!-- FAVICON BASE (ESTE ES EL QUE USA REACT SIEMPRE) -->
-    <link rel="icon" id="favicon" href="%PUBLIC_URL%/abai-logo.png" />
+    <!-- FAVICON BASE -->
+    <link rel="icon" id="favicon" href="%PUBLIC_URL%/favicon-96x96.png" />
 
     <!-- ICONO PARA iOS -->
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/abai-logo.png" />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/favicon-96x96.png" />
 
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
@@ -22,16 +22,16 @@
 
     <title>ABAI</title>
 
-    <!-- ✅ SCRIPT REAL PARA CAMBIAR LOGO SEGÚN MODO -->
+    <!-- Script para cambiar favicon según modo oscuro -->
     <script>
       function cambiarFavicon() {
         const favicon = document.getElementById("favicon");
         const darkMode = window.matchMedia("(prefers-color-scheme: dark)").matches;
 
         if (darkMode) {
-          favicon.href = "%PUBLIC_URL%/Logo-blanco.png";
+          favicon.href = "%PUBLIC_URL%/favicon-blanco.png"; 
         } else {
-          favicon.href = "%PUBLIC_URL%/abai-logo.png";
+          favicon.href = "%PUBLIC_URL%/favicon-96x96.png"; 
         }
       }
 

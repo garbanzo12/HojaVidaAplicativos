@@ -109,7 +109,7 @@ const Dashboard = () => {
             boxSizing: "border-box",
             background: "#002b5b",
             color: "white",
-            borderRight: "4px solid #D68910",
+            borderRight: "4px solid #D4AF37",
             display: "flex",
             flexDirection: "column",
             justifyContent: "space-between",
@@ -354,79 +354,202 @@ const Dashboard = () => {
       </Drawer>
 
       {/* === CONTENIDO PRINCIPAL === */}
-      <Box sx={{ flexGrow: 1, p: 4, overflowY: "auto" }}>
-        {seccionActual === "inicio" && (
-          <>
-            <Typography
-              variant="h4"
-              textAlign="center"
-              fontWeight="bold"
-              color="#002b5b"
-              mb={4}
-            >
-              MENÚ PRINCIPAL DE APLICATIVOS
-            </Typography>
+      <Box sx={{ flexGrow: 1, p: 3, overflow: "hidden" }}>
+  {seccionActual === "inicio" && (
+    <Box
+      sx={{
+        height: "100%",
+        px: 4,
+        pt: 4,
+        overflow: "hidden",
+      }}
+    >
+      <Box textAlign="center" mb={4}>
+        <Typography
+          sx={{
+            fontSize: "2.4rem",
+            fontWeight: "900",
+            color: "#0A1F44",
+            letterSpacing: "1px",
+          }}
+        >
+          MENÚ PRINCIPAL
+        </Typography>
 
+        <Typography sx={{ color: "#6B7280", mt: 0.5, fontSize: "1.05rem" }}>
+          Resumen del estado del sistema
+        </Typography>
+
+        <Box
+          sx={{
+            width: 150,
+            height: 4,
+            mx: "auto",
+            mt: 1.5,
+            borderRadius: 3,
+            background: "linear-gradient(90deg,#D4AF37,#FFD700)",
+          }}
+        />
+      </Box>
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: "repeat(5, 1fr)",
+          gap: 4,
+          maxWidth: 1450,
+          mx: "auto",
+          mb: 4,
+        }}
+      >
+        {[
+          { label: "Campañas Activas", value: 126 },
+          { label: "Campañas Inactivas", value: 45 },
+          { label: "Usuarios Activos", value: 89 },
+          { label: "Usuarios Inactivos", value: 12 },
+          { label: "Aplicativos Activos", value: 58 },
+
+          { label: "Aplicativos Inactivos", value: 14 },
+          { label: "Matriz Esc. Activas", value: 18 },
+          { label: "Matriz Esc. Inactivas", value: 14 },
+          { label: "Matriz Global Activas", value: 14 },
+          { label: "Matriz Global Inactivas", value: 7 },
+        ].map((item, idx) => (
+          <Card
+            key={idx}
+            sx={{
+              borderRadius: 4,
+              border: "1px solid #E5E7EB",
+              transition: "0.3s",
+              "&:hover": {
+                borderColor: "#D4AF37",
+                boxShadow: "0 10px 22px rgba(0,0,0,0.10)",
+                transform: "translateY(-4px)",
+              },
+            }}
+          >
+            <CardContent sx={{ textAlign: "center", py: 4 }}>
+              <Typography
+                sx={{
+                  fontSize: "0.8rem",
+                  color: "#6B7280",
+                  textTransform: "uppercase",
+                  fontWeight: "700",
+                }}
+              >
+                {item.label}
+              </Typography>
+
+              <Typography
+                sx={{
+                  fontSize: "2.3rem",
+                  fontWeight: "900",
+                  color: "#0A1F44",
+                  mt: 1,
+                }}
+              >
+                {item.value}
+              </Typography>
+
+              <Box
+                sx={{
+                  width: 65,
+                  height: 4,
+                  mx: "auto",
+                  mt: 1.5,
+                  borderRadius: 3,
+                  background: "#D4AF37",
+                }}
+              />
+            </CardContent>
+          </Card>
+        ))}
+      </Box>
+
+        <Typography
+          sx={{
+            textAlign: "center",
+            color: "#0A1F44",
+            fontWeight: "900",
+            letterSpacing: "2px",
+            mb: 3,
+            mt: 6,
+            fontSize: "1.4rem",
+          }}
+        >
+          RESUMEN TOTAL
+        </Typography>
+
+        <Box
+          sx={{
+            maxWidth: 1450,
+            mx: "auto",
+            display: "grid",
+            gridTemplateColumns: "repeat(4, 1fr)",
+            gap: 3,
+            mb: 6,
+          }}
+        >
+          {[
+            { label: "Total Campañas", value: 171 },
+            { label: "Total Usuarios", value: 101 },
+            { label: "Total Aplicativos", value: 72 },
+            { label: "Total Matrices", value: 53 },
+          ].map((item, i) => (
             <Box
+              key={i}
               sx={{
-                display: "flex",
-                justifyContent: "center",
-                gap: 4,
-                flexWrap: "wrap",
+                background: "#FFFFFF",
+                borderRadius: 4,
+                p: 3,
+                textAlign: "center",
+                border: "1px solid #E5E7EB",
+                transition: "0.3s",
+                "&:hover": {
+                  transform: "translateY(-6px)",
+                  boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
+                  borderColor: "#D4AF37",
+                },
               }}
             >
-              <Card
+              <Typography
                 sx={{
-                  width: 220,
-                  textAlign: "center",
-                  borderRadius: "16px",
-                  background:
-                    "linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%)",
-                  boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
+                  fontSize: "2.4rem",
+                  fontWeight: "900",
+                  color: "#002b5b",
                 }}
               >
-                <CardContent>
-                  <Person sx={{ fontSize: 45, color: "#1565c0" }} />
-                  <Typography variant="subtitle1" color="#0d47a1">
-                    CAMPAÑAS ACTIVAS
-                  </Typography>
-                  <Typography variant="h5" fontWeight="bold" color="#002b5b">
-                    126
-                  </Typography>
-                </CardContent>
-              </Card>
+                {item.value}
+              </Typography>
 
-              <Card
+              <Typography
                 sx={{
-                  width: 220,
-                  textAlign: "center",
-                  borderRadius: "16px",
-                  background:
-                    "linear-gradient(135deg, #FFF9C4 0%, #FFF59D 100%)",
-                  boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
+                  fontSize: "0.95rem",
+                  fontWeight: "700",
+                  color: "#6B7280",
+                  mt: 0.5,
                 }}
               >
-                <CardContent>
-                  <Warning sx={{ fontSize: 45, color: "#fbc02d" }} />
-                  <Typography variant="subtitle1" color="#795548">
-                    CAMPAÑAS INACTIVAS
-                  </Typography>
-                  <Typography variant="h5" fontWeight="bold" color="#5d4037">
-                    45
-                  </Typography>
-                </CardContent>
-              </Card>
+                {item.label}
+              </Typography>
+
+              <Box
+                sx={{
+                  width: 45,
+                  height: 4,
+                  mx: "auto",
+                  mt: 1.5,
+                  borderRadius: 3,
+                  background: "#D4AF37",
+                }}
+              />
             </Box>
-          </>
-        )}
+          ))}
+        </Box>
 
-        {seccionActual === "campana" && <TablaCampana />}
-        {seccionActual === "abai" && <TablaAplicativos />}
-        {seccionActual === "matriz" && <TablaMatriz />}
-        {seccionActual === "global" && <TablaGlobal />}
-        {seccionActual === "Usuario" && can(["administrador"]) && <TablaUsuarios />}
 
-      </Box>
+    </Box>
+  )}
+</Box>
 
       {/* === MODALES === */}
       {abrirFormulario && (
