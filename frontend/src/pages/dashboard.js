@@ -80,6 +80,28 @@ const Dashboard = () => {
     setSeccionActual("inicio");
   };
 
+  const estiloMenu = {
+  "& .MuiPaper-root": {
+    backgroundColor: "#00395e", // azul oscuro similar a la imagen
+    color: "white",
+    borderRadius: "8px",
+    paddingTop: "6px",
+    paddingBottom: "6px",
+    minWidth: "200px",
+    boxShadow: "0 3px 10px rgba(0,0,0,0.25)",
+  },
+};
+
+const estiloItem = {
+  padding: "10px 20px",
+  fontSize: "14px",
+  display: "block",
+  textAlign: "left",
+  "&:hover": {
+    backgroundColor: "rgba(255,255,255,0.15)",
+  },
+};
+
   const sidebarItems = [
     { label: "Formularios", type: "dropdown" },
   
@@ -160,7 +182,7 @@ const Dashboard = () => {
               color: "#fff",
             }}
           >
-            PANEL {user?.rol?.toUpperCase()}
+             {user?.rol?.toUpperCase()}
           </Typography>
 
 
