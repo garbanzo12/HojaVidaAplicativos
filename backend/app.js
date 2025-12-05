@@ -8,6 +8,7 @@ import matriz from "./routes/matriz.js"
 import aplicativo from "./routes/aplicativo.js"
 import usuario from "./routes/usuario.js";
 import authRoutes from "./routes/auth.js";
+import infogeneral from "./routes/infogeneral.js";
 const app = express();
 
 // ✅ CORS debe estar ANTES de las rutas
@@ -26,6 +27,7 @@ app.use("/matriz", matriz);
 app.use("/aplicativo", aplicativo);
 app.use("/usuario", usuario);
 app.use("/auth", authRoutes);
+app.use("/infogeneral", infogeneral);
 
 app.use("/uploads", express.static("uploads"));
 

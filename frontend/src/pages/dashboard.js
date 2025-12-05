@@ -45,6 +45,7 @@ const Dashboard = () => {
   const token = localStorage.getItem("token");
   const { user } = useAuth(); 
   const [userDB, setUserDB] = React.useState(null);
+  const [info, setInfo] = React.useState(null);
 
 
 
@@ -63,14 +64,18 @@ const Dashboard = () => {
         console.error(error);
         logout();
       }
+      const infos = await axios.get(
+          `http://localhost:4000/infogeneral/`
+        );
+        setInfo(infos.data);
+        
+
     };
 
       fetchUser();
     }, []);
-  
   useAuthGuard(["admin", "proveedor"]);
   const { logout } = useAuth();
-
   const [menuAnchor, setMenuAnchor] = React.useState({});
   const [abrirFormulario, setAbrirFormulario] = React.useState(false);
   const [abrirAplicativo, setAbrirAplicativo] = React.useState(false);
@@ -199,7 +204,6 @@ const estiloItem = {
             }}
           >
 
-             {user?.rol?.toUpperCase()}
 
             PANEL {userDB?.rol?.toUpperCase()}
 
@@ -443,18 +447,23 @@ const estiloItem = {
           mb: 4,
         }}
       >
-        {[
-          { label: "Campañas Activas", value: 126 },
-          { label: "Campañas Inactivas", value: 45 },
-          { label: "Usuarios Activos", value: 89 },
-          { label: "Usuarios Inactivos", value: 12 },
-          { label: "Aplicativos Activos", value: 58 },
+        {
+          
+        [
+           { label: "Campañas Activas", value: info?.campanas?.habilitadas ?? "-" },
+            { label: "Campañas Inactivas", value: info?.campanas?.deshabilitadas ?? "-" },
 
-          { label: "Aplicativos Inactivos", value: 14 },
-          { label: "Matriz Esc. Activas", value: 18 },
-          { label: "Matriz Esc. Inactivas", value: 14 },
-          { label: "Matriz Global Activas", value: 14 },
-          { label: "Matriz Global Inactivas", value: 7 },
+            { label: "Usuarios Activos", value: info?.usuarios?.habilitados ?? "-" },
+            { label: "Usuarios Inactivos", value: info?.usuarios?.deshabilitados ?? "-" },
+
+            { label: "Aplicativos Activos", value: info?.aplicativos?.habilitados ?? "-" },
+            { label: "Aplicativos Inactivos", value: info?.aplicativos?.deshabilitados ?? "-" },
+
+            { label: "Matriz Esc. Activas", value: info?.matriz_escalamiento?.habilitada ?? "-" },
+            { label: "Matriz Esc. Inactivas", value: info?.matriz_escalamiento?.deshabilitada ?? "-" },
+
+            { label: "Matriz Global Activas", value: info?.matriz_escalamiento_global?.habilitada ?? "-" },
+            { label: "Matriz Global Inactivas", value: info?.matriz_escalamiento_global?.deshabilitada ?? "-" },
         ].map((item, idx) => (
           <Card
             key={idx}
@@ -532,10 +541,11 @@ const estiloItem = {
           }}
         >
           {[
-            { label: "Total Campañas", value: 171 },
-            { label: "Total Usuarios", value: 101 },
-            { label: "Total Aplicativos", value: 72 },
-            { label: "Total Matrices", value: 53 },
+            { label: "Total Campañas", value: info?.campanas?.total ?? "-" },
+            { label: "Total Usuarios", value: info?.usuarios?.total ?? "-" },
+            { label: "Total Aplicativos", value: info?.aplicativos?.total ?? "-" },
+            { label: "Total Matriz Escalamiento", value: info?.matriz_escalamiento?.total ?? "-" },
+            { label: "Total Matriz Global", value: info?.matriz_escalamiento_global?.total ?? "-" },
           ].map((item, i) => (
             <Box
               key={i}
