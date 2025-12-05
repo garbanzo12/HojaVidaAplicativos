@@ -535,8 +535,8 @@ const estiloItem = {
             maxWidth: 1450,
             mx: "auto",
             display: "grid",
-            gridTemplateColumns: "repeat(4, 1fr)",
-            gap: 3,
+            gridTemplateColumns: "repeat(5, 1fr)",
+            gap: 4,
             mb: 6,
           }}
         >
@@ -548,21 +548,28 @@ const estiloItem = {
             { label: "Total Matriz Global", value: info?.matriz_escalamiento_global?.total ?? "-" },
           ].map((item, i) => (
             <Box
-              key={i}
-              sx={{
-                background: "#FFFFFF",
-                borderRadius: 4,
-                p: 3,
-                textAlign: "center",
-                border: "1px solid #E5E7EB",
-                transition: "0.3s",
-                "&:hover": {
-                  transform: "translateY(-6px)",
-                  boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
-                  borderColor: "#D4AF37",
-                },
-              }}
-            >
+                key={i}
+                sx={{
+                  background: "#FFFFFF",
+                  borderRadius: 4,
+                  p: 3,
+                  textAlign: "center",
+                  border: "1px solid #E5E7EB",
+                  transition: "0.3s",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+
+                  
+
+                  "&:hover": {
+                    transform: "translateY(-6px)",
+                    boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
+                    borderColor: "#D4AF37",
+                  },
+                }}
+              >
               <Typography
                 sx={{
                   fontSize: "2.4rem",
