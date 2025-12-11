@@ -201,7 +201,7 @@ export const createCampana = async (req, res) => { // Creo mi función para crea
 export const updateCampana = async (req, res) => { // Creo mi función para actualizar camapaña
   const { id } = req.params; // Obtengo id del cuerpo
   const campanaId = Number(id); // Si el id llega como no numerico, se le convierte
-
+  
   if (Number.isNaN(campanaId)) {
     return res.status(400).json({ success: false, message: "ID inválido." });
   } // Si no hay id o es invalido se devuelvo 400
@@ -244,7 +244,20 @@ export const updateCampana = async (req, res) => { // Creo mi función para actu
       "estado"
     ];
 
-    
+    if (req.files) {
+      if (req.files.imagen_sede && req.files.imagen_sede.length > 0) {
+        const file = req.files.imagen_sede[0];
+        dataToUpdate.imagen_sede = file.filename;  // o file.path
+      }
+      if (req.files.imagen_cliente && req.files.imagen_cliente.length > 0) {
+        const file = req.files.imagen_cliente[0];
+        dataToUpdate.imagen_cliente = file.filename;
+      }
+    }
+    dataToUpdate.imagen_cliente = raw.imagen_cliente === 'Eliminada' ? null : dataToUpdate.imagen_cliente;
+
+    dataToUpdate.imagen_sede = raw.imagen_sede === 'Eliminada' ? null : dataToUpdate.imagen_sede;
+     
     camposString.forEach(campo => {
       if (raw[campo] && raw[campo].trim() !== "") {
         dataToUpdate[campo] = raw[campo];

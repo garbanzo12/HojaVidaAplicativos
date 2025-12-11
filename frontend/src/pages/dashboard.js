@@ -157,6 +157,7 @@ const estiloItem = {
             flexDirection: "column",
             justifyContent: "space-between",
             boxShadow: "4px 0 15px rgba(0,0,0,0.15)",
+            
           },
         }}
       >

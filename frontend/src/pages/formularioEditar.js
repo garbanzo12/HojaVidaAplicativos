@@ -272,12 +272,12 @@ export default function FormularioEditarCampana({ open, onClose, idCampana, onUp
   };
 
   const eliminarImagenSede = () => {
-    setFormData(prev => ({ ...prev, imagen_sede: null }));
+    setFormData(prev => ({ ...prev, imagen_sede: "Eliminada" }));
     setPreviewSede(null);
   };
 
   const eliminarImagenCliente = () => {
-    setFormData(prev => ({ ...prev, imagen_cliente: null }));
+    setFormData(prev => ({ ...prev, imagen_cliente: "Eliminada" }));
     setPreviewCliente(null);
   };
 
@@ -310,7 +310,7 @@ export default function FormularioEditarCampana({ open, onClose, idCampana, onUp
       matrizIdArr.forEach(id => formDataToSend.append("matrizId[]", id));
       matrizGlobalArr.forEach(id => formDataToSend.append("matrizGlobalId[]", id));
       if (usuarioIdVal !== "") formDataToSend.append("usuarioId", usuarioIdVal);
-
+       
       // Otros campos mapeados al backend (mismos nombres que en tu formulario antiguo)
       const dataToSubmit = {
         nombre_campana: formData.nombre_campana || null,
@@ -346,7 +346,12 @@ export default function FormularioEditarCampana({ open, onClose, idCampana, onUp
       // Añadir las imágenes si se cargaron nuevas (si no, no las incluimos)
       if (formData.imagen_sede) formDataToSend.append("imagen_sede", formData.imagen_sede);
       if (formData.imagen_cliente) formDataToSend.append("imagen_cliente", formData.imagen_cliente);
-
+      if(formData.imagen_sede === "Eliminada"){
+          dataToSubmit["imagen_sede"] = null;
+      }
+      if(formData.imagen_cliente === "Eliminada"){
+          dataToSubmit["imagen_cliente"] = null;
+      }
       // DEBUG (opcional)
       // for (let p of formDataToSend.entries()) console.log(p[0], p[1]);
 
