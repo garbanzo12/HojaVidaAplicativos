@@ -11,6 +11,7 @@ import {
   TableBody,
   Button,
   Modal,
+  Pagination, // ← IMPORTANTE
 } from "@mui/material";
 import axios from "axios";
 import FormularioEditarAplicativo from "./FormularioEditarAplicativo";
@@ -21,19 +22,53 @@ const ListarAplicativo = () => {
   const [query, setQuery] = useState("");
   const [editing, setEditing] = useState(null);
   const [loading, setLoading] = useState(false);
-  const { user } = useAuth(); 
+  const { user } = useAuth();
 
-const fetchAplicativos = async () => {
-  try {
-    setLoading(true);
+  // 🔥 PAGINACIÓN
+  const [page, setPage] = useState(1);
+  const rowsPerPage = 8;
 
-    console.log(user)
-    const esProveedor = user?.rol === "proveedor";
+  const fetchAplicativos = async () => {
+    try {
+      setLoading(true);
 
-    if (!esProveedor) {
-      // Si NO es proveedor ⇒ trae TODOS los aplicativos como ya lo tenías
-      const res = await axios.get("http://localhost:4000/aplicativo/detalles");
-      const data = res.data.map((a) => ({
+      const esProveedor = user?.rol === "proveedor";
+
+      if (!esProveedor) {
+        const res = await axios.get("http://localhost:4000/aplicativo/detalles");
+        const data = res.data.map((a) => ({
+          id: a.id,
+          nombre: a.nombre,
+          direccion_ip: a.direccion_ip,
+          puerto: a.puerto,
+          tipoAplicativo: a.tipo_aplicativo,
+          tipo_red: a.tipo_red,
+          escalamiento: a.escalamiento,
+          estado: a.estado,
+          url: a.url,
+        }));
+        setRows(data);
+        return;
+      }
+
+      const campanasRes = await axios.get("http://localhost:4000/campana/detalles");
+      const campanas = campanasRes.data;
+
+      const campanasDelUsuario = campanas.filter((c) =>
+        c.usuarios.some((u) => u.id === user.id)
+      );
+
+      const aplicativosFiltrados = [];
+
+      campanasDelUsuario.forEach((campana) => {
+        campana.aplicativos.forEach((app) => aplicativosFiltrados.push(app));
+      });
+
+      const unicos = Array.from(
+        new Map(aplicativosFiltrados.map((a) => [a.id, a])).values()
+      );
+
+      const data = unicos.map((a) => ({
         id: a.id,
         nombre: a.nombre,
         direccion_ip: a.direccion_ip,
@@ -44,54 +79,14 @@ const fetchAplicativos = async () => {
         estado: a.estado,
         url: a.url,
       }));
+
       setRows(data);
-      return;
+    } catch (err) {
+      console.error("Error filtrando aplicativos:", err);
+    } finally {
+      setLoading(false);
     }
-
-    // 🔥 SI ES PROVEEDOR, SE APLICA FILTRO 🔥
-    const campanasRes = await axios.get("http://localhost:4000/campana/detalles");
-    const campanas = campanasRes.data;
-
-    // campañas donde participa el usuario
-    const campanasDelUsuario = campanas.filter((c) =>
-      c.usuarios.some((u) => u.id === user.id)
-    );
-
-    // extraer aplicativos de esas campañas
-    const aplicativosFiltrados = [];
-
-    campanasDelUsuario.forEach((campana) => {
-      campana.aplicativos.forEach((app) => {
-        aplicativosFiltrados.push(app);
-      });
-    });
-
-    // eliminar duplicados por ID
-    const unicos = Array.from(
-      new Map(aplicativosFiltrados.map((a) => [a.id, a])).values()
-    );
-
-    // Formatear como lo necesita la tabla
-    const data = unicos.map((a) => ({
-      id: a.id,
-      nombre: a.nombre,
-      direccion_ip: a.direccion_ip,
-      puerto: a.puerto,
-      tipoAplicativo: a.tipo_aplicativo,
-      tipo_red: a.tipo_red,
-      escalamiento: a.escalamiento,
-      estado: a.estado,
-      url: a.url,
-    }));
-
-    setRows(data);
-  } catch (err) {
-    console.error("Error filtrando aplicativos:", err);
-  } finally {
-    setLoading(false);
-  }
-};
-
+  };
 
   useEffect(() => {
     fetchAplicativos();
@@ -100,10 +95,12 @@ const fetchAplicativos = async () => {
   const toggleEstado = async (id, estadoActual) => {
     const nuevoEstado =
       estadoActual === "HABILITADO" ? "DESHABILITADO" : "HABILITADO";
+
     try {
       await axios.put(`http://localhost:4000/aplicativo/estado/${id}`, {
         estado: nuevoEstado,
       });
+
       setRows((prev) =>
         prev.map((row) =>
           row.id === id ? { ...row, estado: nuevoEstado } : row
@@ -114,19 +111,9 @@ const fetchAplicativos = async () => {
     }
   };
 
-  const handleBuscar = (e) => setQuery(e.target.value.toLowerCase());
-
-  const filteredRows = rows.filter(
-    (row) =>
-      row.nombre.toLowerCase().includes(query) ||
-      row.tipo_red.toLowerCase().includes(query) ||
-      row.escalamiento.toLowerCase().includes(query)
-  );
-
   const handleCerrarEditar = () => setEditing(null);
 
   const handleVerUrl = (url) => {
-    console.log(url)
     if (url) {
       window.open(url, "_blank", "noopener,noreferrer");
     } else {
@@ -134,13 +121,23 @@ const fetchAplicativos = async () => {
     }
   };
 
+  // 🔥 FILTRO
+  const filteredRows = rows.filter((row) =>
+    `${row.nombre} ${row.tipo_red} ${row.escalamiento}`
+      .toLowerCase()
+      .includes(query.toLowerCase())
+  );
+
+  // 🔥 PAGINACIÓN (slice)
+  const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
+
+  const paginatedRows = filteredRows.slice(
+    (page - 1) * rowsPerPage,
+    page * rowsPerPage
+  );
+
   return (
-    <Box
-      sx={{
-        padding: "40px",
-        minHeight: "100vh",
-      }}
-    >
+    <Box sx={{ padding: "40px", minHeight: "100vh" }}>
       <Box
         display="flex"
         alignItems="center"
@@ -163,7 +160,6 @@ const fetchAplicativos = async () => {
           LISTA DE APLICATIVOS
         </Typography>
 
-        {/* 🔥 CORREGIDO SOLO ESTA PARTE 🔥 */}
         <TextField
           label="Buscar aplicativo"
           variant="outlined"
@@ -207,7 +203,6 @@ const fetchAplicativos = async () => {
                   sx={{
                     color: "white",
                     fontWeight: "bold",
-                    textAlign: "center",
                     fontSize: "14px",
                     py: 1.5,
                   }}
@@ -219,7 +214,7 @@ const fetchAplicativos = async () => {
           </TableHead>
 
           <TableBody>
-            {filteredRows.map((row, index) => (
+            {paginatedRows.map((row, index) => (
               <TableRow
                 key={row.id}
                 sx={{
@@ -270,23 +265,19 @@ const fetchAplicativos = async () => {
                         py: 0.5,
                         fontWeight: 600,
                         backgroundColor: "#1565c0",
-                        boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-                        transition: "all 0.25s ease",
                         "&:hover": {
                           backgroundColor: "#0d47a1",
-                          transform: "scale(1.05)",
-                          boxShadow: "0 3px 8px rgba(0,0,0,0.25)",
                         },
                       }}
                       onClick={() => setEditing(row)}
                     >
                       Editar
                     </Button>
+
                     <Button
                       variant="outlined"
                       size="small"
                       onClick={() => handleVerUrl(row.url)}
-                    
                       sx={{
                         color: "#0288d1",
                         borderColor: "#0288d1",
@@ -296,14 +287,10 @@ const fetchAplicativos = async () => {
                         px: 2,
                         py: 0.5,
                         fontWeight: 600,
-                        boxShadow: "0 1px 3px rgba(2, 136, 209, 0.2)",
-                        transition: "all 0.25s ease",
+                        transition: "0.25s",
                         "&:hover": {
                           backgroundColor: "#0288d1",
                           color: "#fff",
-                          borderColor: "#0288d1",
-                          boxShadow: "0 3px 6px rgba(2, 136, 209, 0.3)",
-                          transform: "scale(1.05)",
                         },
                       }}
                     >
@@ -317,7 +304,28 @@ const fetchAplicativos = async () => {
         </Table>
       </Paper>
 
-      {/* MODAL DE EDICIÓN */}
+      {/* 🔥 PAGINACIÓN BONITA ABAJO */}
+      <Box display="flex" justifyContent="center" mt={4}>
+        <Pagination
+          count={totalPages}
+          page={page}
+          onChange={(e, value) => setPage(value)}
+          shape="rounded"
+          size="large"
+          sx={{
+            "& .MuiPaginationItem-root": {
+              fontWeight: "bold",
+              color: "#002b5b",
+            },
+            "& .Mui-selected": {
+              backgroundColor: "#002b5b !important",
+              color: "white !important",
+            },
+          }}
+        />
+      </Box>
+
+      {/* MODAL */}
       <Modal open={Boolean(editing)} onClose={handleCerrarEditar}>
         <Box
           sx={{
@@ -326,7 +334,6 @@ const fetchAplicativos = async () => {
             left: "50%",
             transform: "translate(-50%, -50%)",
             bgcolor: "white",
-            boxShadow: 24,
             borderRadius: "20px",
             p: 4,
             width: "90%",
@@ -335,7 +342,6 @@ const fetchAplicativos = async () => {
         >
           {editing && (
             <FormularioEditarAplicativo
-              open={Boolean(editing)}
               onClose={handleCerrarEditar}
               idAplicativo={editing.id}
               onUpdate={() => fetchAplicativos()}

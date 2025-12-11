@@ -12,6 +12,7 @@ import {
   Button,
   Modal,
   InputAdornment,
+  Pagination,
 } from "@mui/material";
 import axios from "axios";
 import FormularioEditarMatriz from "./FormularioEditarMatriz";
@@ -20,21 +21,34 @@ import { useAuth } from "../context/AuthContext.js";
 const TablaMatriz = ({ registros = [], onEstadoChange, onEditar }) => {
   const [busqueda, setBusqueda] = useState("");
 
+
+  const [page, setPage] = useState(1);
+  const rowsPerPage = 8;
+
   const filtrados = registros.filter((fila) =>
     Object.values(fila).some((v) =>
       String(v).toLowerCase().includes(busqueda.toLowerCase())
     )
   );
 
+  const totalPages = Math.ceil(filtrados.length / rowsPerPage);
+
+  const paginatedRows = filtrados.slice(
+    (page - 1) * rowsPerPage,
+    page * rowsPerPage
+  );
+
   return (
     <Box sx={{ width: "90%", mx: "auto", mt: 4 }}>
-      {/* Header con título y búsqueda en la misma línea */}
-      <Box sx={{ 
-        display: "flex", 
-        justifyContent: "space-between", 
-        alignItems: "center",
-        mb: 3 
-      }}>
+      {/* Header con título y búsqueda */}
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 3,
+        }}
+      >
         <Typography variant="h6" fontWeight="bold">
           MATRIZ DE ESCALAMIENTO
         </Typography>
@@ -42,7 +56,10 @@ const TablaMatriz = ({ registros = [], onEstadoChange, onEditar }) => {
         <TextField
           placeholder="Buscar aplicativo"
           value={busqueda}
-          onChange={(e) => setBusqueda(e.target.value)}
+          onChange={(e) => {
+            setBusqueda(e.target.value);
+            setPage(1); // resetear paginación al buscar
+          }}
           sx={{
             width: "500px",
             backgroundColor: "white",
@@ -92,14 +109,14 @@ const TablaMatriz = ({ registros = [], onEstadoChange, onEditar }) => {
           </TableHead>
 
           <TableBody>
-            {filtrados.length === 0 ? (
+            {paginatedRows.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} align="center">
                   No hay registros
                 </TableCell>
               </TableRow>
             ) : (
-              filtrados.map((fila, index) => (
+              paginatedRows.map((fila, index) => (
                 <TableRow key={index}>
                   <TableCell>{fila.proveedor}</TableCell>
                   <TableCell>{fila.codigo_servicio}</TableCell>
@@ -159,9 +176,30 @@ const TablaMatriz = ({ registros = [], onEstadoChange, onEditar }) => {
           </TableBody>
         </Table>
       </Paper>
+
+      <Box display="flex" justifyContent="center" mt={4} mb={2}>
+        <Pagination
+          count={totalPages}
+          page={page}
+          onChange={(e, value) => setPage(value)}
+          shape="rounded"
+          size="large"
+          sx={{
+            "& .MuiPaginationItem-root": {
+              fontWeight: "bold",
+              color: "#002b5b",
+            },
+            "& .Mui-selected": {
+              backgroundColor: "#002b5b !important",
+              color: "white !important",
+            },
+          }}
+        />
+      </Box>
     </Box>
   );
 };
+
 
 const MatrizPage = () => {
   const [registros, setRegistros] = useState([]);

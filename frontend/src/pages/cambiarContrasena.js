@@ -20,7 +20,7 @@ import Fondo from "../img/2.jpg";
 const CambiarPassword = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const token = searchParams.get("token"); // token desde ?token=...
+  const token = searchParams.get("token"); 
 
   const [showNueva, setShowNueva] = useState(false);
   const [showConfirmar, setShowConfirmar] = useState(false);
@@ -78,7 +78,6 @@ const CambiarPassword = () => {
     }
 
     try {
-      // Enviar token y nueva contraseña EN EL BODY (POST)
       const res = await axios.post("http://localhost:4000/auth/reset-password", {
         token,
         newPassword: form.nueva,
@@ -86,13 +85,12 @@ const CambiarPassword = () => {
 
       setAlerta({
         open: true,
-        message: res.data?.message || "Contraseña restablecida correctamente 💖",
+        message: res.data?.message || "Contraseña restablecida correctamente ",
         severity: "success",
       });
 
       setForm({ nueva: "", confirmar: "" });
 
-      // Opcional: redirigir al login después de 2s
       setTimeout(() => {
         navigate("/");
       }, 1800);

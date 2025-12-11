@@ -10,6 +10,7 @@ import {
   Box,
   Button,
   TextField,
+  Pagination,
 } from "@mui/material";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext.js";
@@ -25,12 +26,22 @@ const TablaMatriz = ({ registros = [], onEstadoChange, onEditar }) => {
   const { user } = useAuth(); 
   const [busqueda, setBusqueda] = useState("");
 
+  const [page, setPage] = useState(1);
+  const rowsPerPage = 8;
+
   const esProveedor = user?.rol === "proveedor";
 
   const filtrados = registros.filter((fila) =>
     Object.values(fila).some((v) =>
       String(v).toLowerCase().includes(busqueda.toLowerCase())
     )
+  );
+
+  const totalPages = Math.ceil(filtrados.length / rowsPerPage);
+
+  const paginatedRows = filtrados.slice(
+    (page - 1) * rowsPerPage,
+    page * rowsPerPage
   );
 
   return (
@@ -80,19 +91,18 @@ const TablaMatriz = ({ registros = [], onEstadoChange, onEditar }) => {
               ) : (
                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Editar</TableCell>
               )}
-                          
-               </TableRow>
+            </TableRow>
           </TableHead>
 
           <TableBody>
-            {filtrados.length === 0 ? (
+            {paginatedRows.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} align="center">
                   No hay registros
                 </TableCell>
               </TableRow>
             ) : (
-              filtrados.map((fila, index) => (
+              paginatedRows.map((fila, index) => (
                 <TableRow key={index}>
                   <TableCell>{fila.proveedor}</TableCell>
                   <TableCell>{fila.codigo_servicio}</TableCell>
@@ -167,6 +177,26 @@ const TablaMatriz = ({ registros = [], onEstadoChange, onEditar }) => {
           </TableBody>
         </Table>
       </Paper>
+
+      <Box display="flex" justifyContent="center" mt={4}>
+        <Pagination
+          count={totalPages}
+          page={page}
+          onChange={(e, value) => setPage(value)}
+          shape="rounded"
+          size="large"
+          sx={{
+            "& .MuiPaginationItem-root": {
+              fontWeight: "bold",
+              color: "#002b5b",
+            },
+            "& .Mui-selected": {
+              backgroundColor: "#002b5b !important",
+              color: "white !important",
+            },
+          }}
+        />
+      </Box>
     </Box>
   );
 };

@@ -19,21 +19,25 @@
     Grid,
     Divider,
     TextField,
-    TablePagination,
     CircularProgress,
+      Pagination, 
   } from "@mui/material";
   import FormularioEditar from "./formularioEditar.js";
   import { useAuth } from "../context/AuthContext";
 
   const TablaCampana = () => {
-    const { user } = useAuth(); 
-    const [rows, setRows] = useState([]);
-    const [selected, setSelected] = useState(null);
-    const [editing, setEditing] = useState(null);
-    const [search, setSearch] = useState("");
-    const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(5);
-    const [loading, setLoading] = useState(false);
+    const { user } = useAuth();
+
+  const [rows, setRows] = useState([]);
+  const [selected, setSelected] = useState(null);
+  const [editing, setEditing] = useState(null);
+  const [search, setSearch] = useState("");
+
+  /**  PAGINACIÓN BONITA */
+  const [page, setPage] = useState(1);
+  const rowsPerPage = 8;
+
+  const [loading, setLoading] = useState(false);
     console.log(user)
   useEffect(() => {
     const fetchCampanas = async () => {
@@ -129,16 +133,18 @@
         c.directorOperacion.toLowerCase().includes(search.toLowerCase())
     );
 
-    const handleChangePage = (_, newPage) => setPage(newPage);
-    const handleChangeRowsPerPage = (e) => {
-      setRowsPerPage(parseInt(e.target.value, 10));
-      setPage(0);
-    };
-
     const handleVerDetalle = (campaña) => setSelected(campaña);
     const handleCerrarDetalle = () => setSelected(null);
     const handleEditar = (campaña) => setEditing(campaña);
     const handleCerrarEditar = () => setEditing(null);
+
+      /** NUEVA PAGINACIÓN */
+  const totalPages = Math.ceil(filtered.length / rowsPerPage);
+
+  const paginatedRows = filtered.slice(
+    (page - 1) * rowsPerPage,
+    page * rowsPerPage
+  );
 
     if (loading)
       return (
@@ -195,145 +201,137 @@
           </Box>
 
         <TableContainer
-          component={Paper}
-          sx={{
+        component={Paper}
+        sx={{
           borderRadius: 3,
-            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-            backgroundColor: "white",
-            overflowX: "auto",
-          }}
-        >
-          <Table>
-            <TableHead sx={{ backgroundColor: "#002b5b" }}>
-              <TableRow>
-                {["Imagen", "Campaña", "Cliente", "Director", "Correo", "Estado", "Acciones"].map(
-                  (h, i) => (
-                    <TableCell
-                      key={i}
-                      align="center"
-                      sx={{  color: "white",
-                      fontWeight: "bold",
-                      textAlign: "center",
-                      fontSize: "14px",
-                      py: 1.5, }}
-                    >
-                      {h}
-                    </TableCell>
-                  )
-                )}
-              </TableRow>
-            </TableHead>
-
-            <TableBody>
-              {filtered
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((c) => (
-                  <TableRow
-                    key={c.id}
+          boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+          backgroundColor: "white",
+          overflowX: "auto",
+        }}
+      >
+        <Table>
+          <TableHead sx={{ backgroundColor: "#002b5b" }}>
+            <TableRow>
+              {["Imagen", "Campaña", "Cliente", "Director", "Correo", "Estado", "Acciones"].map(
+                (h, i) => (
+                  <TableCell
+                    key={i}
+                    align="center"
                     sx={{
-                      "&:hover": { backgroundColor: "#e3f2fd  " },
-                      transition: "0.3s",
+                      color: "white",
+                      fontWeight: "bold",
+                      py: 1.5,
+                      fontSize: "14px",
                     }}
                   >
-                    <TableCell align="center">
-                      <Avatar
-                        src={c.imagen}
-                        alt={c.nombreCampaña}
-                        variant="rounded"
-                        sx={{ width: 60, height: 60 }}
-                      />
-                    </TableCell>
-                    <TableCell align="center">{c.nombreCampaña}</TableCell>
-                    <TableCell align="center">{c.cliente}</TableCell>
-                    <TableCell align="center">{c.directorOperacion}</TableCell>
-                    <TableCell align="center">{c.correo}</TableCell>
-                    <TableCell align="center">
+                    {h}
+                  </TableCell>
+                )
+              )}
+            </TableRow>
+          </TableHead>
+
+          <TableBody>
+            {paginatedRows.map((c) => (
+              <TableRow
+                key={c.id}
+                sx={{
+                  "&:hover": { backgroundColor: "#e3f2fd" },
+                  transition: "0.3s",
+                }}
+              >
+                <TableCell align="center">
+                  <Avatar src={c.imagen} variant="rounded" sx={{ width: 60, height: 60 }} />
+                </TableCell>
+
+                <TableCell align="center">{c.nombreCampaña}</TableCell>
+                <TableCell align="center">{c.cliente}</TableCell>
+                <TableCell align="center">{c.directorOperacion}</TableCell>
+                <TableCell align="center">{c.correo}</TableCell>
+
+                <TableCell align="center">
+                  <Button
+                    onClick={(e) => {
+                      if (user?.rol === "proveedor") return;
+                      handleToggleEstado(c.id, c.estado);
+                    }}
+                    variant="contained"
+                    sx={{
+                      backgroundColor: c.estado === "Activo" ? "#4caf50" : "#e53935",
+                      "&:hover": {
+                        backgroundColor: c.estado === "Activo" ? "#43a047" : "#c62828",
+                      },
+                      borderRadius: "20px",
+                      textTransform: "none",
+                      fontWeight: "bold",
+                      cursor: user?.rol === "proveedor" ? "not-allowed" : "pointer",
+                    }}
+                  >
+                    {c.estado}
+                  </Button>
+                </TableCell>
+
+                <TableCell align="center">
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => setSelected(c)}
+                    sx={{
+                      color: "#0288d1",
+                      borderColor: "#0288d1",
+                      backgroundColor: "#e3f2fd",
+                      borderRadius: "10px",
+                      px: 2,
+                      textTransform: "none",
+                      fontWeight: 600,
+                    }}
+                  >
+                    Ver Detalle
+                  </Button>
+
+                  {user?.rol !== "proveedor" && (
                     <Button
-                      onClick={(e) => {
-                        if (user?.rol === "proveedor") {
-                          e.preventDefault(); // evita que ejecute la acción
-                          return;
-                        }
-                        handleToggleEstado(c.id, c.estado);
-                      }}
                       variant="contained"
+                      size="small"
                       sx={{
-                        backgroundColor: c.estado === "Activo" ? "#4caf50" : "#e53935",
-                        "&:hover": {
-                          backgroundColor: c.estado === "Activo" ? "#43a047" : "#c62828",
-                        },
-                        borderRadius: "20px",
+                        ml: 1,
                         textTransform: "none",
-                        fontWeight: "bold",
-
-                        // 👇 Estilos cuando no puede usarlo, pero conserva color
-                        cursor: user?.rol === "proveedor" ? "not-allowed" : "pointer",
+                        borderRadius: "10px",
+                        px: 2,
+                        fontWeight: 600,
                       }}
+                      onClick={() => setEditing(c)}
                     >
-                      {c.estado}
+                      Editar
                     </Button>
+                  )}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
-                    </TableCell>
-                    <TableCell align="center">
-                      <Button
-                          variant="outlined"
-                          size="small"
-                          onClick={() => handleVerDetalle(c)}
-                          sx={{
-                            color: "#0288d1",
-                            borderColor: "#0288d1",
-                            backgroundColor: "#e3f2fd",
-                            textTransform: "none",
-                            borderRadius: "10px",
-                            px: 2,
-                            py: 0.5,
-                            fontWeight: 600,
-                            boxShadow: "0 1px 3px rgba(2, 136, 209, 0.2)",
-                            transition: "all 0.25s ease",
-                            "&:hover": {
-                              backgroundColor: "#0288d1",
-                              color: "#fff",
-                              borderColor: "#0288d1",
-                              boxShadow: "0 3px 6px rgba(2, 136, 209, 0.3)",
-                              transform: "scale(1.05)",
-                            },
-                          }}
-                        >
-                          Ver Detalle
-                        </Button>
-
-                        {user?.rol !== "proveedor" && (<Button
-                          variant="contained"
-                          color="primary"
-                          size="small"
-                          sx={{
-                            ml: 1,
-                            textTransform: "none",
-                            borderRadius: "10px",
-                            px: 2,
-                            py: 0.5,
-                            fontWeight: 600,
-                            backgroundColor: "#1565c0",
-                            boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-                            transition: "all 0.25s ease",
-                            "&:hover": {
-                              backgroundColor: "#0d47a1",
-                              transform: "scale(1.05)",
-                              boxShadow: "0 3px 8px rgba(0,0,0,0.25)",
-                            },
-                          }}
-                          onClick={() => handleEditar(c)}
-                          disabled={user?.rol === "proveedor"}  // El boton se desactiva para el proveedor
-                        >
-                          Editar
-                        </Button>)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-            </TableBody>
-          </Table>
-
-        </TableContainer>
+      {/* PAGINACIÓN BONITA */}
+      <Box display="flex" justifyContent="center" mt={4} mb={2}>
+        <Pagination
+          count={totalPages}
+          page={page}
+          onChange={(e, value) => setPage(value)}
+          shape="rounded"
+          size="large"
+          sx={{
+            "& .MuiPaginationItem-root": {
+              fontWeight: "bold",
+              color: "#002b5b",
+            },
+            "& .Mui-selected": {
+              backgroundColor: "#002b5b !important",
+              color: "white !important",
+            },
+          }}
+        />
+      </Box>
 
         {/* 🔍 Modal Detalle */}
       <Dialog
