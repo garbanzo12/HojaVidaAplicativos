@@ -26,7 +26,7 @@ const ListarAplicativo = () => {
 
   // 🔥 PAGINACIÓN
   const [page, setPage] = useState(1);
-  const rowsPerPage = 8;
+  const rowsPerPage = 10;
 
   const fetchAplicativos = async () => {
     try {
@@ -214,7 +214,14 @@ const ListarAplicativo = () => {
           </TableHead>
 
           <TableBody>
-            {paginatedRows.map((row, index) => (
+            {paginatedRows.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={6} align="center">
+                              No hay registros
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+            paginatedRows.map((row, index) => (
               <TableRow
                 key={row.id}
                 sx={{
@@ -299,7 +306,8 @@ const ListarAplicativo = () => {
                   </Box>
                 </TableCell>
               </TableRow>
-            ))}
+            ))
+            )}
           </TableBody>
         </Table>
       </Paper>

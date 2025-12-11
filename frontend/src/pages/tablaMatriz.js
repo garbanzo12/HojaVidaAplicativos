@@ -23,7 +23,7 @@ const TablaMatriz = ({ registros = [], onEstadoChange, onEditar }) => {
 
 
   const [page, setPage] = useState(1);
-  const rowsPerPage = 8;
+  const rowsPerPage = 10;
 
   const filtrados = registros.filter((fila) =>
     Object.values(fila).some((v) =>

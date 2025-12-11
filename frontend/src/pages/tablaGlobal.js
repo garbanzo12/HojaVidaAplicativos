@@ -27,7 +27,7 @@ const TablaMatriz = ({ registros = [], onEstadoChange, onEditar }) => {
   const [busqueda, setBusqueda] = useState("");
 
   const [page, setPage] = useState(1);
-  const rowsPerPage = 8;
+  const rowsPerPage = 10;
 
   const esProveedor = user?.rol === "proveedor";
 

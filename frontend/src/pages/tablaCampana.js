@@ -35,7 +35,7 @@
 
   /**  PAGINACIÓN BONITA */
   const [page, setPage] = useState(1);
-  const rowsPerPage = 8;
+  const rowsPerPage = 5;
 
   const [loading, setLoading] = useState(false);
     console.log(user)
@@ -232,7 +232,14 @@
           </TableHead>
 
           <TableBody>
-            {paginatedRows.map((c) => (
+          {paginatedRows.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={6} align="center">
+                No hay registros
+              </TableCell>
+            </TableRow>
+            ) : (  
+            paginatedRows.map((c) => (
               <TableRow
                 key={c.id}
                 sx={{
@@ -306,9 +313,13 @@
                     </Button>
                   )}
                 </TableCell>
+                
               </TableRow>
-            ))}
+              
+            ))
+            )}
           </TableBody>
+        
         </Table>
       </TableContainer>
 
