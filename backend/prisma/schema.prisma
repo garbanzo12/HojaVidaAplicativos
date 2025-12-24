@@ -26,7 +26,14 @@ model aplicativo {
   campana         campana[]             @relation("AplicativosCampanas")
 
 }
+model cliente {
+  id              Int                        @id @default(autoincrement())
+  nombre          String
+  pais            String
+  estado          cliente_estado        @default(HABILITADO)
+  campana         campana[]             @relation("ClientesCampanas")
 
+}
 model usuario {
   id               Int                   @id @default(autoincrement())
   nombre_completo  String
@@ -47,7 +54,6 @@ model usuario {
 model campana {
   id                          Int                          @id @default(autoincrement())
   nombre_campana              String
-  cliente                     String
   director_operacion_abai     String
   correo_director             String
   segmento                    String?
@@ -71,6 +77,7 @@ model campana {
   imagen_sede                 String?
   estado                      campana_estado               @default(HABILITADO)
   aplicativos  aplicativo[] @relation("AplicativosCampanas")
+  clientes  cliente[] @relation("ClientesCampanas")
   matriz_escalamiento         matriz_escalamiento[]        @relation("campanatomatriz_escalamiento")
   matriz_escalamiento_global  matriz_escalamiento_global[] @relation("campanatomatriz_escalamiento_global")
   usuarios  usuario[] @relation("UsuariosCampanas")
@@ -114,6 +121,10 @@ enum aplicativo_tipo_aplicativo {
 }
 
 enum campana_estado {
+  HABILITADO
+  DESHABILITADO
+}
+enum cliente_estado {
   HABILITADO
   DESHABILITADO
 }
