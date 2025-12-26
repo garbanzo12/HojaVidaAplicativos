@@ -73,7 +73,6 @@ export const createCampana = async (req, res) => { // Creo mi función para crea
   try {
     const {
       nombre_campana,
-      cliente,
       director_operacion_abai,
       correo_director,
       segmento,
@@ -102,10 +101,16 @@ export const createCampana = async (req, res) => { // Creo mi función para crea
     let usuarioIds = req.body["usuarioId[]"] || req.body.usuarioId || [];
     if (!Array.isArray(usuarioIds)) usuarioIds = [usuarioIds];
     usuarioIds = usuarioIds.map(Number).filter(Boolean);
+
     // Aplicativos
     let aplicativoIds = req.body["aplicativoId[]"] || req.body.aplicativoId || [];
     if (!Array.isArray(aplicativoIds)) aplicativoIds = [aplicativoIds];
     aplicativoIds = aplicativoIds.map(Number).filter(Boolean);
+
+    // Clientes
+    let clienteIds = req.body["clienteId[]"] || req.body.clienteId || [];
+    if (!Array.isArray(clienteIds)) clienteIds = [clienteIds];
+    clienteIds = clienteIds.map(Number).filter(Boolean);
 
     // Matriz Escalamiento Normal
     let matrizIds = req.body["matrizId[]"] || req.body.matrizId || [];
@@ -121,6 +126,7 @@ export const createCampana = async (req, res) => { // Creo mi función para crea
     // console.log("📌 APLICATIVOS IDs:", aplicativoIds);
     // console.log("📌 MATRIZ NORMAL IDs:", matrizIds);
     // console.log("📌 MATRIZ GLOBAL IDs:", matrizGlobalIds);
+    console.log("📌 Clientes GLOBAL IDs:", clienteIds);
 
     // A continuación hago un tratamiento a los archivos(imagenes) que llegan al body
     const imagen_cliente = req.files?.imagen_cliente
@@ -136,7 +142,6 @@ export const createCampana = async (req, res) => { // Creo mi función para crea
     const nuevaCampana = await prisma.campana.create({
       data: {
         nombre_campana,
-        cliente,
         director_operacion_abai,
         correo_director,
         segmento,
@@ -165,6 +170,9 @@ export const createCampana = async (req, res) => { // Creo mi función para crea
 
         aplicativos: {
           connect: aplicativoIds.map(id => ({ id }))
+        },
+        clientes: {
+          connect: clienteIds.map(id => ({ id }))
         },
 
         matriz_escalamiento: {

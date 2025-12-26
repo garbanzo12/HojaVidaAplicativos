@@ -6,7 +6,6 @@ const EstadoEnum = z.enum(["HABILITADO", "DESHABILITADO"]);
 export const campanaSchema = z.object({
   // 🔹 Campos principales
   nombre_campana: z.string().min(1, "El nombre de la campaña es obligatorio"),
-  cliente: z.string().min(1, "El cliente es obligatorio"),
   director_operacion_abai: z.string().min(1, "El director de operación es obligatorio"),
   correo_director: z.string().email("El correo del director es inválido"),
 

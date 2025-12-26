@@ -125,7 +125,7 @@ export default function FormularioModal({ open, onClose }) {
   const [matrices, setMatrices] = useState([]);
   const [matricesGlobal, setMatricesGlobal] = useState([]);
   const [usuarios, setUsuarios] = useState([]);
-
+  const [clientes, setClientes] = useState([]);
   const [loading, setLoading] = useState(false);
 
   // Cargar listas desde el backend cuando el modal se abre (igual que el primer componente)
@@ -174,6 +174,16 @@ export default function FormularioModal({ open, onClose }) {
       .catch(err => {
         console.error("Error cargando Usuarios:", err);
         setUsuarios([]);
+      });
+    // Cliente
+    axios.get("http://localhost:4000/cliente")
+      .then(res => {
+        const filtrados = (res.data || []).filter(u => u.estado === "HABILITADO");
+        setClientes(filtrados);
+      })
+      .catch(err => {
+        console.error("Error cargando Cliente:", err);
+        setClientes([]);
       });
 
   }, [open]);
@@ -275,7 +285,6 @@ export default function FormularioModal({ open, onClose }) {
       // Construimos un objeto con los keys que el backend espera
       const dataToSubmit = {
         nombre_campana: formData.nombre_campana || null,
-        cliente: formData.cliente || null,
         director_operacion_abai: formData.director_operacion_abai || null,
         correo_director: formData.correo_director || null,
 
@@ -286,6 +295,7 @@ export default function FormularioModal({ open, onClose }) {
         matrizId: formData.matriz_escalamiento ? [Number(formData.matriz_escalamiento)] : null,
         matrizGlobalId: formData.matriz_global ? [Number(formData.matriz_global)] : null,
         usuarioId: formData.usuario ? [Number(formData.usuario)] : null,
+        clienteId: formData.cliente ? [Number(formData.cliente)] : null,
 
         // Ubicación y puestos (notar nombre adaptado al backend original)
         ubicacion_sedes: formData.ubicacion_sede || null,
@@ -408,16 +418,24 @@ export default function FormularioModal({ open, onClose }) {
                     required
                   />
                 </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    label="Cliente *"
-                    name="cliente"
-                    value={formData.cliente}
-                    fullWidth
-                    size="small"
-                    onChange={handleChange}
-                    required
-                  />
+                <Grid  item xs={12} sm={6} md={3}>
+                  <FormControl fullWidth size="small" sx={selectStyles}>
+                    <InputLabel id="cliente-label">Cliente **</InputLabel>
+                    <Select
+                      labelId="cliente-label"
+                      name="cliente"
+                      value={formData.cliente || ""}
+                      label="Cliente"
+                      onChange={handleChange}
+                      MenuProps={menuProps}
+                      required
+                    >
+                      
+                      {clientes.map(u => (
+                        <MenuItem key={u.id} value={u.id}>{ u.nombre || `Cliente ${u.id}`}</MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <TextField
