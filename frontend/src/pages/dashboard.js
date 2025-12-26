@@ -33,6 +33,8 @@ import TablaMatriz from "./tablaMatriz";
 import TablaGlobal from "./tablaGlobal";
 import FormularioUsuario from "./formularioUsuario";
 import TablaUsuarios from "./tablaUsuarios";
+import FormularioCliente from "./formularioCliente";
+import TablaClientes from "./tablaCliente.js";
 import { jwtDecode } from "jwt-decode";
 import useAuthGuard from "../hooks/useAuthGuard.js";
 import { useAuth } from "../context/AuthContext";
@@ -84,6 +86,8 @@ const Dashboard = () => {
   const [abrirUsuarios, setAbrirUsuarios] = React.useState(false);
   const [seccionActual, setSeccionActual] = React.useState("inicio");
   const can = (rolesAllowed) => rolesAllowed.includes(userDB?.rol);
+  const [abrirCliente, setAbrirCliente] = React.useState(false);
+
 
   const handleMenuClick = (event, menuName) => {
     setMenuAnchor({ ...menuAnchor, [menuName]: event.currentTarget });
@@ -125,8 +129,8 @@ const estiloItem = {
 
   const sidebarItems = [
     { label: "Formularios", type: "dropdown" },
-  
     { label: "Usuarios", route: "Usuario", roles: ["administrador"] },
+    { label: "Clientes", route: "cliente" },
     { label: "Campaña", route: "campana" },
     { label: "Aplicativos", route: "abai" },
     { label: "Matrizes ", type: "dropdownMatriz" },
@@ -252,7 +256,16 @@ const estiloItem = {
                       Crear Usuario
                     </MenuItem>
                     )}
-                    
+
+                    <MenuItem
+                      onClick={() => {
+                        handleMenuClose(item.label);
+                        setAbrirCliente(true);
+                      }}
+                    >
+                      Crear Cliente
+                    </MenuItem>
+                  
                     {can(["administrador"]) && (<MenuItem
                       onClick={() => {
                         handleMenuClose(item.label);
@@ -286,6 +299,9 @@ const estiloItem = {
                     >
                       Crear Matriz Global
                     </MenuItem>)}
+
+                    
+
 
 
                   </Menu>
@@ -609,11 +625,13 @@ const estiloItem = {
     
   )}
 
-    {seccionActual === "campana" && <TablaCampana />}
+        {seccionActual === "campana" && <TablaCampana />}
         {seccionActual === "abai" && <TablaAplicativos />}
         {seccionActual === "matriz" && <TablaMatriz />}
         {seccionActual === "global" && <TablaGlobal />}
         {seccionActual === "Usuario" && can(["administrador"]) && <TablaUsuarios />}
+        {seccionActual === "cliente" && <TablaClientes />}
+
 </Box>
 
       {/* === MODALES === */}
@@ -677,6 +695,34 @@ const estiloItem = {
           </Box>
         </Modal>
       )}
+
+      {abrirCliente && (
+        <Modal open={abrirCliente} onClose={() => setAbrirCliente(false)}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              minHeight: "100vh",
+              p: 2,
+            }}
+          >
+            <Paper
+              elevation={6}
+              sx={{
+                width: "90%",
+                maxWidth: 800,
+                borderRadius: 3,
+                p: 3,
+                backgroundColor: "#f9f9f9",
+              }}
+            >
+              <FormularioCliente onClose={() => setAbrirCliente(false)} />
+            </Paper>
+          </Box>
+        </Modal>
+      )}
+
 
       {abrirMatriz && (
         <Modal open={abrirMatriz} onClose={() => setAbrirMatriz(false)}>

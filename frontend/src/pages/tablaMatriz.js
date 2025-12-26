@@ -58,7 +58,7 @@ const TablaMatriz = ({ registros = [], onEstadoChange, onEditar }) => {
           value={busqueda}
           onChange={(e) => {
             setBusqueda(e.target.value);
-            setPage(1); // resetear paginación al buscar
+            setPage(1); 
           }}
           sx={{
             width: "500px",

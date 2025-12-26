@@ -148,7 +148,9 @@ const Login = () => {
             </Typography>
 
             {/* Formulario */}
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
+            <Box  component="form"
+  onSubmit={handleSubmit}
+  sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
               <TextField
                 label="Correo electrónico"
                 name="email"
@@ -189,9 +191,9 @@ const Login = () => {
               </Box>
 
               <Button
-                variant="contained"
-                fullWidth
-                onClick={handleSubmit}
+                 type="submit"
+                  variant="contained"
+                  fullWidth
                 sx={{
                   py: 1.4,
                   borderRadius: 2,
